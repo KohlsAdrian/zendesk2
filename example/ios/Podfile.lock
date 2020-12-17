@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - zendesk2 (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - zendesk2 (from `.symlinks/plugins/zendesk2/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  zendesk2:
+    :path: ".symlinks/plugins/zendesk2/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  zendesk2: ef615411b964fa45656eea28d8535c53277cbb14
+
+PODFILE CHECKSUM: 53795643eb735a0d0175462b30225495fe46f9e1
+
+COCOAPODS: 1.10.0
