@@ -1,0 +1,50 @@
+group 'br.com.adriankohls.zendesk2'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.4.21'
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://zendesk.jfrog.io/zendesk/repo' }
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.6.4'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://zendesk.jfrog.io/zendesk/repo' }
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 29
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+    defaultConfig {
+        minSdkVersion 21
+    }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+}
+
+dependencies {
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.21"
+
+    implementation group: 'com.zendesk', name: 'chat', version: '3.2.0'
+    implementation group: 'com.zendesk', name: 'messaging', version: '5.1.0'
+    implementation group: 'com.zendesk', name: 'chat-providers', version: '3.2.0'
+}

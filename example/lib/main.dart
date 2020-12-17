@@ -24,12 +24,12 @@ class _MyAppState extends State<MyApp> {
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.chat),
           onPressed: () async {
-            String accountKey = 'i2fF4ndZWQd6LhVGuMOWIOZQBbcDk4EB';
-            String appId = 'a7ef57b405a2c7c9a3e90e02d4d5495d9539f22a0b54a0de';
+            String accountKey = '';
+            String appId = '';
 
-            String name = 'Adrian Kohls Teste Plugin';
-            String email = 'adrian@iza.com.vc';
-            String phoneNumber = '+5547996545040';
+            String name = '';
+            String email = '';
+            String phoneNumber = '';
 
             await Zendesk2.logger(true);
             await Zendesk2.init(accountKey, appId);
