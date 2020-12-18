@@ -127,9 +127,12 @@ class Zendesk2Plugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     val name = call.argument<String>("name")
     val email = call.argument<String>("email")
     val phoneNumber = call.argument<String>("phoneNumber")
-    val departmentName = call.argument<String>("deparmentName")
+    val departmentName = call.argument<String>("departmentName")
 
-    val tags = call.argument<List<String>>("tags")
+    val tags = call.argument<List<String>>("tags")?.toMutableList() ?: mutableListOf()
+
+    val profileProvider = Chat.INSTANCE.providers()?.profileProvider()
+    profileProvider?.addVisitorTags(tags, null)
 
     val visitorBuilder = VisitorInfo.builder()
 

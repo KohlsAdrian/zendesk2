@@ -2,10 +2,31 @@ PODS:
   - Flutter (1.0.0)
   - zendesk2 (0.0.1):
     - Flutter
+    - ZendeskChatSDK
+  - ZendeskChatProvidersSDK (2.10.0)
+  - ZendeskChatSDK (2.10.0):
+    - ZendeskChatProvidersSDK (~> 2.10.0)
+    - ZendeskMessagingSDK (~> 3.8.1)
+  - ZendeskCommonUISDK (6.1.0)
+  - ZendeskMessagingAPISDK (3.8.1):
+    - ZendeskSDKConfigurationsSDK (~> 1.1.7)
+  - ZendeskMessagingSDK (3.8.1):
+    - ZendeskCommonUISDK (~> 6.1.0)
+    - ZendeskMessagingAPISDK (~> 3.8.1)
+  - ZendeskSDKConfigurationsSDK (1.1.7)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - zendesk2 (from `.symlinks/plugins/zendesk2/ios`)
+
+SPEC REPOS:
+  trunk:
+    - ZendeskChatProvidersSDK
+    - ZendeskChatSDK
+    - ZendeskCommonUISDK
+    - ZendeskMessagingAPISDK
+    - ZendeskMessagingSDK
+    - ZendeskSDKConfigurationsSDK
 
 EXTERNAL SOURCES:
   Flutter:
@@ -15,7 +36,13 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  zendesk2: ef615411b964fa45656eea28d8535c53277cbb14
+  zendesk2: f68e359ce9c095e31e0c4b6321b2481d2ca1de5e
+  ZendeskChatProvidersSDK: dcda37575fba7ae503f3dc03313424ef1b2e729d
+  ZendeskChatSDK: 389196ae1688de1104ac05a40c5f89a9e76db838
+  ZendeskCommonUISDK: 92ca6b16956430a2cb61c89aeaa6ca123d1f81fd
+  ZendeskMessagingAPISDK: 986919a8f6f11a7019660d1ff798f1efb42fa572
+  ZendeskMessagingSDK: bf9a06f0cbb219617d9cf60a46aba1b68c8f3b30
+  ZendeskSDKConfigurationsSDK: 45fa87ec8418697f7fce5e56bec472052f0aedb5
 
 PODFILE CHECKSUM: 53795643eb735a0d0175462b30225495fe46f9e1
 

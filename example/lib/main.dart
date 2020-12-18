@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:zendesk2/zendesk2.dart';
 
@@ -31,8 +33,12 @@ class _MyAppState extends State<MyApp> {
             String email = '';
             String phoneNumber = '';
 
+            await Zendesk2.init(
+              accountKey,
+              appId,
+              iosThemeColor: Color(0xFFFF5148),
+            );
             await Zendesk2.logger(true);
-            await Zendesk2.init(accountKey, appId);
             await Zendesk2.customize(
               departmentFieldStatus: PRE_CHAT_FIELD_STATUS.REQUIRED,
               nameFieldStatus: PRE_CHAT_FIELD_STATUS.REQUIRED,
@@ -41,7 +47,7 @@ class _MyAppState extends State<MyApp> {
               transcriptChatEnabled: true,
               agentAvailability: true,
               endChatEnabled: true,
-              offlineForms: false,
+              offlineForms: true,
               preChatForm: true,
               transcript: true,
             );
@@ -53,7 +59,11 @@ class _MyAppState extends State<MyApp> {
               tags: ['app', 'zendesk2_plugin'],
             );
 
-            await Zendesk2.startChat();
+            await Zendesk2.startChat(
+              toolbarTitle: 'Fale Conosco',
+              backButtonLabel: 'Voltar',
+              botLabel: 'IZA',
+            );
           },
         ),
       ),
