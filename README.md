@@ -1,15 +1,39 @@
 # zendesk2
 
-A new flutter plugin project.
+An Android and iOS SDK port of Zendesk for Flutter
 
-## Getting Started
+Easy and fast to use
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+# Still in development
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Status
 
+#### Android
+
+  Chat SDK: 
+    Live Chat - OK
+    Customization - OK
+
+  Answer BOT SDK
+    not focused yet
+   
+  Talk SDK
+    not focused yet
+    
+   
+
+#### iOS
+
+  Chat SDK:  
+    Live Chat - Development
+    Customization - OK
+
+  Answer BOT SDK
+    not focused yet
+   
+  Talk SDK
+    not focused yet
+    
+# Far development
+
+  Unified SDK and Support SDK
