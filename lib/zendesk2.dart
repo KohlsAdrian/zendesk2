@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
@@ -11,13 +12,18 @@ enum PRE_CHAT_FIELD_STATUS {
 class Zendesk2 {
   static const _channel = const MethodChannel('zendesk2');
 
-  static Future<void> init(String accountKey, String appId,
-      {String firebaseToken}) async {
+  static Future<void> init(
+    String accountKey,
+    String appId, {
+    Color iosThemeColor,
+    String firebaseToken,
+  }) async {
     assert(accountKey != null);
     assert(appId != null);
     Map arguments = {
       'accountKey': accountKey,
       'appId': appId,
+      if (iosThemeColor != null) 'iosThemeColor': iosThemeColor.value,
       if (firebaseToken != null) 'firebaseToken': firebaseToken,
     };
     try {
@@ -123,10 +129,12 @@ class Zendesk2 {
     }
   }
 
-  static Future<void> startChat({String toolbarTitle, String botLabel}) async {
+  static Future<void> startChat(
+      {String toolbarTitle, String botLabel, String backButtonLabel}) async {
     Map arguments = {
       'toolbarTitle': toolbarTitle,
       'botLabel': botLabel,
+      'backButtonLabel': backButtonLabel,
     };
     try {
       await _channel.invokeMethod('startChat', arguments);
