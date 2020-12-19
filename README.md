@@ -4,37 +4,19 @@ An Android and iOS SDK port of Zendesk for Flutter
 
 Easy and fast to use
 
-# Still in development
+# Working
 
-#### Android
+  Chat SDK
 
-  Chat SDK: 
+    Live Chat and Customization
   
     Live Chat - OK
     Customization - OK
 
-  Answer BOT SDK
-  
-    not focused yet
-   
-  Talk SDK
-  
-    not focused yet
-    
-#### iOS
-
-  Chat SDK:  
-  
-    Live Chat - Development
-    Customization - OK
+# Development
 
   Answer BOT SDK
-  
-    not focused yet
-   
   Talk SDK
-  
-    not focused yet
     
 # Far development
 

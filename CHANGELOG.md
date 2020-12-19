@@ -1,7 +1,11 @@
+## 1.0.0
+
+* iOS integration finished, Chat SDK v2 for Android and iOS 
+
 ## 0.0.2
 
-* TODO: Describe initial release.
+* Android working
 
 ## 0.0.1
 
-* TODO: Describe initial release.
+* Initial release
