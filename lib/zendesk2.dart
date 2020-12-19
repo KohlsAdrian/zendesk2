@@ -9,10 +9,13 @@ enum PRE_CHAT_FIELD_STATUS {
   REQUIRED,
 }
 
-class Zendesk2 {
+class Zendesk2Chat {
+  Zendesk2Chat._();
+  static final Zendesk2Chat instance = Zendesk2Chat._();
+
   static const _channel = const MethodChannel('zendesk2');
 
-  static Future<void> init(
+  Future<void> init(
     String accountKey,
     String appId, {
     Color iosThemeColor,
@@ -33,7 +36,7 @@ class Zendesk2 {
     }
   }
 
-  static Future<void> setVisitorInfo({
+  Future<void> setVisitorInfo({
     String name,
     String email,
     String phoneNumber,
@@ -54,7 +57,7 @@ class Zendesk2 {
     }
   }
 
-  static Future<void> customize({
+  Future<void> customize({
     bool agentAvailability = false,
     bool transcript = false,
     bool preChatForm = false,
@@ -109,7 +112,7 @@ class Zendesk2 {
     }
   }
 
-  static Future<void> logger(bool enabled) async {
+  Future<void> logger(bool enabled) async {
     assert(enabled != null);
     Map arguments = {
       'enabled': enabled,
@@ -121,7 +124,7 @@ class Zendesk2 {
     }
   }
 
-  static Future<void> dispose() async {
+  Future<void> dispose() async {
     try {
       await _channel.invokeMethod('dispose');
     } catch (e) {
@@ -129,7 +132,7 @@ class Zendesk2 {
     }
   }
 
-  static Future<void> startChat(
+  Future<void> startChat(
       {String toolbarTitle, String botLabel, String backButtonLabel}) async {
     Map arguments = {
       'toolbarTitle': toolbarTitle,

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:zendesk2/zendesk2.dart';
 
@@ -33,33 +31,22 @@ class _MyAppState extends State<MyApp> {
             String email = '';
             String phoneNumber = '';
 
-            await Zendesk2.init(
+            Zendesk2Chat z = Zendesk2Chat.instance;
+
+            await z.init(
               accountKey,
               appId,
               iosThemeColor: Color(0xFFFF5148),
             );
-            await Zendesk2.logger(true);
-            await Zendesk2.customize(
-              departmentFieldStatus: PRE_CHAT_FIELD_STATUS.REQUIRED,
-              nameFieldStatus: PRE_CHAT_FIELD_STATUS.REQUIRED,
-              emailFieldStatus: PRE_CHAT_FIELD_STATUS.REQUIRED,
-              phoneFieldStatus: PRE_CHAT_FIELD_STATUS.REQUIRED,
-              transcriptChatEnabled: true,
-              agentAvailability: true,
-              endChatEnabled: true,
-              offlineForms: true,
-              preChatForm: true,
-              transcript: true,
-            );
-            await Zendesk2.setVisitorInfo(
+            await z.logger(true);
+            await z.setVisitorInfo(
               name: name,
               email: email,
               phoneNumber: phoneNumber,
-              departmentName: 'Suporte IZA',
               tags: ['app', 'zendesk2_plugin'],
             );
 
-            await Zendesk2.startChat(
+            await z.startChat(
               toolbarTitle: 'Fale Conosco',
               backButtonLabel: 'Voltar',
               botLabel: 'IZA',

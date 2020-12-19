@@ -8,7 +8,7 @@ import CommonUISDK
 public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
     private var chatConfiguration: ChatConfiguration? = nil
-    private var navigationController: UIViewController? = nil
+    private var navigationController: UINavigationController? = nil
     
     
     ///
@@ -19,20 +19,39 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         let channel = FlutterMethodChannel(name: "zendesk2", binaryMessenger: registrar.messenger())
         let instance = SwiftZendesk2Plugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
-        
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        switch(call.method){
-        case "init": zendeskInit(call: call)
-        case "logger": logger(call: call)
-        case "setVisitorInfo": setVisitorInfo(call: call)
-        case "startChat": startChat(call: call)
-        case "dispose": dismiss()
-        case "customize": customize(call: call)
-        default: result(0)
+        if navigationController == nil {
+            let rootViewController = UIApplication.shared.keyWindow?.rootViewController as? UINavigationController
+            self.navigationController = rootViewController
         }
-        result(nil)
+        
+        let arguments = call.arguments as? Dictionary<String, Any>
+        switch(call.method){
+        case "init":
+            zendeskInit(arguments)
+            break
+        case "logger":
+            logger(arguments)
+            break
+        case "setVisitorInfo":
+            setVisitorInfo(arguments)
+            break
+        case "startChat":
+            startChat(arguments)
+            break
+        case "dispose":
+            dismiss()
+            break
+        case "customize":
+            customize(arguments)
+            break
+        default:
+            break
+        }
+        
+        result(0)
     }
     
     ///
@@ -40,8 +59,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     ///
     
     /// Initialize Zendesk SDK
-    private func zendeskInit(call: FlutterMethodCall) {
-        let arguments = call.arguments as? Dictionary<String, Any>
+    private func zendeskInit(_ arguments: Dictionary<String, Any>?) {
         let accountKey = arguments!["accountKey"] as? String
         let appId = arguments?["appId"] as? String
         //let firebaseToken = call.argument("firebaseToken")
@@ -57,22 +75,20 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     }
     
     /// Logging  Zendesk API
-    private func logger(call: FlutterMethodCall) {
+    private func logger(_ arguments: Dictionary<String, Any>?) {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        let arguments = call.arguments as? Dictionary<String, Any>
         let enabled = arguments?["enabled"] as? Bool
         Logger.isEnabled = enabled ?? false
-        Logger.defaultLevel = .info
+        Logger.defaultLevel = .verbose
     }
     
     /// setVisitorInfo Zendesk API
-    private func setVisitorInfo(call: FlutterMethodCall) {
+    private func setVisitorInfo(_ arguments: Dictionary<String, Any>?) {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        let arguments = call.arguments as? Dictionary<String, Any>
         
         let name = arguments?["name"] as? String?
         let email = arguments?["email"] as? String?
@@ -86,18 +102,17 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         let chatAPIConfiguration = ChatAPIConfiguration()
         chatAPIConfiguration.tags = tags!
         chatAPIConfiguration.visitorInfo = visitorInfo
-        chatAPIConfiguration.department = (departmentName ?? "")!
+        chatAPIConfiguration.department = departmentName ?? ""
         
         Chat.instance?.configuration = chatAPIConfiguration
         
     }
     
     /// startChat v2 Zendesk API
-    private func startChat(call: FlutterMethodCall) {
+    private func startChat(_ arguments: Dictionary<String, Any>?) {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        let arguments = call.arguments as? Dictionary<String, Any>
         let botLabel = arguments?["botLabel"] as? String
         let toolbarTitle = arguments?["toolbarTitle"] as? String
         let backButtonLabel = arguments?["backButtonLabel"] as? String
@@ -115,43 +130,32 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
                 let chatEngine = try ChatEngine.engine()
                 let messaging = Messaging.instance
                 
-                
                 let themeColor = CommonTheme.currentTheme.primaryColor
-                
-                
-                let backButton = UIBarButtonItem.init(title: backButtonLabel ?? "Back", style:.plain, target: self, action: #selector(dismiss))
-                let optionsButton = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(actions))
-                
                 let brightnessColor = uiColorByTheme(color: themeColor)
                 
+                let backButton = UIBarButtonItem.init(title: backButtonLabel ?? "Back", style:.plain, target: self, action: #selector(dismiss))
                 backButton.tintColor = brightnessColor
-                optionsButton.tintColor = brightnessColor
                 
+                // creates zendesk chat UI
                 let viewController = try messaging.buildUI(engines: [chatEngine], configs: [messagingConfiguration, mChatConfiguration!])
-                
-                viewController.navigationController?.navigationBar.backgroundColor = themeColor //Toolbar background color
-                viewController.navigationController?.navigationBar.barTintColor = themeColor //Toolbar background color
                 viewController.navigationItem.leftBarButtonItem = backButton //Close/back button
+                
+                
+                // customize navigation controller
+                viewController.navigationItem.rightBarButtonItem?.tintColor = brightnessColor
+                
+                let navigationBar = self.navigationController?.navigationBar
+                navigationBar?.barTintColor = themeColor // bar tint color
+                navigationBar?.backgroundColor = themeColor //Toolbar background color
+                navigationBar?.barTintColor = themeColor //Toolbar background color
+                navigationBar?.titleTextAttributes = [NSAttributedString.Key.foregroundColor:brightnessColor] // set title color
                 
                 let navigationItem = viewController.navigationItem
                 navigationItem.title = toolbarTitle
                 
-                let navigationController = UINavigationController.init(rootViewController: viewController)
-                let navigationBar = navigationController.navigationBar
-                navigationBar.barTintColor = themeColor
-                navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor:brightnessColor]
-                
-                let actions = chatConfiguration?.chatMenuActions
-                
-                if !(actions?.isEmpty ?? false) {
-                    viewController.navigationItem.rightBarButtonItem = optionsButton
-                }
-                
-                
-                self.navigationController = navigationController
-                
-                let rootViewController = UIApplication.shared.keyWindow?.rootViewController
-                rootViewController?.present(navigationController, animated: true)
+                self.navigationController?.isNavigationBarHidden = false
+                // present navigation controller
+                self.navigationController?.pushViewController(viewController, animated: true)
             } catch {
                 print(error)
             }
@@ -161,11 +165,10 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     }
     
     /// customize Zendesk API
-    private func customize(call: FlutterMethodCall) {
+    private func customize(_ arguments: Dictionary<String, Any>?) {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        let arguments = call.arguments as? Dictionary<String, Any>
         let agentAvailability = arguments?["agentAvailability"] as? Bool
         let preChatForm = arguments?["preChatForm"] as? Bool
         let offlineForms = arguments?["offlineForms"] as? Bool
@@ -243,8 +246,15 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         
         if actions?.contains(.endChat) ?? false {
             let alertActionEndChat = UIAlertAction.init(title: localizedEndChat, style: .default) { (alertAction) in
-                Chat.chatProvider?.endChat()
-                self.dismiss()
+                Chat.chatProvider?.endChat() { (result) in
+                    switch result {
+                    case .success(let success):
+                        NSLog(success ? "success" : "not success")
+                        self.dismiss()
+                    case .failure(let error):
+                        NSLog(error.localizedDescription)
+                    }
+                }
             }
             actionsAlertController.addAction(alertActionEndChat)
         }
@@ -254,14 +264,21 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
                 let email = self.chatConfiguration?.preChatFormConfiguration.email
                 if email != nil {
                     let email = Chat.instance?.configuration.visitorInfo?.email
-                    Chat.chatProvider?.sendEmailTranscript(email!)
-                    self.dismiss()
+                    Chat.chatProvider?.sendEmailTranscript(email!) { (result) in
+                        switch result {
+                        case .success(let success):
+                            NSLog(success)
+                            self.dismiss()
+                        case .failure(let error):
+                            NSLog(error.localizedDescription)
+                        }
+                    }
                 }
             }
             actionsAlertController.addAction(alertActionTranscriptChat)
         }
         
-        let alertActionCancel = UIAlertAction.init(title: localizedCancel, style: .cancel,handler: nil)
+        let alertActionCancel = UIAlertAction.init(title: localizedCancel, style: .cancel, handler: nil)
         actionsAlertController.addAction(alertActionCancel)
         
         self.navigationController?.present(actionsAlertController, animated: true, completion: nil)
@@ -269,7 +286,8 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
     /// Closes Zendesk Chat
     @objc private func dismiss() {
-        self.navigationController?.dismiss(animated: true, completion: nil)
+        self.navigationController?.isNavigationBarHidden = true
+        self.navigationController?.popViewController(animated: true)
         
         let chat = Chat.instance
         
@@ -279,6 +297,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         })
         self.chatConfiguration = nil
         self.navigationController = nil
+        
     }
 }
 
