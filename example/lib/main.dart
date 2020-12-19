@@ -49,7 +49,7 @@ class _MyAppState extends State<MyApp> {
             await z.startChat(
               toolbarTitle: 'Fale Conosco',
               backButtonLabel: 'Voltar',
-              botLabel: 'IZA',
+              botLabel: 'bip bop boting',
             );
           },
         ),
