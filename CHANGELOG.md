@@ -1,3 +1,7 @@
+## 1.0.1
+
+* fixed iOS native code department glitch, was not setting nil on empty field, so SDK didn't work properly
+
 ## 1.0.0
 
 * iOS integration finished, Chat SDK v2 for Android and iOS 

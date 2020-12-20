@@ -10,7 +10,6 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     private var chatConfiguration: ChatConfiguration? = nil
     private var navigationController: UINavigationController? = nil
     
-    
     ///
     /// FLUTTER PLUGIN SETTINGS
     ///
@@ -60,18 +59,18 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
     /// Initialize Zendesk SDK
     private func zendeskInit(_ arguments: Dictionary<String, Any>?) {
-        let accountKey = arguments!["accountKey"] as? String
-        let appId = arguments?["appId"] as? String
         //let firebaseToken = call.argument("firebaseToken")
+        let accountKey: String = (arguments?["accountKey"] ?? "") as! String
+        let appId: String = (arguments?["appId"] ?? "") as! String
         let rgb = arguments?["iosThemeColor"] as? Int
         
-        if rgb != nil {
+        if rgb != nil{
             let color = uiColorFromHex(rgbValue: rgb!)
             CommonTheme.currentTheme.primaryColor = color
         }
         chatConfiguration = ChatConfiguration()
         
-        Chat.initialize(accountKey: accountKey!, appId: appId!)
+        Chat.initialize(accountKey: accountKey, appId: appId)
     }
     
     /// Logging  Zendesk API
@@ -79,8 +78,8 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        let enabled = arguments?["enabled"] as? Bool
-        Logger.isEnabled = enabled ?? false
+        let enabled: Bool = (arguments?["enabled"] ?? false) as! Bool
+        Logger.isEnabled = enabled
         Logger.defaultLevel = .verbose
     }
     
@@ -90,22 +89,20 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             NSLog("You must call init first")
         }
         
-        let name = arguments?["name"] as? String?
-        let email = arguments?["email"] as? String?
-        let phoneNumber = arguments?["phoneNumber"] as? String?
-        let departmentName = arguments?["departmentName"] as? String?
+        let name: String = (arguments?["name"] ?? "") as! String
+        let email: String = (arguments?["email"] ?? "") as! String
+        let phoneNumber: String = (arguments?["phoneNumber"] ?? "") as! String
+        let departmentName = arguments?["departmentName"] as? String
+        let tags: Array<String> = (arguments?["tags"] ?? Array<String>()) as! Array<String>
         
-        let tags = (arguments?["tags"] as? Array<String>?) ?? Array<String>()
-        
-        let visitorInfo = VisitorInfo.init(name: (name ?? "")!, email: (email ?? "")!, phoneNumber: (phoneNumber ?? "")!)
+        let visitorInfo = VisitorInfo.init(name: name, email: email, phoneNumber: phoneNumber)
         
         let chatAPIConfiguration = ChatAPIConfiguration()
-        chatAPIConfiguration.tags = tags!
+        chatAPIConfiguration.tags = tags
         chatAPIConfiguration.visitorInfo = visitorInfo
-        chatAPIConfiguration.department = departmentName ?? ""
+        chatAPIConfiguration.department = departmentName
         
         Chat.instance?.configuration = chatAPIConfiguration
-        
     }
     
     /// startChat v2 Zendesk API
@@ -113,36 +110,32 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        let botLabel = arguments?["botLabel"] as? String
-        let toolbarTitle = arguments?["toolbarTitle"] as? String
-        let backButtonLabel = arguments?["backButtonLabel"] as? String
+        let botLabel: String = (arguments?["botLabel"] ?? "") as! String
+        let toolbarTitle: String = (arguments?["toolbarTitle"] ?? "") as! String
+        let backButtonLabel: String = (arguments?["backButtonLabel"] ?? "Back") as! String
         
         let mChatConfiguration = self.chatConfiguration
         mChatConfiguration?.isPreChatFormEnabled = true
         
+        
+        let themeColor = CommonTheme.currentTheme.primaryColor
+        let brightnessColor = uiColorByTheme(color: themeColor)
+        
         if mChatConfiguration != nil {
+            
             let messagingConfiguration = MessagingConfiguration()
-            if botLabel != nil {
-                messagingConfiguration.name = botLabel!
-            }
+            messagingConfiguration.name = botLabel
             
             do {
                 let chatEngine = try ChatEngine.engine()
                 let messaging = Messaging.instance
                 
-                let themeColor = CommonTheme.currentTheme.primaryColor
-                let brightnessColor = uiColorByTheme(color: themeColor)
-                
-                let backButton = UIBarButtonItem.init(title: backButtonLabel ?? "Back", style:.plain, target: self, action: #selector(dismiss))
+                let backButton = UIBarButtonItem.init(title: backButtonLabel, style:.plain, target: self, action: #selector(dismiss))
                 backButton.tintColor = brightnessColor
                 
                 // creates zendesk chat UI
                 let viewController = try messaging.buildUI(engines: [chatEngine], configs: [messagingConfiguration, mChatConfiguration!])
                 viewController.navigationItem.leftBarButtonItem = backButton //Close/back button
-                
-                
-                // customize navigation controller
-                viewController.navigationItem.rightBarButtonItem?.tintColor = brightnessColor
                 
                 let navigationBar = self.navigationController?.navigationBar
                 navigationBar?.barTintColor = themeColor // bar tint color
@@ -169,39 +162,39 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        let agentAvailability = arguments?["agentAvailability"] as? Bool
-        let preChatForm = arguments?["preChatForm"] as? Bool
-        let offlineForms = arguments?["offlineForms"] as? Bool
-        let endChatEnabled = arguments?["endChatEnabled"] as? Bool
-        let transcriptChatEnabled = arguments?["transcriptChatEnabled"] as? Bool
+        let agentAvailability: Bool = arguments?["agentAvailability"] as! Bool
+        let preChatForm: Bool = arguments?["preChatForm"] as! Bool
+        let offlineForms: Bool = arguments?["offlineForms"] as! Bool
+        let endChatEnabled: Bool = arguments?["endChatEnabled"] as! Bool
+        let transcriptChatEnabled: Bool = arguments?["transcriptChatEnabled"] as! Bool
         
-        //let transcript = arguments?["transcript"] as? Bool
-        let nameFieldStatus = arguments?["nameFieldStatus"] as? String
-        let emailFieldStatus = arguments?["emailFieldStatus"] as? String
-        let phoneFieldStatus = arguments?["phoneFieldStatus"] as? String
-        let departmentFieldStatus = arguments?["departmentFieldStatus"] as? String
+        //let transcript = (arguments?["transcript"] ?? false) as! Bool
+        let nameFieldStatus: String = (arguments?["nameFieldStatus"] ?? false) as! String
+        let emailFieldStatus: String = (arguments?["emailFieldStatus"] ?? false) as! String
+        let phoneFieldStatus: String = (arguments?["phoneFieldStatus"] ?? "") as! String
+        let departmentFieldStatus: String = (arguments?["departmentFieldStatus"] ?? "") as! String
         
-        let nameFieldEnum = getPreChatEnumByString(preChatName: nameFieldStatus)
-        let emailFieldEnum = getPreChatEnumByString(preChatName: emailFieldStatus)
-        let phoneFieldEnum = getPreChatEnumByString(preChatName: phoneFieldStatus)
-        let departmentFieldEnum = getPreChatEnumByString(preChatName: departmentFieldStatus)
+        let nameFieldEnum: FormFieldStatus = getPreChatEnumByString(preChatName: nameFieldStatus)
+        let emailFieldEnum: FormFieldStatus = getPreChatEnumByString(preChatName: emailFieldStatus)
+        let phoneFieldEnum: FormFieldStatus = getPreChatEnumByString(preChatName: phoneFieldStatus)
+        let departmentFieldEnum: FormFieldStatus = getPreChatEnumByString(preChatName: departmentFieldStatus)
         
         var menuActions = Array<ChatMenuAction>()
         
-        if endChatEnabled != nil && endChatEnabled ?? false {
+        if endChatEnabled {
             menuActions.append(ChatMenuAction.endChat)
         }
-        if transcriptChatEnabled != nil && transcriptChatEnabled ?? false {
+        if transcriptChatEnabled {
             menuActions.append(ChatMenuAction.emailTranscript)
         }
         
         let chatConfiguration = ChatConfiguration()
         let formConfiguration = ChatFormConfiguration.init(name: nameFieldEnum, email: emailFieldEnum, phoneNumber: phoneFieldEnum, department: departmentFieldEnum)
         
-        chatConfiguration.isPreChatFormEnabled = preChatForm ?? false
-        chatConfiguration.isAgentAvailabilityEnabled = agentAvailability ?? false
-        chatConfiguration.isChatTranscriptPromptEnabled = transcriptChatEnabled ?? false
-        chatConfiguration.isOfflineFormEnabled = offlineForms ?? false
+        chatConfiguration.isPreChatFormEnabled = preChatForm
+        chatConfiguration.isAgentAvailabilityEnabled = agentAvailability
+        chatConfiguration.isChatTranscriptPromptEnabled = transcriptChatEnabled
+        chatConfiguration.isOfflineFormEnabled = offlineForms
         chatConfiguration.chatMenuActions = menuActions
         chatConfiguration.preChatFormConfiguration = formConfiguration
         
@@ -233,61 +226,8 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         return UIColor(red: red, green: green, blue: blue, alpha: alpha)
     }
     
-    /// Shows Zendesk Chat actions
-    @objc private func actions() {
-        let localizedEndChat = NSLocalizedString("ios.conversation.ui.end_chat.button_label", comment: "")
-        let localizedTranscriptChat = NSLocalizedString("ios.conversation.ui.chat.transcript.prompt.request_transcript.title", comment: "")
-        let localizedCancel = NSLocalizedString("ios.conversation.ui.chat.transcript.prompt.cancel", comment: "")
-        let localzedHelp = NSLocalizedString("ios.conversation.ui.chat.welcome_message.conversation_start", comment: "")
-        
-        let actionsAlertController = UIAlertController(title: localzedHelp, message: "", preferredStyle: .alert)
-        
-        let actions = chatConfiguration?.chatMenuActions
-        
-        if actions?.contains(.endChat) ?? false {
-            let alertActionEndChat = UIAlertAction.init(title: localizedEndChat, style: .default) { (alertAction) in
-                Chat.chatProvider?.endChat() { (result) in
-                    switch result {
-                    case .success(let success):
-                        NSLog(success ? "success" : "not success")
-                        self.dismiss()
-                    case .failure(let error):
-                        NSLog(error.localizedDescription)
-                    }
-                }
-            }
-            actionsAlertController.addAction(alertActionEndChat)
-        }
-        
-        if actions?.contains(.emailTranscript) ?? false {
-            let alertActionTranscriptChat = UIAlertAction.init(title: localizedTranscriptChat, style: .default) { (alertAction) in
-                let email = self.chatConfiguration?.preChatFormConfiguration.email
-                if email != nil {
-                    let email = Chat.instance?.configuration.visitorInfo?.email
-                    Chat.chatProvider?.sendEmailTranscript(email!) { (result) in
-                        switch result {
-                        case .success(let success):
-                            NSLog(success)
-                            self.dismiss()
-                        case .failure(let error):
-                            NSLog(error.localizedDescription)
-                        }
-                    }
-                }
-            }
-            actionsAlertController.addAction(alertActionTranscriptChat)
-        }
-        
-        let alertActionCancel = UIAlertAction.init(title: localizedCancel, style: .cancel, handler: nil)
-        actionsAlertController.addAction(alertActionCancel)
-        
-        self.navigationController?.present(actionsAlertController, animated: true, completion: nil)
-    }
-    
     /// Closes Zendesk Chat
     @objc private func dismiss() {
-        self.navigationController?.isNavigationBarHidden = true
-        self.navigationController?.popViewController(animated: true)
         
         let chat = Chat.instance
         
@@ -295,9 +235,14 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         chat?.resetIdentity({
             print("Identity reseted")
         })
-        self.chatConfiguration = nil
-        self.navigationController = nil
         
+        chat?.chatProvider.endChat()
+        
+        self.chatConfiguration = nil
+        
+        self.navigationController?.isNavigationBarHidden = true
+        self.navigationController?.popViewController(animated: true)
+        self.navigationController = nil
     }
 }
 
