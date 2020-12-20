@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Updated readme.me
+
 ## 1.0.1
 
 * fixed iOS native code department glitch, was not setting nil on empty field, so SDK didn't work properly
