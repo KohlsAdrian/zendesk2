@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Added providers for custom UI development, see example
+
 ## 1.0.2
 
 * Updated readme.me
