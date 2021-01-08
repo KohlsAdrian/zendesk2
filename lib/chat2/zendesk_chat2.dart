@@ -158,7 +158,8 @@ class Zendesk2Chat {
     }
   }
 
-  Future<void> startChatProviders() async {
+  Future<void> startChatProviders(
+      {Duration periodicRetrieve = const Duration(milliseconds: 300)}) async {
     try {
       if (_providersStream != null) {
         await _providersStream.sink.close();
@@ -166,8 +167,8 @@ class Zendesk2Chat {
       }
       _providersStream = StreamController<ProviderModel>();
       await _channel.invokeMethod('startChatProviders');
-      _getProvidersTimer = Timer.periodic(
-          Duration(milliseconds: 300), (timer) => _getChatProviders());
+      _getProvidersTimer =
+          Timer.periodic(periodicRetrieve, (timer) => _getChatProviders());
     } catch (e) {
       print(e);
     }
@@ -218,6 +219,28 @@ class Zendesk2Chat {
     };
     try {
       await _channel.invokeMethod('sendFile', arguments);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> sendRateComment(String comment) async {
+    Map arguments = {
+      'comment': comment,
+    };
+    try {
+      await _channel.invokeMethod('sendRatingComment', arguments);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> sendRateReview(RATING rating) async {
+    Map arguments = {
+      'rating': rating.toString().replaceAll('RATING.', ''),
+    };
+    try {
+      await _channel.invokeMethod('sendRatingReview', arguments);
     } catch (e) {
       print(e);
     }

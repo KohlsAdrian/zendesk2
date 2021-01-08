@@ -54,6 +54,15 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             let value = zendesk2Chat?.getAttachmentsExtension()
             result(value)
             break;
+        case "endChat":
+            zendesk2Chat?.endChat()
+            break;
+        case "sendRatingComment":
+            zendesk2Chat?.sendRatingComment(arguments)
+            break
+        case "sendRatingReview":
+            zendesk2Chat?.sendRatingReview(arguments)
+            break
         case "sendIsTyping":
             zendesk2Chat?.sendTyping(arguments)
         default:

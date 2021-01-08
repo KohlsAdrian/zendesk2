@@ -42,6 +42,12 @@ enum CHAT_PARTICIPANT {
   VISITOR,
 }
 
+enum RATING {
+  NONE,
+  GOOD,
+  BAD,
+}
+
 enum ATTACHMENT_ERROR {
   NONE,
   SIZE_LIMIT,
@@ -176,7 +182,6 @@ class Agent {
 class ChatLog {
   final bool createdByVisitor;
   final DateTime createdTimestamp;
-  final String description;
   final String displayName;
   final DateTime lastModifiedTimestamp;
   final String nick;
@@ -187,7 +192,6 @@ class ChatLog {
   ChatLog(
     this.createdByVisitor,
     this.createdTimestamp,
-    this.description,
     this.displayName,
     this.lastModifiedTimestamp,
     this.nick,
@@ -200,7 +204,6 @@ class ChatLog {
     bool createdByVisitor = map['createdByVisitor'];
     DateTime createdTimestamp = DateTime.fromMillisecondsSinceEpoch(
         (map['createdTimestamp'] as double).toInt());
-    String description = map['description'];
     String displayName = map['displayName'];
     DateTime lastModifiedTimestamp = DateTime.fromMillisecondsSinceEpoch(
         (map['lastModifiedTimestamp'] as double).toInt());
@@ -213,7 +216,6 @@ class ChatLog {
     return ChatLog(
       createdByVisitor,
       createdTimestamp,
-      description,
       displayName,
       lastModifiedTimestamp,
       nick,
@@ -284,14 +286,24 @@ class ChatLogType {
   final LOG_TYPE logType;
   final ChatMessage chatMessage;
   final ChatAttachment chatAttachment;
+  final ChatComment chatComment;
+  final ChatRating chatRating;
 
-  ChatLogType(this.logType, this.chatMessage, this.chatAttachment);
+  ChatLogType(
+    this.logType,
+    this.chatMessage,
+    this.chatAttachment,
+    this.chatComment,
+    this.chatRating,
+  );
 
   factory ChatLogType.fromJson(Map map) {
     String mLogType = map['type'];
     ChatMessage chatMessage = ChatMessage.fromJson(map['chatMessage'] ?? {});
     ChatAttachment chatAttachment =
         ChatAttachment.fromJson(map['chatAttachment'] ?? {});
+    ChatComment chatComment = ChatComment.fromJson(map['chatComment'] ?? {});
+    ChatRating chatRating = ChatRating.fromJson(map['chatRating'] ?? {});
     LOG_TYPE logType;
 
     switch (mLogType) {
@@ -324,7 +336,13 @@ class ChatLogType {
         break;
     }
 
-    return ChatLogType(logType, chatMessage, chatAttachment);
+    return ChatLogType(
+      logType,
+      chatMessage,
+      chatAttachment,
+      chatComment,
+      chatRating,
+    );
   }
 }
 
@@ -341,6 +359,43 @@ class ChatMessage {
     String id = map['id'];
     String message = map['message'];
     return ChatMessage(id, message);
+  }
+}
+
+class ChatComment {
+  final String comment;
+  final String newComment;
+
+  ChatComment(this.comment, this.newComment);
+
+  factory ChatComment.fromJson(Map map) {
+    String comment = map['comment'];
+    String newComment = map['newComment'];
+    return ChatComment(comment, newComment);
+  }
+}
+
+class ChatRating {
+  final RATING rating;
+
+  ChatRating(this.rating);
+
+  factory ChatRating.fromJson(Map map) {
+    String mRating = map['rating'];
+
+    RATING rating;
+    switch (mRating) {
+      case 'GOOD':
+        rating = RATING.GOOD;
+        break;
+      case 'BAD':
+        rating = RATING.BAD;
+        break;
+      default:
+        rating = RATING.NONE;
+    }
+
+    return ChatRating(rating);
   }
 }
 

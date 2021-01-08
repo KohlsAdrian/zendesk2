@@ -414,8 +414,7 @@ public class SwiftZendesk2Chat {
         dictionary["hasAgent"] = self.hasAgent
         dictionary["isFileSendingEnabled"] = self.isFileSendingEnabled
         dictionary["connectionStatus"] = self.connectionStatus
-        dictionary["chatSessionStatus"] = self.chatSessionStatus
-        
+        dictionary["chatSessionStatus"] = self.chatSessionStatus        
         
         switch self.rating {
         case .bad: dictionary["rating"] = "BAD"
@@ -429,19 +428,25 @@ public class SwiftZendesk2Chat {
         var agentsList = Array<Dictionary<String, Any>>()
         for agent in agents {
             var agentDict = [String: Any]()
-            agentDict["avatar"] = agent.avatar?.absoluteString
-            agentDict["displayName"] = agent.displayName
-            agentDict["isTyping"] = agent.isTyping
-            agentDict["nick"] = agent.nick
+            
+            let avatar = agent.avatar?.absoluteString
+            let displayName = agent.displayName;
+            let isTyping = agent.isTyping
+            let nick = agent.nick
+            
+            agentDict["avatar"] = avatar
+            agentDict["displayName"] = displayName
+            agentDict["isTyping"] = isTyping
+            agentDict["nick"] = nick
             agentsList.append(agentDict)
         }
         
         var logsList = Array<Dictionary<String, Any>>()
         for log in logs {
             var logDict = [String: Any]()
+            logDict["id"] = log.id
             logDict["createdByVisitor"] = log.createdByVisitor
             logDict["createdTimestamp"] = log.createdTimestamp
-            logDict["description"] = log.description
             logDict["displayName"] = log.displayName
             logDict["lastModifiedTimestamp"] = log.lastModifiedTimestamp
             logDict["nick"] = log.nick
@@ -551,6 +556,35 @@ public class SwiftZendesk2Chat {
                 
                 logChatAttachmentMessage["chatAttachmentAttachment"] = logChatAttachmentAttachmentMessage
                 logT["chatAttachment"] = logChatAttachmentMessage
+                
+            } else if log is ChatRating {
+                let chatRating = log as! ChatRating
+                
+                var logChatRating = [String: Any]()
+                
+                let rating = chatRating.rating
+                switch rating {
+                case .good:
+                    logChatRating["rating"] = "GOOD"
+                case .bad:
+                    logChatRating["rating"] = "BAD"
+                default:
+                    logChatRating["rating"] = "NONE"
+                }
+                
+                logT["chatRating"] = logChatRating
+            } else if log is ChatComment {
+                let chatComment = log as! ChatComment
+                
+                var logChatComment = [String: Any]()
+                
+                let comment = chatComment.comment
+                let newComment = chatComment.newComment
+                
+                logChatComment["comment"] = comment
+                logChatComment["newComment"] = newComment
+                
+                logT["chatComment"] = logChatComment
             }
             
             logDict["participant"] = logCP
@@ -565,8 +599,52 @@ public class SwiftZendesk2Chat {
         return dictionary
     }
     
+    func sendRatingComment(_ arguments: Dictionary<String, Any>?) -> Void {
+        let comment: String = (arguments?["comment"] ?? "") as! String
+        Chat.chatProvider?.sendChatComment(comment, completion: { (result) in
+            switch result {
+            case .failure(let error):
+                print(error)
+            case .success(let success):
+                print(success)
+            }
+        })
+    }
+    
+    func sendRatingReview(_ arguments: Dictionary<String, Any>?) -> Void {
+        let rate: String = (arguments?["rating"] ?? "") as! String
+        
+        
+        var rating: Rating
+        switch rate {
+        case "GOOD":
+            rating = .good
+        case "BAD":
+            rating = .bad
+        default:
+            rating = .none
+        }
+        
+        Chat.chatProvider?.sendChatRating(rating, completion: { (result) in
+            switch result {
+            case .failure(let error):
+                print(error)
+            case .success(let success):
+                print(success)
+            }
+        })
+    }
+    
     func endChat() -> Void {
-        Chat.chatProvider?.endChat()
+        Chat.chatProvider?.endChat({ (result) in
+            switch result {
+            case .failure(let error):
+                print(error)
+            case .success(let success):
+                self.chatSessionStatus =  "ENDED"
+                print(success)
+            }
+        })
     }
 }
 
