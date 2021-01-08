@@ -371,7 +371,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                   ),
                 ),
                 Container(
-                  width: size.width / 2,
+                  width: size.width / 2.5,
                   padding: EdgeInsets.all(5),
                   child: Card(
                     elevation: 5,
