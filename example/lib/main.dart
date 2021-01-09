@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zendesk2/zendesk2.dart';
+import 'package:zendesk2_example/zendesk_chat.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,7 +13,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  void zendesk() async {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(home: Home());
+  }
+}
+
+class Home extends StatefulWidget {
+  _Home createState() => _Home();
+}
+
+class _Home extends State<Home> {
+  void zendesk(bool isNativeChat, BuildContext context) async {
     String accountKey = '';
     String appId = '';
 
@@ -21,11 +34,7 @@ class _MyAppState extends State<MyApp> {
 
     Zendesk2Chat z = Zendesk2Chat.instance;
 
-    await z.init(
-      accountKey,
-      appId,
-      iosThemeColor: Color(0xFFFF5148),
-    );
+    await z.init(accountKey, appId, iosThemeColor: Colors.yellow);
 
     await z.customize(
       departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
@@ -48,28 +57,44 @@ class _MyAppState extends State<MyApp> {
     );
 
     await z.logger(true);
-
-    await z.startChat(
-      toolbarTitle: 'Fale Conosco',
-      backButtonLabel: 'Voltar',
-      botLabel: 'bip bop boting',
-    );
+    if (isNativeChat)
+      await z.startChat(
+        toolbarTitle: 'Talk to us',
+        backButtonLabel: 'Back',
+        botLabel: 'bip bop boting',
+      );
+    else
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Text('Press on FAB to start chat'),
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.chat),
-          onPressed: zendesk,
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Plugin example app'),
+      ),
+      body: Center(
+        child: Text('Press on FAB to start chat'),
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'nativeChat',
+            icon: Icon(Icons.chat),
+            label: Text('Native Chat'),
+            onPressed: () => zendesk(true, context),
+          ),
+          SizedBox(height: 20),
+          FloatingActionButton.extended(
+            heroTag: 'customChat',
+            icon: Icon(FontAwesomeIcons.comments),
+            label: Text('Custom Chat'),
+            onPressed: () => zendesk(false, context),
+          ),
+        ],
       ),
     );
   }
