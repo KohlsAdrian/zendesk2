@@ -64,6 +64,7 @@ Easy and fast to use
     Live Chat and Customization
   
     Live Chat - OK
+    Support SDK - OK
     Customization - OK
 
 # Development
@@ -74,4 +75,4 @@ Easy and fast to use
     
 # Far development
 
-  Unified SDK and Support SDK
+  Unified SDK
