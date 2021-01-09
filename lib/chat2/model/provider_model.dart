@@ -1,57 +1,4 @@
-enum CONNECTION_STATUS {
-  CONNECTED,
-  CONNECTING,
-  DISCONNECTED,
-  FAILED,
-  RECONNECTING,
-  UNREACHABLE,
-  UNKNOWN,
-}
-
-enum CHAT_SESSION_STATUS {
-  CONFIGURING,
-  ENDED,
-  ENDING,
-  INITIALIZING,
-  STARTED,
-  UNKNOWN,
-}
-
-enum DELIVERY_STATUS {
-  DELIVERED,
-  PENDING,
-  UNKNOWN,
-}
-
-enum LOG_TYPE {
-  ATTACHMENT_MESSAGE,
-  CHAT_COMMENT,
-  CHAT_RATING,
-  CHAT_RATING_REQUEST,
-  MEMBER_JOIN,
-  MEMBER_LEAVE,
-  MESSAGE,
-  OPTIONS_MESSAGE,
-  UNKNOWN,
-}
-
-enum CHAT_PARTICIPANT {
-  AGENT,
-  SYSTEM,
-  TRIGGER,
-  VISITOR,
-}
-
-enum RATING {
-  NONE,
-  GOOD,
-  BAD,
-}
-
-enum ATTACHMENT_ERROR {
-  NONE,
-  SIZE_LIMIT,
-}
+import 'package:zendesk2/zendesk2.dart';
 
 class ProviderModel {
   final bool isOnline;
@@ -83,7 +30,7 @@ class ProviderModel {
   factory ProviderModel.fromJson(Map map) {
     bool isOnline = map['isOnline'];
     bool isChatting = map['isChatting'];
-    bool hasAgents = map['hasAgent'];
+    bool hasAgents = map['hasAgents'];
     bool isFileSendingEnabled = map['isFileSendingEnabled'];
     List<Agent> agents = ((map['agents'] ?? []) as Iterable)
         .map((e) => Agent.fromJson(e))
@@ -202,11 +149,21 @@ class ChatLog {
 
   factory ChatLog.fromJson(Map map) {
     bool createdByVisitor = map['createdByVisitor'];
-    DateTime createdTimestamp = DateTime.fromMillisecondsSinceEpoch(
-        (map['createdTimestamp'] as double).toInt());
     String displayName = map['displayName'];
+
+    final mCreatedTimestamp = map['createdTimestamp'];
+    final mLastModifiedTimestamp = map['lastModifiedTimestamp'];
+
+    DateTime createdTimestamp = DateTime.fromMillisecondsSinceEpoch(
+        mCreatedTimestamp is double
+            ? mCreatedTimestamp.toInt()
+            : mCreatedTimestamp);
+
     DateTime lastModifiedTimestamp = DateTime.fromMillisecondsSinceEpoch(
-        (map['lastModifiedTimestamp'] as double).toInt());
+        mLastModifiedTimestamp is double
+            ? mLastModifiedTimestamp.toInt()
+            : mLastModifiedTimestamp);
+
     String nick = map['nick'];
     ChatLogParticipant chatLogParticipant =
         ChatLogParticipant.fromJson(map['participant'] ?? {});
@@ -285,6 +242,7 @@ class ChatLogDeliveryStatus {
 class ChatLogType {
   final LOG_TYPE logType;
   final ChatMessage chatMessage;
+  final ChatOptionsMessage chatOptionsMessage;
   final ChatAttachment chatAttachment;
   final ChatComment chatComment;
   final ChatRating chatRating;
@@ -292,6 +250,7 @@ class ChatLogType {
   ChatLogType(
     this.logType,
     this.chatMessage,
+    this.chatOptionsMessage,
     this.chatAttachment,
     this.chatComment,
     this.chatRating,
@@ -300,6 +259,8 @@ class ChatLogType {
   factory ChatLogType.fromJson(Map map) {
     String mLogType = map['type'];
     ChatMessage chatMessage = ChatMessage.fromJson(map['chatMessage'] ?? {});
+    ChatOptionsMessage chatOptionsMessage =
+        ChatOptionsMessage.fromJson(map['chatOptionsMessage'] ?? {});
     ChatAttachment chatAttachment =
         ChatAttachment.fromJson(map['chatAttachment'] ?? {});
     ChatComment chatComment = ChatComment.fromJson(map['chatComment'] ?? {});
@@ -339,6 +300,7 @@ class ChatLogType {
     return ChatLogType(
       logType,
       chatMessage,
+      chatOptionsMessage,
       chatAttachment,
       chatComment,
       chatRating,
@@ -359,6 +321,20 @@ class ChatMessage {
     String id = map['id'];
     String message = map['message'];
     return ChatMessage(id, message);
+  }
+}
+
+class ChatOptionsMessage {
+  final String message;
+  final List<String> options;
+
+  ChatOptionsMessage(this.message, this.options);
+
+  factory ChatOptionsMessage.fromJson(Map map) {
+    final String message = map['message'];
+    final List<String> options =
+        ((map['options'] ?? []) as Iterable).map((e) => e.toString()).toList();
+    return ChatOptionsMessage(message, options);
   }
 }
 

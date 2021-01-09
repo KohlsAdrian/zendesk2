@@ -35,7 +35,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             zendesk2Chat?.startChatProviders()
             break
         case "dispose":
-            zendesk2Chat?.dismiss()
+            zendesk2Chat?.dispose()
             break
         case "customize":
             zendesk2Chat?.customize(arguments)
@@ -43,20 +43,20 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         case "getChatProviders":
             let providers = zendesk2Chat?.getChatProviders()
             result(providers)
-            break;
+            break
         case "sendMessage":
             zendesk2Chat?.sendMessage(arguments)
-            break;
+            break
         case "sendFile":
             zendesk2Chat?.sendFile(arguments)
-            break;
+            break
         case "compatibleAttachmentsExtensions":
             let value = zendesk2Chat?.getAttachmentsExtension()
             result(value)
-            break;
+            break
         case "endChat":
             zendesk2Chat?.endChat()
-            break;
+            break
         case "sendRatingComment":
             zendesk2Chat?.sendRatingComment(arguments)
             break

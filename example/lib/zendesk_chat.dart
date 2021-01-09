@@ -199,7 +199,22 @@ class _ZendeskChat extends State<ZendeskChat> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Custom Chat UI')),
+      appBar: AppBar(
+        title: Text('Custom Chat UI'),
+        actions: [
+          if (_providerModel != null)
+            Icon(
+              Icons.circle,
+              color:
+                  _providerModel.connectionStatus == CONNECTION_STATUS.CONNECTED
+                      ? Colors.green
+                      : _providerModel.connectionStatus ==
+                              CONNECTION_STATUS.CONNECTING
+                          ? Colors.yellow
+                          : Colors.red,
+            )
+        ],
+      ),
       body: _providerModel == null
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -319,7 +334,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                                                 ? CrossAxisAlignment.end
                                                 : CrossAxisAlignment.start,
                                             children: [
-                                              if (isAttachment)
+                                              if (isAttachment && imageUrl != null)
                                                 CachedNetworkImage(
                                                   imageUrl: imageUrl,
                                                   placeholder: (context, url) =>

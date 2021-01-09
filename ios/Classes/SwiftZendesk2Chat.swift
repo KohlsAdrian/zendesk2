@@ -20,10 +20,10 @@ public class SwiftZendesk2Chat {
     private var observeChatStateToken: ObservationToken? = nil
     private var isOnline: Bool = false
     private var isChatting: Bool = false
-    private var hasAgent: Bool = false
+    private var hasAgents: Bool = false
     private var isFileSendingEnabled: Bool = false
-    private var connectionStatus: String = "UNKNOWN";
-    private var chatSessionStatus: String = "UNKNOWN";
+    private var connectionStatus: String = "UNKNOWN"
+    private var chatSessionStatus: String = "UNKNOWN"
     private var chatId: String? = nil
     private var agents: Array<Agent> = Array<Agent>()
     private var logs: Array<ChatLog> = Array<ChatLog>()
@@ -112,7 +112,7 @@ public class SwiftZendesk2Chat {
                 let chatEngine = try ChatEngine.engine()
                 let messaging = Messaging.instance
                 
-                let backButton = UIBarButtonItem.init(title: backButtonLabel, style:.plain, target: self, action: #selector(dismiss))
+                let backButton = UIBarButtonItem.init(title: backButtonLabel, style:.plain, target: self, action: #selector(dispose))
                 backButton.tintColor = brightnessColor
                 
                 // creates zendesk chat UI
@@ -216,7 +216,7 @@ public class SwiftZendesk2Chat {
     }
     
     /// Closes Zendesk Chat
-    @objc func dismiss() -> Void {
+    @objc func dispose() -> Void {
         
         let chat = Chat.instance
         
@@ -225,7 +225,7 @@ public class SwiftZendesk2Chat {
             print("Identity reseted")
         })
         
-        chat?.chatProvider.endChat()
+        endChat()
         
         self.chatConfiguration = nil
         
@@ -303,13 +303,13 @@ public class SwiftZendesk2Chat {
         observeAccoutToken = Chat.accountProvider?.observeAccount { (account) in
             let accountStatus = account.accountStatus
             self.isOnline = accountStatus == .online
-            self.hasAgent = self.isOnline
+            self.hasAgents = self.isOnline
         }
         
         Chat.accountProvider?.getAccount { (result) in
             switch result {
             case .success(let account):
-                self.hasAgent = true
+                self.hasAgents = true
                 self.isOnline = account.accountStatus == .online
             case .failure(let error):
                 print(error)
@@ -411,7 +411,7 @@ public class SwiftZendesk2Chat {
         var dictionary = [String: Any]()
         dictionary["isOnline"] = self.isOnline
         dictionary["isChatting"] = self.isChatting
-        dictionary["hasAgent"] = self.hasAgent
+        dictionary["hasAgents"] = self.hasAgents
         dictionary["isFileSendingEnabled"] = self.isFileSendingEnabled
         dictionary["connectionStatus"] = self.connectionStatus
         dictionary["chatSessionStatus"] = self.chatSessionStatus        
@@ -430,7 +430,7 @@ public class SwiftZendesk2Chat {
             var agentDict = [String: Any]()
             
             let avatar = agent.avatar?.absoluteString
-            let displayName = agent.displayName;
+            let displayName = agent.displayName
             let isTyping = agent.isTyping
             let nick = agent.nick
             
@@ -521,12 +521,10 @@ public class SwiftZendesk2Chat {
                 
                 var logChatAttachmentMessage = [String: Any]()
                 
-                let message = chatMessageAttachment.message
                 let id = chatMessageAttachment.id
                 let url = chatMessageAttachment.url?.absoluteString
                 
                 logChatAttachmentMessage["id"] = id
-                logChatAttachmentMessage["message"] = message
                 logChatAttachmentMessage["url"] = url
                 
                 let attachment = chatMessageAttachment.attachment
@@ -543,16 +541,16 @@ public class SwiftZendesk2Chat {
                 case .none:
                     logChatAttachmentAttachmentMessage["error"] = "NONE"
                 case .sizeLimit:
-                    logChatAttachmentAttachmentMessage["error"] = "SIZE_LIMITÏ"
+                    logChatAttachmentAttachmentMessage["error"] = "SIZE_LIMIT"
                 default:
                     logChatAttachmentAttachmentMessage["error"] = "NONE"
                 }
                 
-                logChatAttachmentAttachmentMessage["name"] = attachmentName;
-                logChatAttachmentAttachmentMessage["localUrl"] = attachmentLocalUrl?.absoluteString;
-                logChatAttachmentAttachmentMessage["mimeType"] = attachmentMimeType;
-                logChatAttachmentAttachmentMessage["size"] = attachmentSize;
-                logChatAttachmentAttachmentMessage["url"] = attachmentUrl;
+                logChatAttachmentAttachmentMessage["name"] = attachmentName
+                logChatAttachmentAttachmentMessage["localUrl"] = attachmentLocalUrl?.absoluteString
+                logChatAttachmentAttachmentMessage["mimeType"] = attachmentMimeType
+                logChatAttachmentAttachmentMessage["size"] = attachmentSize
+                logChatAttachmentAttachmentMessage["url"] = attachmentUrl
                 
                 logChatAttachmentMessage["chatAttachmentAttachment"] = logChatAttachmentAttachmentMessage
                 logT["chatAttachment"] = logChatAttachmentMessage
@@ -585,6 +583,18 @@ public class SwiftZendesk2Chat {
                 logChatComment["newComment"] = newComment
                 
                 logT["chatComment"] = logChatComment
+            } else if log is ChatOptionsMessage {
+                let chatOptionsMessage = log as! ChatOptionsMessage
+                
+                var logChatOptionsMessage = [String: Any]()
+
+                let message = chatOptionsMessage.message
+                let options = chatOptionsMessage.options
+                
+                logChatOptionsMessage["message"] = message
+                logChatOptionsMessage["options"] = options
+                
+                logT["chatOptionsMessage"] = logChatOptionsMessage
             }
             
             logDict["participant"] = logCP

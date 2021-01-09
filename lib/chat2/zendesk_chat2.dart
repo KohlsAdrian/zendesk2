@@ -1,4 +1,3 @@
-import 'package:zendesk2/chat2/model/provider_model.dart';
 import 'package:zendesk2/zendesk2.dart';
 
 enum PRE_CHAT_FIELD_STATUS {
@@ -24,7 +23,6 @@ class Zendesk2Chat {
     String accountKey,
     String appId, {
     Color iosThemeColor,
-    String firebaseToken,
   }) async {
     assert(accountKey != null);
     assert(appId != null);
@@ -32,7 +30,6 @@ class Zendesk2Chat {
       'accountKey': accountKey,
       'appId': appId,
       if (iosThemeColor != null) 'iosThemeColor': iosThemeColor.value,
-      if (firebaseToken != null) 'firebaseToken': firebaseToken,
     };
     try {
       await _channel.invokeMethod('init', arguments);
