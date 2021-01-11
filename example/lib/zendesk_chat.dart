@@ -334,7 +334,8 @@ class _ZendeskChat extends State<ZendeskChat> {
                                                 ? CrossAxisAlignment.end
                                                 : CrossAxisAlignment.start,
                                             children: [
-                                              if (isAttachment && imageUrl != null)
+                                              if (isAttachment &&
+                                                  imageUrl != null)
                                                 CachedNetworkImage(
                                                   imageUrl: imageUrl,
                                                   placeholder: (context, url) =>

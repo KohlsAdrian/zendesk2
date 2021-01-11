@@ -4,7 +4,7 @@ An Android and iOS SDK port of Zendesk for Flutter
 
 Easy and fast to use
 
-# Setup
+# Setup for Native Chat
 
 <details>
   <summary>Android Min SDK - 21</summary>
@@ -57,22 +57,30 @@ Easy and fast to use
   
 </details>
 
+# Setup for custom UI
+
+ None
+
+# What you need
+
+ * AccountKey
+
+ * AppId
+
 # STATUS
 
   Chat SDK
 
-    Live Chat and Customization
+    Live Chat, Customization and Providers for custom UI
   
     Live Chat - OK
     Support SDK - OK
     Customization - OK
-
-# Development
-
-  Answer BOT SDK
-  
-  Talk SDK
     
 # Far development
 
   Unified SDK
+
+  Answer BOT SDK
+  
+  Talk SDK

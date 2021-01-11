@@ -14,11 +14,21 @@ class Zendesk2Chat {
 
   StreamController<ProviderModel> _providersStream;
 
+  /// Listen to all parameters of the connected Live Chat
+  ///
+  /// Stream is updated at Duration provided on ```startChatProviders```
   Stream<ProviderModel> get providersStream =>
       _providersStream.stream.asBroadcastStream();
 
   Timer _getProvidersTimer;
 
+  /// Initialize the Zendesk SDK
+  ///
+  /// ```accountKey``` the zendesk created account key, unique by organization
+  ///
+  /// ```appId``` the app ID created on Zendesk Panel
+  ///
+  /// ```iosThemeColor``` the Theme color for Native Chat on iOS (AppBar and chat bubbles)
   Future<void> init(
     String accountKey,
     String appId, {
@@ -38,6 +48,17 @@ class Zendesk2Chat {
     }
   }
 
+  /// Set on Native/Custom chat user information
+  ///
+  /// ```name``` The name of the user identified
+  ///
+  /// ```email``` The email of the user identified
+  ///
+  /// ```phoneNumber``` The phone number of the user identified
+  ///
+  /// ```departmentName``` The chat department for chat, usually this field is empty
+  ///
+  /// ```tags``` The list of tags to represent the chat context
   Future<void> setVisitorInfo({
     String name,
     String email,
@@ -59,6 +80,28 @@ class Zendesk2Chat {
     }
   }
 
+  /// Set Native Chat parameters
+  ///
+  /// ```agentAvailability``` BOT tells if agent in available or not
+  ///
+  /// ```transcript``` If enabled user with provided email will receive the chat addressed to email
+  ///
+  /// ```preChatForm``` BOT request information of empty field on ```setVisitorInfo```
+  ///
+  /// ```offlineForms``` BOT request information to cache and will send as soon the user has connected ethernet
+  ///
+  /// ```nameFieldStatus``` if the BOT should ask about the user ```name```
+  ///
+  /// ```emailFieldStatus``` if the BOT should ask about the user ```email```
+  ///
+  /// ```phoneFieldStatus``` if the BOT should ask about the user ```phone```
+  ///
+  /// ```departmentFieldStatus``` if the BOT should ask about the user ```department``` to talk about
+  ///
+  /// ```endChatEnabled``` option to user end the chat
+  ///
+  /// ```transcriptChatEnabled``` option to user request chat transcription
+  ///
   Future<void> customize({
     bool agentAvailability = false,
     bool transcript = false,
@@ -114,6 +157,9 @@ class Zendesk2Chat {
     }
   }
 
+  /// LOG events of the SDK
+  ///
+  /// ```enabled``` if enabled, shows detailed information about the SDK actions
   Future<void> logger(bool enabled) async {
     assert(enabled != null);
     Map arguments = {
@@ -126,6 +172,7 @@ class Zendesk2Chat {
     }
   }
 
+  /// END chat, close connection and release resources
   Future<void> dispose() async {
     try {
       _getProvidersTimer?.cancel();
@@ -138,6 +185,13 @@ class Zendesk2Chat {
     }
   }
 
+  /// Start Native Chat with own bot behaviours
+  ///
+  /// ```toolbarTitle``` set toolbar title
+  ///
+  /// ```botLabel``` text to represent the BOT name
+  ///
+  /// ```backButtonLabel``` button text to represent iOS back button
   Future<void> startChat({
     String toolbarTitle = 'Zendesk NativeChat',
     String botLabel = 'Z',
@@ -155,6 +209,9 @@ class Zendesk2Chat {
     }
   }
 
+  /// Start chat providers for custom UI handling
+  ///
+  /// ```periodicRetrieve``` periodic time to update the ```providersStream```
   Future<void> startChatProviders(
       {Duration periodicRetrieve = const Duration(milliseconds: 300)}) async {
     try {
@@ -171,6 +228,9 @@ class Zendesk2Chat {
     }
   }
 
+  /// Providers only - send message
+  ///
+  /// ```message``` the message text that represents on live chat
   Future<void> sendMessage(String message) async {
     Map arguments = {
       'message': message,
@@ -182,6 +242,10 @@ class Zendesk2Chat {
     }
   }
 
+  /// Providers only - update Zendesk panel if user is typing
+  ///
+  /// ```isTyping``` if true Zendesk panel will know that user is typing,
+  /// otherwise not
   Future<void> sendTyping(bool isTyping) async {
     Map arguments = {
       'isTyping': isTyping,
@@ -193,6 +257,7 @@ class Zendesk2Chat {
     }
   }
 
+  /// Providers only - end the live chat
   Future<void> endChat() async {
     try {
       await _channel.invokeMethod('endChat');
@@ -201,6 +266,7 @@ class Zendesk2Chat {
     }
   }
 
+  /// Providers only - private function to update ```providersStream```
   Future<void> _getChatProviders() async {
     final value = await _channel.invokeMethod('getChatProviders');
     if (value != null) {
@@ -210,6 +276,9 @@ class Zendesk2Chat {
     }
   }
 
+  /// Providers only - send file
+  ///
+  /// ```path``` the file path, that will represent the file attachment on live chat
   Future<void> sendFile(String path) async {
     Map arguments = {
       'file': path,
@@ -221,6 +290,9 @@ class Zendesk2Chat {
     }
   }
 
+  /// Providers only - send rate comment
+  ///
+  /// ```comment``` the rate comment that will represent on live chat
   Future<void> sendRateComment(String comment) async {
     Map arguments = {
       'comment': comment,
@@ -232,6 +304,9 @@ class Zendesk2Chat {
     }
   }
 
+  /// Providers only - send rate review
+  ///
+  /// ```rating``` the rating enum that will represent on live chat
   Future<void> sendRateReview(RATING rating) async {
     Map arguments = {
       'rating': rating.toString().replaceAll('RATING.', ''),
@@ -243,6 +318,7 @@ class Zendesk2Chat {
     }
   }
 
+  /// Providers only - retrieve all compatible file extensions for Zendesk live chat
   Future<List<String>> getAttachmentExtensions() async {
     try {
       final value =
