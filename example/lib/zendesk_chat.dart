@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:zendesk2/chat2/model/provider_model.dart';
 import 'package:zendesk2/zendesk2.dart';
@@ -194,10 +195,196 @@ class _ZendeskChat extends State<ZendeskChat> {
     }
   }
 
+  Widget _userWidget() => Container(
+        padding: EdgeInsets.all(5),
+        child: Card(
+          color: Theme.of(context).primaryColor,
+          elevation: 10,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          child: Container(
+            padding: EdgeInsets.all(5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width / 0.1,
+                  padding: EdgeInsets.all(10),
+                  child: TextField(
+                    cursorColor: Colors.white,
+                    style: TextStyle(color: Colors.amber),
+                    decoration: InputDecoration(
+                      labelText: 'Message',
+                      labelStyle: TextStyle(color: Colors.white),
+                      prefixIcon: Icon(
+                        FontAwesomeIcons.pencilAlt,
+                        color: Colors.white,
+                      ),
+                    ),
+                    controller: _tecM,
+                    onChanged: (text) => _z.sendTyping(text.isNotEmpty),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    FloatingActionButton(
+                      heroTag: 'attachFab',
+                      mini: true,
+                      backgroundColor: Theme.of(context).accentColor,
+                      child: Icon(Icons.attach_file),
+                      onPressed: _attach,
+                    ),
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: 'zendeskSettings',
+                      child: Icon(Icons.settings),
+                      onPressed: _settings,
+                    ),
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: 'zendeskSend',
+                      child: Icon(Icons.send),
+                      onPressed: _send,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  Widget _chat() => ListView.builder(
+        padding: EdgeInsets.only(bottom: 200),
+        itemCount: _providerModel.logs.length,
+        itemBuilder: (context, index) {
+          ChatLog log = _providerModel.logs[index];
+          ChatMessage chatMessage = log.chatLogType.chatMessage;
+
+          String message = chatMessage?.message ?? '';
+
+          String name = log.displayName;
+
+          bool isAttachment = false;
+          bool isJoinOrLeave = false;
+          bool isRatingReview = false;
+          bool isRatingComment = false;
+          bool isAgent =
+              log.chatLogParticipant.chatParticipant == CHAT_PARTICIPANT.AGENT;
+
+          Agent agent;
+          if (isAgent)
+            agent = _providerModel.agents.firstWhere(
+                (element) => element.displayName == name,
+                orElse: () => null);
+
+          switch (log.chatLogType.logType) {
+            case LOG_TYPE.ATTACHMENT_MESSAGE:
+              message = 'Attachment';
+              isAttachment = true;
+              break;
+            case LOG_TYPE.CHAT_COMMENT:
+              ChatComment chatComment = log.chatLogType.chatComment;
+              final comment = chatComment.comment ?? '';
+              final newComment = chatComment.newComment ?? '';
+              message = 'Rating comment: $comment\n'
+                  'New comment: $newComment';
+              isRatingComment = true;
+              break;
+            case LOG_TYPE.CHAT_RATING:
+              message = 'Rating review: ' +
+                  log.chatLogType.chatRating.rating
+                      .toString()
+                      .replaceAll('RATING.', '');
+              isRatingReview = true;
+              break;
+            case LOG_TYPE.CHAT_RATING_REQUEST:
+              message = 'Rating request';
+              break;
+            case LOG_TYPE.MEMBER_JOIN:
+              message = '$name Joined!';
+              isJoinOrLeave = true;
+              break;
+            case LOG_TYPE.MEMBER_LEAVE:
+              message = '$name Left!';
+              isJoinOrLeave = true;
+              break;
+            case LOG_TYPE.MESSAGE:
+              message = message;
+              break;
+            case LOG_TYPE.OPTIONS_MESSAGE:
+              message = 'Options message';
+              break;
+            case LOG_TYPE.UNKNOWN:
+              message = 'Unknown';
+              break;
+          }
+
+          bool isVisitor = log.chatLogParticipant.chatParticipant ==
+              CHAT_PARTICIPANT.VISITOR;
+
+          final imageUrl = log.chatLogType?.chatAttachment?.url;
+
+          return isJoinOrLeave || isRatingReview || isRatingComment
+              ? Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                    ),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: isVisitor
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(5),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (isAgent)
+                            agent?.avatar != null
+                                ? CachedNetworkImage(imageUrl: agent.avatar)
+                                : Icon(Icons.person),
+                          Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0)),
+                            child: Container(
+                              width: MediaQuery.of(context).size.width * 0.5,
+                              padding: EdgeInsets.all(10),
+                              child: Column(
+                                crossAxisAlignment: isVisitor
+                                    ? CrossAxisAlignment.end
+                                    : CrossAxisAlignment.start,
+                                children: [
+                                  if (isAttachment && imageUrl != null)
+                                    CachedNetworkImage(
+                                      imageUrl: imageUrl,
+                                      placeholder: (context, url) =>
+                                          CircularProgressIndicator(),
+                                    ),
+                                  Text(message),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (isVisitor) Icon(Icons.person),
+                        ],
+                      ),
+                    )
+                  ],
+                );
+        },
+      );
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Custom Chat UI'),
@@ -217,210 +404,23 @@ class _ZendeskChat extends State<ZendeskChat> {
       ),
       body: _providerModel == null
           ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: EdgeInsets.only(bottom: 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: _providerModel.logs.length,
-                    itemBuilder: (context, index) {
-                      ChatLog log = _providerModel.logs[index];
-                      ChatMessage chatMessage = log.chatLogType.chatMessage;
-
-                      String message = chatMessage?.message ?? '';
-
-                      String name = log.displayName;
-
-                      bool isAttachment = false;
-                      bool isJoinOrLeave = false;
-                      bool isRatingReview = false;
-                      bool isRatingComment = false;
-                      bool isAgent = log.chatLogParticipant.chatParticipant ==
-                          CHAT_PARTICIPANT.AGENT;
-
-                      Agent agent;
-                      if (isAgent)
-                        agent = _providerModel.agents.firstWhere(
-                            (element) => element.displayName == name,
-                            orElse: () => null);
-
-                      switch (log.chatLogType.logType) {
-                        case LOG_TYPE.ATTACHMENT_MESSAGE:
-                          message = 'Attachment';
-                          isAttachment = true;
-                          break;
-                        case LOG_TYPE.CHAT_COMMENT:
-                          ChatComment chatComment = log.chatLogType.chatComment;
-                          final comment = chatComment.comment ?? '';
-                          final newComment = chatComment.newComment ?? '';
-                          message = 'Rating comment: $comment\n'
-                              'New comment: $newComment';
-                          isRatingComment = true;
-                          break;
-                        case LOG_TYPE.CHAT_RATING:
-                          message = 'Rating review: ' +
-                              log.chatLogType.chatRating.rating
-                                  .toString()
-                                  .replaceAll('RATING.', '');
-                          isRatingReview = true;
-                          break;
-                        case LOG_TYPE.CHAT_RATING_REQUEST:
-                          message = 'Rating request';
-                          break;
-                        case LOG_TYPE.MEMBER_JOIN:
-                          message = '$name Joined!';
-                          isJoinOrLeave = true;
-                          break;
-                        case LOG_TYPE.MEMBER_LEAVE:
-                          message = '$name Left!';
-                          isJoinOrLeave = true;
-                          break;
-                        case LOG_TYPE.MESSAGE:
-                          message = message;
-                          break;
-                        case LOG_TYPE.OPTIONS_MESSAGE:
-                          message = 'Options message';
-                          break;
-                        case LOG_TYPE.UNKNOWN:
-                          message = 'Unknown';
-                          break;
-                      }
-
-                      bool isVisitor = log.chatLogParticipant.chatParticipant ==
-                          CHAT_PARTICIPANT.VISITOR;
-
-                      final imageUrl = log.chatLogType?.chatAttachment?.url;
-
-                      return isJoinOrLeave || isRatingReview || isRatingComment
-                          ? Padding(
-                              padding: EdgeInsets.all(5),
-                              child: Text(
-                                message,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: isVisitor
-                                  ? MainAxisAlignment.end
-                                  : MainAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(5),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      if (isAgent)
-                                        agent?.avatar != null
-                                            ? CachedNetworkImage(
-                                                imageUrl: agent.avatar)
-                                            : Icon(Icons.person),
-                                      Card(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0)),
-                                        child: Container(
-                                          width: size.width * 0.5,
-                                          padding: EdgeInsets.all(5),
-                                          child: Column(
-                                            crossAxisAlignment: isVisitor
-                                                ? CrossAxisAlignment.end
-                                                : CrossAxisAlignment.start,
-                                            children: [
-                                              if (isAttachment &&
-                                                  imageUrl != null)
-                                                CachedNetworkImage(
-                                                  imageUrl: imageUrl,
-                                                  placeholder: (context, url) =>
-                                                      CircularProgressIndicator(),
-                                                ),
-                                              Text(message),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      if (isVisitor) Icon(Icons.person),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            );
-                    },
-                  ),
-                  if (_providerModel.agents.isNotEmpty &&
-                      _providerModel.agents.first.isTyping)
-                    Text(
-                      'Agent is typing...',
-                      textAlign: TextAlign.start,
-                    ),
-                ],
-              ),
-            ),
-      floatingActionButton: _providerModel == null ||
-              _providerModel.chatSessionStatus == CHAT_SESSION_STATUS.ENDED
-          ? null
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          : Stack(
+              alignment: Alignment.bottomCenter,
               children: [
-                Container(
-                  width: size.width / 3,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                          'Agents: ' + _providerModel.agents.length.toString()),
-                      IconButton(
-                        icon: Icon(Icons.attach_file),
-                        onPressed: _attach,
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: size.width / 2.5,
-                  padding: EdgeInsets.all(5),
-                  child: Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10.0))),
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      child: TextField(
-                        controller: _tecM,
-                        onChanged: (text) => _z.sendTyping(text.isNotEmpty),
-                      ),
-                    ),
-                  ),
-                ),
+                _chat(),
                 Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 10),
-                      child: FloatingActionButton(
-                        heroTag: 'zendeskSettings',
-                        child: Icon(Icons.settings),
-                        onPressed: _settings,
+                    if (_providerModel.agents.isNotEmpty &&
+                        _providerModel.agents.first.isTyping)
+                      Text(
+                        'Agent is typing...',
+                        textAlign: TextAlign.start,
                       ),
-                    ),
-                    FloatingActionButton(
-                      heroTag: 'zendeskSend',
-                      child: Icon(Icons.send),
-                      onPressed: _send,
-                    ),
+                    if (_providerModel != null && _providerModel.isChatting)
+                      _userWidget(),
                   ],
-                )
+                ),
               ],
             ),
     );
