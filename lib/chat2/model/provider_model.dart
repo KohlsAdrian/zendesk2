@@ -419,7 +419,7 @@ class ChatAttachmentAttachment {
   factory ChatAttachmentAttachment.fromJson(Map map) {
     String name = map['name'];
     String localUrl = map['localUrl'];
-    String mimeType = map['mmimeType'];
+    String mimeType = map['mimeType'];
     int size = map['size'];
     String url = map['url'];
     String mAttachmentError = map['error'];

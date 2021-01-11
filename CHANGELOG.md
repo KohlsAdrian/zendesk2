@@ -1,3 +1,11 @@
+## 1.1.1
+
+* Hotfix
+
+ - mistype mimeType in ProviderModel
+
+ - You must call supported types after providers finished initializing
+
 ## 1.1.0+1
 
 * Added plugin docs.

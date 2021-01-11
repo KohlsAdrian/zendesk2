@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zendesk2/chat2/model/provider_model.dart';
 import 'package:zendesk2/zendesk2.dart';
 
@@ -14,7 +15,6 @@ class _ZendeskChat extends State<ZendeskChat> {
   final Zendesk2Chat _z = Zendesk2Chat.instance;
 
   final _tecM = TextEditingController();
-
   ProviderModel _providerModel;
 
   @override
@@ -28,7 +28,6 @@ class _ZendeskChat extends State<ZendeskChat> {
     super.initState();
 
     Future.delayed(Duration(), () async {
-      await _z.startChatProviders();
       _z.providersStream.listen((providerModel) {
         _providerModel = providerModel;
         setState(() {});
@@ -55,8 +54,8 @@ class _ZendeskChat extends State<ZendeskChat> {
           ListTile(
             title: Row(
               children: [
-                Icon(Icons.photo),
-                Text('Gallery'),
+                Icon(FontAwesomeIcons.file),
+                Text('File'),
               ],
             ),
             onTap: () => Navigator.of(context).pop(false),
@@ -326,6 +325,16 @@ class _ZendeskChat extends State<ZendeskChat> {
 
           final imageUrl = log.chatLogType?.chatAttachment?.url;
 
+          final mimeType = log
+              .chatLogType?.chatAttachment?.chatAttachmentAttachment?.mimeType
+              ?.toLowerCase();
+          final isImage = mimeType == null
+              ? false
+              : (mimeType.contains('jpg') ||
+                  mimeType.contains('png') ||
+                  mimeType.contains('jpeg') ||
+                  mimeType.contains('gif'));
+
           return isJoinOrLeave || isRatingReview || isRatingComment
               ? Padding(
                   padding: EdgeInsets.all(5),
@@ -359,15 +368,30 @@ class _ZendeskChat extends State<ZendeskChat> {
                               width: MediaQuery.of(context).size.width * 0.5,
                               padding: EdgeInsets.all(10),
                               child: Column(
-                                crossAxisAlignment: isVisitor
-                                    ? CrossAxisAlignment.end
-                                    : CrossAxisAlignment.start,
                                 children: [
-                                  if (isAttachment && imageUrl != null)
-                                    CachedNetworkImage(
-                                      imageUrl: imageUrl,
-                                      placeholder: (context, url) =>
-                                          CircularProgressIndicator(),
+                                  if (isAttachment)
+                                    GestureDetector(
+                                      onTap: () => launch(log
+                                          .chatLogType
+                                          .chatAttachment
+                                          .chatAttachmentAttachment
+                                          .url),
+                                      child: isImage
+                                          ? CachedNetworkImage(
+                                              imageUrl: imageUrl,
+                                              placeholder: (context, url) =>
+                                                  CircularProgressIndicator(),
+                                            )
+                                          : Column(
+                                              children: [
+                                                Icon(FontAwesomeIcons.file),
+                                                Text(log
+                                                    .chatLogType
+                                                    .chatAttachment
+                                                    .chatAttachmentAttachment
+                                                    .name)
+                                              ],
+                                            ),
                                     ),
                                   Text(message),
                                 ],
@@ -417,7 +441,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                         'Agent is typing...',
                         textAlign: TextAlign.start,
                       ),
-                    if (_providerModel != null && _providerModel.isChatting)
+                    if (_providerModel != null && _providerModel.isOnline)
                       _userWidget(),
                   ],
                 ),

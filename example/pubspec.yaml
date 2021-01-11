@@ -27,6 +27,7 @@ dependencies:
   file_picker:
   image_picker:
   cached_network_image:
+  url_launcher:
     
 dev_dependencies:
   flutter_test:

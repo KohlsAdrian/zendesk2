@@ -395,7 +395,8 @@ public class SwiftZendesk2Chat {
     
     func getAttachmentsExtension() -> Array<String> {
         var array = Array<String>()
-        let types = Chat.settingsProvider?.settings.supportedFileTypes
+        let settingsProvider = Chat.settingsProvider
+        let types = settingsProvider?.settings.supportedFileTypes
         for type in types ?? [] {
             array.append(type)
         }

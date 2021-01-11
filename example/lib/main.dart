@@ -67,9 +67,12 @@ class _Home extends State<Home> {
         backButtonLabel: 'Back',
         botLabel: 'bip bop boting',
       );
-    else
+    else {
+      await Zendesk2Chat.instance.startChatProviders();
+
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
+    }
   }
 
   @override
