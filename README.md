@@ -59,13 +59,39 @@ Easy and fast to use
 
 # Setup for custom UI
 
- None
+    /// Zendesk Chat instance
+    Zendesk2Chat z = Zendesk2Chat.instance;
+
+    /// Initialize Zendesk SDK
+    await z.init(
+      accountKey,
+      appId,
+      iosThemeColor: Constants.IZA_YELLOW,
+    );
+    
+    /// Optional Visitor Info information
+    await z.setVisitorInfo(
+        name: name,
+        email: email,
+        phoneNumber: phoneNumber,
+      );
+      
+    /// Very important, for custom UI, prepare Stream for ProviderModel
+    await z.startChatProviders();
+    
+    /// Get the updated provider Model from SDK
+    z.providersStream.listen((providerModel) {
+      /// this stream retrieve all Chat data and Logs from SDK
+      _providerModel = providerModel;
+    });
 
 # What you need
 
  * AccountKey
 
  * AppId
+ 
+ * Update Cocoapods to latest version
 
 # STATUS
 
