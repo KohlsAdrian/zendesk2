@@ -8,6 +8,7 @@ import io.flutter.plugin.common.MethodCall
 import zendesk.chat.*
 import zendesk.messaging.MessagingActivity
 import java.io.File
+import java.lang.Exception
 
 
 class Zendesk2Chat(private val activity: Activity?) {
@@ -32,17 +33,17 @@ class Zendesk2Chat(private val activity: Activity?) {
     private var settingsProviderObservationToken: ObservationScope? = null
     private var connectionProviderObservationToken: ObservationScope? = null
 
-    fun customize(call: MethodCall){
+    fun customize(call: MethodCall): Map<String, Any>? {
         val agentAvailability = call.argument<Boolean>("agentAvailability") ?: false
         val transcript = call.argument<Boolean>("transcript") ?: false
         val preChatForm = call.argument<Boolean>("preChatForm") ?: false
-        val offlineForms = call.argument<Boolean>("offlineForms") ?:false
+        val offlineForms = call.argument<Boolean>("offlineForms") ?: false
         val nameFieldStatus = call.argument<String>("nameFieldStatus")
         val emailFieldStatus = call.argument<String>("emailFieldStatus")
         val phoneFieldStatus = call.argument<String>("phoneFieldStatus")
-        val departmentFieldStatus =  call.argument<String>("departmentFieldStatus")
+        val departmentFieldStatus = call.argument<String>("departmentFieldStatus")
         val endChatEnabled = call.argument<Boolean>("endChatEnabled") ?: true
-        val transcriptChatEnabled = call.argument<Boolean>("transcriptChatEnabled")?: true
+        val transcriptChatEnabled = call.argument<Boolean>("transcriptChatEnabled") ?: true
 
         val nameFieldEnum = getPreChatEnumByString(nameFieldStatus)
         val emailFieldEnum = getPreChatEnumByString(emailFieldStatus)
@@ -60,44 +61,49 @@ class Zendesk2Chat(private val activity: Activity?) {
         chatConfigurationBuilder.withPhoneFieldStatus(phoneFieldEnum)
         chatConfigurationBuilder.withDepartmentFieldStatus(departmentFieldEnum)
 
-        if(!endChatEnabled && !transcriptChatEnabled)
+        if (!endChatEnabled && !transcriptChatEnabled)
             chatConfigurationBuilder.withChatMenuActions()
-        else if(!transcriptChatEnabled)
+        else if (!transcriptChatEnabled)
             chatConfigurationBuilder.withChatMenuActions(ChatMenuAction.END_CHAT)
-        else if(!endChatEnabled)
+        else if (!endChatEnabled)
             chatConfigurationBuilder.withChatMenuActions(ChatMenuAction.CHAT_TRANSCRIPT)
 
         chatConfiguration = chatConfigurationBuilder.build()
+
+        if (!Logger.isLoggable()) {
+            return null
+        }
+
+        return mapOf<String, Any>(
+                "zendesk_agent_availability" to agentAvailability,
+        )
     }
 
     private fun getPreChatEnumByString(preChatName: String?): PreChatFormFieldStatus =
-            when(preChatName){
+            when (preChatName) {
                 "OPTIONAL" -> PreChatFormFieldStatus.OPTIONAL
                 "HIDDEN" -> PreChatFormFieldStatus.HIDDEN
                 "REQUIRED" -> PreChatFormFieldStatus.REQUIRED
                 else -> PreChatFormFieldStatus.HIDDEN
             }
 
-    fun init(call: MethodCall){
+    fun init(call: MethodCall) {
         val accountKey = call.argument<String>("accountKey")!!
         val appId = call.argument<String>("appId")!!
-
-        val chatConfigurationBuilder = ChatConfiguration.builder()
-        chatConfiguration = chatConfigurationBuilder.build()
 
         Chat.INSTANCE.init(activity!!, accountKey, appId)
     }
 
-    fun logger(call: MethodCall){
+    fun logger(call: MethodCall) {
         var enabled = call.argument<Boolean>("enabled")
         enabled = enabled ?: false
         Logger.setLoggable(enabled)
     }
 
-    fun startChat(call: MethodCall){
+    fun startChat(call: MethodCall) {
         val botLabel = call.argument<String>("botLabel") ?: ""
         val toolbarTitle = call.argument<String>("toolbarTitle") ?: ""
-        if(chatConfiguration != null)
+        if (chatConfiguration != null)
             MessagingActivity
                     .builder()
                     .withEngines(ChatEngine.engine())
@@ -107,7 +113,7 @@ class Zendesk2Chat(private val activity: Activity?) {
                     .show(activity!!, chatConfiguration)
     }
 
-    fun dispose(){
+    fun dispose() {
         val pushProvider = Chat.INSTANCE.providers()?.pushNotificationsProvider()
         pushProvider?.unregisterPushToken()
         endChat()
@@ -117,7 +123,7 @@ class Zendesk2Chat(private val activity: Activity?) {
         releaseProviders()
     }
 
-    fun setVisitorInfo(call: MethodCall){
+    fun setVisitorInfo(call: MethodCall) {
         val name = call.argument<String>("name")
         val email = call.argument<String>("email")
         val phoneNumber = call.argument<String>("phoneNumber")
@@ -128,23 +134,29 @@ class Zendesk2Chat(private val activity: Activity?) {
         val profileProvider = Chat.INSTANCE.providers()?.profileProvider()
         profileProvider?.addVisitorTags(tags, null)
 
-        val visitorBuilder = VisitorInfo.builder()
+        val visitorInfoBuilder = VisitorInfo.builder()
+                .withName(name ?: "")
+                .withEmail(email ?: "")
+                .withPhoneNumber(phoneNumber)
 
-        visitorBuilder.withName(name ?: "")
-        visitorBuilder.withEmail(email ?: "")
-        visitorBuilder.withPhoneNumber(phoneNumber ?: "")
+        val visitorInfo = visitorInfoBuilder.build()
 
-
-        val visitorInfo = visitorBuilder.build()
-
-        val chatProviderConfigurationBuilder = ChatProvidersConfiguration.builder()
+        val chatProvidersConfigurationBuilder = ChatProvidersConfiguration.builder()
                 .withVisitorInfo(visitorInfo)
+                .withDepartment(departmentName)
 
-        chatProviderConfigurationBuilder.withDepartment(departmentName ?: "")
+        val chatProvidersConfiguration = chatProvidersConfigurationBuilder.build()
 
-        val chatProviderConfiguration = chatProviderConfigurationBuilder.build()
+        Chat.INSTANCE.chatProvidersConfiguration = chatProvidersConfiguration
+        Chat.INSTANCE.providers()?.profileProvider()?.setVisitorInfo(visitorInfo, object : ZendeskCallback<Void>() {
+            override fun onSuccess(success: Void?) {
+                print("sucess")
+            }
 
-        Chat.INSTANCE.chatProvidersConfiguration = chatProviderConfiguration
+            override fun onError(error: ErrorResponse?) {
+                print(error)
+            }
+        })
     }
 
     private fun releaseProviders() {
@@ -156,24 +168,24 @@ class Zendesk2Chat(private val activity: Activity?) {
     }
 
     fun startChatProviders() {
-        if(chatConfiguration == null){
-            throw Exception("You must call init first")
+        if (chatConfiguration == null) {
+            throw Exception("You must call '.customize' and add more information")
         }
         startProviders()
 
         Chat.INSTANCE.providers()?.connectionProvider()?.connect()
     }
 
-    private fun startProviders(){
+    private fun startProviders() {
         chatProviderStart()
         accountProviderStart()
         settingsProviderStart()
         connectionProviderStart()
     }
 
-    private fun chatProviderStart(){
+    private fun chatProviderStart() {
         chatProviderObservationToken = ObservationScope()
-        if(chatProviderObservationToken != null)
+        if (chatProviderObservationToken != null)
             Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(chatProviderObservationToken!!) {
                 this.agents = it.agents
                 this.hasAgents = it.agents.isNotEmpty()
@@ -187,11 +199,11 @@ class Zendesk2Chat(private val activity: Activity?) {
             }
     }
 
-    private fun accountProviderStart(){
+    private fun accountProviderStart() {
         accountProviderObservationToken = ObservationScope()
-        if(accountProviderObservationToken != null)
-            Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!){
-                when(it.status){
+        if (accountProviderObservationToken != null)
+            Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!) {
+                when (it.status) {
                     AccountStatus.ONLINE -> {
                         this.isOnline = it.status == AccountStatus.ONLINE
                         this.hasAgents = this.isOnline
@@ -203,7 +215,7 @@ class Zendesk2Chat(private val activity: Activity?) {
                 }
             }
 
-        Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object: ZendeskCallback<Account>(){
+        Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
             override fun onSuccess(a: Account?) {
                 hasAgents = true
                 isOnline = a?.status == AccountStatus.ONLINE
@@ -214,41 +226,43 @@ class Zendesk2Chat(private val activity: Activity?) {
             }
         })
     }
-    private fun settingsProviderStart(){
+
+    private fun settingsProviderStart() {
         settingsProviderObservationToken = ObservationScope()
-        if(settingsProviderObservationToken != null)
-            Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(settingsProviderObservationToken!!){
+        if (settingsProviderObservationToken != null)
+            Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(settingsProviderObservationToken!!) {
                 this.isFileSendingEnabled = it.isFileSendingEnabled
             }
 
     }
-    private fun connectionProviderStart(){
+
+    private fun connectionProviderStart() {
         connectionProviderObservationToken = ObservationScope()
-        if(connectionProviderObservationToken != null)
-            Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!){
+        if (connectionProviderObservationToken != null)
+            Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
                 this.connectionStatus = it.name.split('.').last()
             }
     }
 
-    fun sendMessage(call: MethodCall){
+    fun sendMessage(call: MethodCall) {
         val message = call.argument<String>("message")
 
-        if(message != null) {
+        if (message != null) {
             val sent = Chat.INSTANCE.providers()?.chatProvider()?.sendMessage(message)
-            if(sent?.deliveryStatus != DeliveryStatus.DELIVERED)
-                if(sent?.id != null)
+            if (sent?.deliveryStatus != DeliveryStatus.DELIVERED)
+                if (sent?.id != null)
                     Chat.INSTANCE.providers()?.chatProvider()?.resendFailedMessage(sent.id)
         }
     }
 
-    fun sendFile(call: MethodCall){
+    fun sendFile(call: MethodCall) {
         val file = call.argument<String>("file") ?: ""
 
         val fileObject = File(file)
 
         val attachmentMessage = Chat.INSTANCE.providers()?.chatProvider()?.sendFile(fileObject, null)
 
-        if(attachmentMessage != null && attachmentMessage.deliveryStatus != DeliveryStatus.DELIVERED)
+        if (attachmentMessage != null && attachmentMessage.deliveryStatus != DeliveryStatus.DELIVERED)
             Chat.INSTANCE.providers()?.chatProvider()?.resendFailedMessage(attachmentMessage.id)
     }
 
@@ -258,7 +272,7 @@ class Zendesk2Chat(private val activity: Activity?) {
         return array ?: listOf()
     }
 
-    fun sendTyping(call: MethodCall){
+    fun sendTyping(call: MethodCall) {
         val isTyping = call.argument<Boolean>("isTyping") ?: false
         Chat.INSTANCE.providers()?.chatProvider()?.setTyping(isTyping)
     }
@@ -276,7 +290,7 @@ class Zendesk2Chat(private val activity: Activity?) {
         dictionary["queuePosition"] = this.queuePosition
 
         val agentsList = mutableListOf<MutableMap<String, Any?>>()
-        for (agent in this.agents){
+        for (agent in this.agents) {
             val agentDict = mutableMapOf<String, Any?>()
 
             val avatar = agent.avatarPath
@@ -293,7 +307,7 @@ class Zendesk2Chat(private val activity: Activity?) {
         }
 
         val logsList = mutableListOf<MutableMap<String, Any?>>()
-        for(log in this.logs){
+        for (log in this.logs) {
             val logDict = mutableMapOf<String, Any?>()
             logDict["id"] = log.id
             logDict["createdTimestamp"] = log.createdTimestamp
@@ -396,18 +410,19 @@ class Zendesk2Chat(private val activity: Activity?) {
         return dictionary
     }
 
-    fun sendRatingComment(call: MethodCall){
+    fun sendRatingComment(call: MethodCall) {
         val comment = call.argument<String>("comment") ?: ""
-        if(comment.isNotEmpty())
-            Chat.INSTANCE.providers()?.chatProvider()?.sendChatComment(comment,null)
+        if (comment.isNotEmpty())
+            Chat.INSTANCE.providers()?.chatProvider()?.sendChatComment(comment, null)
     }
-    fun sendRatingReview(call: MethodCall){
-        val rating: ChatRating? = when(call.argument<String>("rating") ?: ""){
-            "GOOD"-> ChatRating.GOOD
-            "BAD" ->ChatRating.BAD
+
+    fun sendRatingReview(call: MethodCall) {
+        val rating: ChatRating? = when (call.argument<String>("rating") ?: "") {
+            "GOOD" -> ChatRating.GOOD
+            "BAD" -> ChatRating.BAD
             else -> null
         }
-        if(rating != null)
+        if (rating != null)
             Chat.INSTANCE.providers()?.chatProvider()?.sendChatRating(rating, null)
     }
 

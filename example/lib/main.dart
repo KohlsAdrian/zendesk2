@@ -29,17 +29,25 @@ class Home extends StatefulWidget {
 
 class _Home extends State<Home> {
   void zendesk(bool isNativeChat, BuildContext context) async {
-    String accountKey = '';
-    String appId = '';
+    String accountKey = 'i2fF4ndZWQd6LhVGuMOWIOZQBbcDk4EB';
+    String appId = 'a7ef57b405a2c7c9a3e90e02d4d5495d9539f22a0b54a0de';
 
-    String name = '';
-    String email = '';
-    String phoneNumber = '';
+    String name = 'AdrianZ';
+    String email = 'adriankohls95@gmail.com';
+    String phoneNumber = '47996545040';
 
     Zendesk2Chat z = Zendesk2Chat.instance;
 
+    await z.logger(true);
+
     await z.init(accountKey, appId, iosThemeColor: Colors.yellow);
 
+    await z.setVisitorInfo(
+      name: name,
+      email: email,
+      phoneNumber: phoneNumber,
+      tags: ['app', 'zendesk2_plugin'],
+    );
     await z.customize(
       departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
       emailFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
@@ -53,21 +61,13 @@ class _Home extends State<Home> {
       transcript: true,
     );
 
-    await z.setVisitorInfo(
-      name: name,
-      email: email,
-      phoneNumber: phoneNumber,
-      tags: ['app', 'zendesk2_plugin'],
-    );
-
-    await z.logger(true);
-    if (isNativeChat)
+    if (isNativeChat) {
       await z.startChat(
         toolbarTitle: 'Talk to us',
         backButtonLabel: 'Back',
         botLabel: 'bip bop boting',
       );
-    else {
+    } else {
       await Zendesk2Chat.instance.startChatProviders();
 
       Navigator.of(context)

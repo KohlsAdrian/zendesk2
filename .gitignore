@@ -5,3 +5,9 @@
 .pub/
 
 build/
+.idea/vcs.xml
+.gitignore
+.idea/workspace.xml
+pubspec.lock
+example/pubspec.lock
+example/ios/Podfile.lock
