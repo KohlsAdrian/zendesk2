@@ -32,9 +32,9 @@ class _Home extends State<Home> {
     String accountKey = '';
     String appId = '';
 
-    String name = 'AdrianZ';
-    String email = 'adriankohls95@gmail.com';
-    String phoneNumber = '47996545040';
+    String name = '';
+    String email = '';
+    String phoneNumber = '';
 
     Zendesk2Chat z = Zendesk2Chat.instance;
 
