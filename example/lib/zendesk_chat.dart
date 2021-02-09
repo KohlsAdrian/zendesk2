@@ -441,8 +441,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                         'Agent is typing...',
                         textAlign: TextAlign.start,
                       ),
-                    if (_providerModel != null && _providerModel.isOnline)
-                      _userWidget(),
+                    _userWidget(),
                   ],
                 ),
               ],

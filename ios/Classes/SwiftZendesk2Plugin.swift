@@ -5,7 +5,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
     private var navigationController: UINavigationController? = nil
     private var zendesk2Chat: SwiftZendesk2Chat? = nil
-
+    
     public static func register(with registrar: FlutterPluginRegistrar) -> Void {
         let channel = FlutterMethodChannel(name: "zendesk2", binaryMessenger: registrar.messenger())
         let instance = SwiftZendesk2Plugin()
@@ -18,55 +18,58 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         }
         
         let arguments = call.arguments as? Dictionary<String, Any>
+        var mResult: Any? = nil
         switch(call.method){
         case "init":
-            zendesk2Chat?.zendeskInit(arguments)
+            mResult = zendesk2Chat?.zendeskInit(arguments)
             break
         case "logger":
-            zendesk2Chat?.logger(arguments)
+            mResult = zendesk2Chat?.logger(arguments)
             break
         case "setVisitorInfo":
-            zendesk2Chat?.setVisitorInfo(arguments)
+            mResult = zendesk2Chat?.setVisitorInfo(arguments)
             break
         case "startChat":
-            zendesk2Chat?.startChat(arguments)
+            mResult = zendesk2Chat?.startChat(arguments)
             break
         case "startChatProviders":
-            zendesk2Chat?.startChatProviders()
+            mResult = zendesk2Chat?.startChatProviders()
             break
         case "dispose":
-            zendesk2Chat?.dispose()
+            mResult = zendesk2Chat?.dispose()
             break
         case "customize":
-            zendesk2Chat?.customize(arguments)
+            mResult = zendesk2Chat?.customize(arguments)
             break
         case "getChatProviders":
-            let providers = zendesk2Chat?.getChatProviders()
-            result(providers)
+            mResult = zendesk2Chat?.getChatProviders()
             break
         case "sendMessage":
-            zendesk2Chat?.sendMessage(arguments)
+            mResult = zendesk2Chat?.sendMessage(arguments)
             break
         case "sendFile":
-            zendesk2Chat?.sendFile(arguments)
+            mResult = zendesk2Chat?.sendFile(arguments)
             break
         case "compatibleAttachmentsExtensions":
-            let value = zendesk2Chat?.getAttachmentsExtension()
-            result(value)
+            mResult = zendesk2Chat?.getAttachmentsExtension()
             break
         case "endChat":
-            zendesk2Chat?.endChat()
+            mResult = zendesk2Chat?.endChat()
             break
         case "sendRatingComment":
-            zendesk2Chat?.sendRatingComment(arguments)
+            mResult = zendesk2Chat?.sendRatingComment(arguments)
             break
         case "sendRatingReview":
-            zendesk2Chat?.sendRatingReview(arguments)
+            mResult = zendesk2Chat?.sendRatingReview(arguments)
             break
         case "sendIsTyping":
-            zendesk2Chat?.sendTyping(arguments)
+            mResult = zendesk2Chat?.sendTyping(arguments)
         default:
             break
+        }
+        
+        if mResult is Array<Any?> || mResult is Dictionary<String, Any?> {
+            result(mResult)
         }
         
         result(0)

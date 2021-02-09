@@ -46,10 +46,10 @@ class Zendesk2Plugin: ActivityAware, FlutterPlugin, MethodCallHandler {
               "sendIsTyping" -> zendesk2Chat?.sendTyping(call)
               else -> print("method not implemented")
             }
-    if(data is Unit)
-      result.success(this.hashCode())
+    if(data is Map<*, *> || data is Array<*>)
+        result.success(data)
     else
-      result.success(data)
+        result.success(this.hashCode())
   }
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {

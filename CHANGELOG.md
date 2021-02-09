@@ -1,3 +1,7 @@
+## 1.2.0
+
+* Added logs for all events happening on plugin if Logger enabled
+
 ## 1.1.1
 
 * Hotfix

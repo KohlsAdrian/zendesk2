@@ -14,6 +14,8 @@ class Zendesk2Chat {
 
   StreamController<ProviderModel> _providersStream;
 
+  bool _isLoggerEnabled = false;
+
   /// Listen to all parameters of the connected Live Chat
   ///
   /// Stream is updated at Duration provided on ```startChatProviders```
@@ -42,7 +44,10 @@ class Zendesk2Chat {
       if (iosThemeColor != null) 'iosThemeColor': iosThemeColor.value,
     };
     try {
-      await _channel.invokeMethod('init', arguments);
+      final result = await _channel.invokeMethod('init', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -74,7 +79,10 @@ class Zendesk2Chat {
       if (tags != null) 'tags': tags,
     };
     try {
-      await _channel.invokeMethod('setVisitorInfo', arguments);
+      final result = await _channel.invokeMethod('setVisitorInfo', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -151,7 +159,10 @@ class Zendesk2Chat {
     };
 
     try {
-      await _channel.invokeMethod('customize', arguments);
+      final result = await _channel.invokeMethod('customize', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -162,11 +173,15 @@ class Zendesk2Chat {
   /// ```enabled``` if enabled, shows detailed information about the SDK actions
   Future<void> logger(bool enabled) async {
     assert(enabled != null);
+    _isLoggerEnabled = enabled;
     Map arguments = {
       'enabled': enabled,
     };
     try {
-      await _channel.invokeMethod('logger', arguments);
+      final result = await _channel.invokeMethod('logger', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -179,7 +194,10 @@ class Zendesk2Chat {
       await _providersStream.sink.close();
       await _providersStream.close();
       _providersStream = null;
-      await _channel.invokeMethod('dispose');
+      final result = await _channel.invokeMethod('dispose');
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -203,7 +221,10 @@ class Zendesk2Chat {
       'backButtonLabel': backButtonLabel,
     };
     try {
-      await _channel.invokeMethod('startChat', arguments);
+      final result = await _channel.invokeMethod('startChat', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -220,9 +241,13 @@ class Zendesk2Chat {
         await _providersStream.close();
       }
       _providersStream = StreamController<ProviderModel>();
-      await _channel.invokeMethod('startChatProviders');
+      final result = await _channel.invokeMethod('startChatProviders');
       _getProvidersTimer =
           Timer.periodic(periodicRetrieve, (timer) => _getChatProviders());
+
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -236,7 +261,10 @@ class Zendesk2Chat {
       'message': message,
     };
     try {
-      await _channel.invokeMethod('sendMessage', arguments);
+      final result = await _channel.invokeMethod('sendMessage', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -251,7 +279,10 @@ class Zendesk2Chat {
       'isTyping': isTyping,
     };
     try {
-      await _channel.invokeMethod('sendIsTyping', arguments);
+      final result = await _channel.invokeMethod('sendIsTyping', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -260,7 +291,10 @@ class Zendesk2Chat {
   /// Providers only - end the live chat
   Future<void> endChat() async {
     try {
-      await _channel.invokeMethod('endChat');
+      final result = await _channel.invokeMethod('endChat');
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -284,7 +318,10 @@ class Zendesk2Chat {
       'file': path,
     };
     try {
-      await _channel.invokeMethod('sendFile', arguments);
+      final result = await _channel.invokeMethod('sendFile', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -298,7 +335,11 @@ class Zendesk2Chat {
       'comment': comment,
     };
     try {
-      await _channel.invokeMethod('sendRatingComment', arguments);
+      final result =
+          await _channel.invokeMethod('sendRatingComment', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
@@ -312,7 +353,10 @@ class Zendesk2Chat {
       'rating': rating.toString().replaceAll('RATING.', ''),
     };
     try {
-      await _channel.invokeMethod('sendRatingReview', arguments);
+      final result = await _channel.invokeMethod('sendRatingReview', arguments);
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
     } catch (e) {
       print(e);
     }
