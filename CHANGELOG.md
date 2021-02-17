@@ -1,3 +1,7 @@
+## 1.2.1
+
+* Fixed Android setVisitorInfo not working, and added iOS logging
+
 ## 1.2.0
 
 * Added logs for all events happening on plugin if Logger enabled
