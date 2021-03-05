@@ -116,7 +116,6 @@ class Zendesk2Chat(private val activity: Activity?) {
     fun dispose() {
         val pushProvider = Chat.INSTANCE.providers()?.pushNotificationsProvider()
         pushProvider?.unregisterPushToken()
-        endChat()
         Chat.INSTANCE.resetIdentity()
         Chat.INSTANCE.clearCache()
         chatConfiguration = null
