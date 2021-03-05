@@ -8,11 +8,9 @@ import io.flutter.plugin.common.MethodCall
 import zendesk.chat.*
 import zendesk.messaging.MessagingActivity
 import java.io.File
-import java.lang.Exception
 
 
 class Zendesk2Chat(private val activity: Activity?) {
-
 
     private var chatConfiguration: ChatConfiguration? = null
     private var isOnline: Boolean = false
@@ -114,12 +112,9 @@ class Zendesk2Chat(private val activity: Activity?) {
     }
 
     fun dispose() {
-        val pushProvider = Chat.INSTANCE.providers()?.pushNotificationsProvider()
-        pushProvider?.unregisterPushToken()
-        Chat.INSTANCE.resetIdentity()
-        Chat.INSTANCE.clearCache()
+        clearTokens()
         chatConfiguration = null
-        releaseProviders()
+        Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
     }
 
     fun setVisitorInfo(call: MethodCall) {
@@ -158,62 +153,56 @@ class Zendesk2Chat(private val activity: Activity?) {
         })
     }
 
-    private fun releaseProviders() {
-        // Token cancelation is the same as calling endChat() bug
-        /* chatProviderObservationToken?.cancel()
-        accountProviderObservationToken?.cancel()
-        settingsProviderObservationToken?.cancel()
-        connectionProviderObservationToken?.cancel() */
-        Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
-    }
-
     fun startChatProviders() {
         if (chatConfiguration == null) {
             throw Exception("You must call '.customize' and add more information")
         }
         startProviders()
 
-        Chat.INSTANCE.providers()?.connectionProvider()?.connect()
+        val providers = Chat.INSTANCE.providers()
+        providers?.connectionProvider()?.connect()
     }
 
     private fun startProviders() {
-        chatProviderStart()
-        accountProviderStart()
-        settingsProviderStart()
-        connectionProviderStart()
+        if (chatProviderObservationToken == null)
+            chatProviderStart()
+        if (accountProviderObservationToken == null)
+            accountProviderStart()
+        if (settingsProviderObservationToken == null)
+            settingsProviderStart()
+        if (connectionProviderObservationToken == null)
+            connectionProviderStart()
     }
 
     private fun chatProviderStart() {
         chatProviderObservationToken = ObservationScope()
-        if (chatProviderObservationToken != null)
-            Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(chatProviderObservationToken!!) {
-                this.agents = it.agents
-                this.hasAgents = it.agents.isNotEmpty()
-                this.logs = it.chatLogs
-                this.chatId = it.chatId
-                this.rating = it.chatRating
-                this.queuePosition = it.queuePosition
-                this.isChatting = it.isChatting
-                this.chatSessionStatus = it.chatSessionStatus.name.split('.').last()
-                this.comment = it.chatComment
-            }
+        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(chatProviderObservationToken!!) {
+            this.agents = it.agents
+            this.hasAgents = it.agents.isNotEmpty()
+            this.logs = it.chatLogs
+            this.chatId = it.chatId
+            this.rating = it.chatRating
+            this.queuePosition = it.queuePosition
+            this.isChatting = it.isChatting
+            this.chatSessionStatus = it.chatSessionStatus.name.split('.').last()
+            this.comment = it.chatComment
+        }
     }
 
     private fun accountProviderStart() {
         accountProviderObservationToken = ObservationScope()
-        if (accountProviderObservationToken != null)
-            Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!) {
-                when (it.status) {
-                    AccountStatus.ONLINE -> {
-                        this.isOnline = it.status == AccountStatus.ONLINE
-                        this.hasAgents = this.isOnline
-                    }
-                    AccountStatus.OFFLINE -> {
-                        this.isOnline = false
-                        this.hasAgents = this.isOnline
-                    }
+        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!) {
+            when (it.status) {
+                AccountStatus.ONLINE -> {
+                    this.isOnline = it.status == AccountStatus.ONLINE
+                    this.hasAgents = this.agents.isNotEmpty()
+                }
+                AccountStatus.OFFLINE -> {
+                    this.isOnline = false
+                    this.hasAgents = this.agents.isNotEmpty()
                 }
             }
+        }
 
         Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
             override fun onSuccess(a: Account?) {
@@ -229,19 +218,16 @@ class Zendesk2Chat(private val activity: Activity?) {
 
     private fun settingsProviderStart() {
         settingsProviderObservationToken = ObservationScope()
-        if (settingsProviderObservationToken != null)
-            Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(settingsProviderObservationToken!!) {
-                this.isFileSendingEnabled = it.isFileSendingEnabled
-            }
-
+        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(settingsProviderObservationToken!!) {
+            this.isFileSendingEnabled = it.isFileSendingEnabled
+        }
     }
 
     private fun connectionProviderStart() {
         connectionProviderObservationToken = ObservationScope()
-        if (connectionProviderObservationToken != null)
-            Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
-                this.connectionStatus = it.name.split('.').last()
-            }
+        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
+            this.connectionStatus = it.name.split('.').last()
+        }
     }
 
     fun sendMessage(call: MethodCall) {
@@ -426,14 +412,32 @@ class Zendesk2Chat(private val activity: Activity?) {
             Chat.INSTANCE.providers()?.chatProvider()?.sendChatRating(rating, null)
     }
 
+    private fun releaseTokens() {
+        val pushProvider = Chat.INSTANCE.providers()?.pushNotificationsProvider()
+        pushProvider?.unregisterPushToken()
+        Chat.INSTANCE.resetIdentity {
+            Chat.INSTANCE.clearCache()
+            clearTokens()
+        }
+    }
+
+    private fun clearTokens() {
+        chatProviderObservationToken?.cancel()
+        accountProviderObservationToken?.cancel()
+        settingsProviderObservationToken?.cancel()
+        connectionProviderObservationToken?.cancel()
+
+        chatProviderObservationToken = null
+        accountProviderObservationToken = null
+        settingsProviderObservationToken = null
+        connectionProviderObservationToken = null
+    }
+
     fun endChat() {
         Chat.INSTANCE.providers()?.chatProvider()?.endChat(object : ZendeskCallback<Void>() {
             override fun onSuccess(v: Void?) {
                 print("success")
-                chatProviderObservationToken?.cancel()
-                accountProviderObservationToken?.cancel()
-                settingsProviderObservationToken?.cancel()
-                connectionProviderObservationToken?.cancel()
+                releaseTokens()
             }
 
             override fun onError(e: ErrorResponse?) {
