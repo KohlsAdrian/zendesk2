@@ -433,7 +433,7 @@ class Zendesk2Chat(private val activity: Activity?) {
                 chatProviderObservationToken?.cancel()
                 accountProviderObservationToken?.cancel()
                 settingsProviderObservationToken?.cancel()
-                ØconnectionProviderObservationToken?.cancel()
+                connectionProviderObservationToken?.cancel()
             }
 
             override fun onError(e: ErrorResponse?) {
