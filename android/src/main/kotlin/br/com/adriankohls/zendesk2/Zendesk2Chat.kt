@@ -159,10 +159,11 @@ class Zendesk2Chat(private val activity: Activity?) {
     }
 
     private fun releaseProviders() {
-        chatProviderObservationToken?.cancel()
+        // Token cancelation is the same as calling endChat() bug
+        /* chatProviderObservationToken?.cancel()
         accountProviderObservationToken?.cancel()
         settingsProviderObservationToken?.cancel()
-        connectionProviderObservationToken?.cancel()
+        connectionProviderObservationToken?.cancel() */
         Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
     }
 
@@ -429,6 +430,10 @@ class Zendesk2Chat(private val activity: Activity?) {
         Chat.INSTANCE.providers()?.chatProvider()?.endChat(object : ZendeskCallback<Void>() {
             override fun onSuccess(v: Void?) {
                 print("success")
+                chatProviderObservationToken?.cancel()
+                accountProviderObservationToken?.cancel()
+                settingsProviderObservationToken?.cancel()
+                ØconnectionProviderObservationToken?.cancel()
             }
 
             override fun onError(e: ErrorResponse?) {
