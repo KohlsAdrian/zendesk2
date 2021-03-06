@@ -187,7 +187,7 @@ class Zendesk2Chat {
     }
   }
 
-  /// END chat, close connection and release resources
+  /// Close connection and release resources
   Future<void> dispose() async {
     try {
       _getProvidersTimer?.cancel();

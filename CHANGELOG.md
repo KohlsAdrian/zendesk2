@@ -1,3 +1,7 @@
+## 1.3.0
+
+* Fixed Android bug, removed `endChat()` on `dispose()`
+
 ## 1.2.1
 
 * Fixed Android setVisitorInfo not working, and added iOS logging
