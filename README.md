@@ -1,4 +1,4 @@
-![](https://avatars.githubusercontent.com/u/14101776?s=200&v=4)![](https://x5m7g5e8.stackpathcdn.com/static/images/pages/integrations/logo/zendesk.png)
+![](zendesk2.jpg)
 
 An Android and iOS SDK port of Zendesk for Flutter
 
