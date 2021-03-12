@@ -134,10 +134,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                             child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: RATING.values
-                                    .map((e) => FlatButton(
-                                          color: rate[e]
-                                              ? Colors.blue
-                                              : Colors.transparent,
+                                    .map((e) => TextButton(
                                           onPressed: () => setState(() {
                                             rate.keys.forEach((element) =>
                                                 rate[element] = element == e);
@@ -158,11 +155,11 @@ class _ZendeskChat extends State<ZendeskChat> {
                       ),
                     ),
                     actions: [
-                      FlatButton(
+                      TextButton(
                         onPressed: () => Navigator.of(context).pop(null),
                         child: Text('Cancel'),
                       ),
-                      RaisedButton(
+                      ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(tec.text),
                         child: Text('Rate'),
                       ),

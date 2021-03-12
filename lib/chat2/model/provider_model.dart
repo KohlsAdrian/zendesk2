@@ -1,17 +1,17 @@
 import 'package:zendesk2/zendesk2.dart';
 
 class ProviderModel {
-  final bool isOnline;
-  final bool isChatting;
-  final bool hasAgents;
-  final bool isFileSendingEnabled;
+  final bool? isOnline;
+  final bool? isChatting;
+  final bool? hasAgents;
+  final bool? isFileSendingEnabled;
   final CONNECTION_STATUS connectionStatus;
   final CHAT_SESSION_STATUS chatSessionStatus;
   final List<Agent> agents;
   final List<ChatLog> logs;
-  final int queuePosition;
-  final String rating;
-  final String comment;
+  final int? queuePosition;
+  final String? rating;
+  final String? comment;
 
   ProviderModel(
     this.isOnline,
@@ -28,10 +28,10 @@ class ProviderModel {
   );
 
   factory ProviderModel.fromJson(Map map) {
-    bool isOnline = map['isOnline'];
-    bool isChatting = map['isChatting'];
-    bool hasAgents = map['hasAgents'];
-    bool isFileSendingEnabled = map['isFileSendingEnabled'];
+    bool? isOnline = map['isOnline'];
+    bool? isChatting = map['isChatting'];
+    bool? hasAgents = map['hasAgents'];
+    bool? isFileSendingEnabled = map['isFileSendingEnabled'];
     List<Agent> agents = ((map['agents'] ?? []) as Iterable)
         .map((e) => Agent.fromJson(e))
         .toList();
@@ -40,9 +40,9 @@ class ProviderModel {
         .map((e) => ChatLog.fromJson(e))
         .toList();
 
-    int queuePosition = map['queuePosition'];
-    String rating = map['rating'];
-    String comment = map['comment'];
+    int? queuePosition = map['queuePosition'];
+    String? rating = map['rating'];
+    String? comment = map['comment'];
 
     CONNECTION_STATUS connectionStatus;
     CHAT_SESSION_STATUS chatSessionStatus;
@@ -110,28 +110,28 @@ class ProviderModel {
 }
 
 class Agent {
-  final String avatar;
-  final String displayName;
-  final bool isTyping;
-  final String nick;
+  final String? avatar;
+  final String? displayName;
+  final bool? isTyping;
+  final String? nick;
 
   Agent(this.avatar, this.displayName, this.isTyping, this.nick);
 
   factory Agent.fromJson(Map map) {
-    String avatar = map['avatar'];
-    String displayName = map['displayName'];
-    bool isTyping = map['isTyping'];
-    String nick = map['nick'];
+    String? avatar = map['avatar'];
+    String? displayName = map['displayName'];
+    bool? isTyping = map['isTyping'];
+    String? nick = map['nick'];
     return Agent(avatar, displayName, isTyping, nick);
   }
 }
 
 class ChatLog {
-  final bool createdByVisitor;
+  final bool? createdByVisitor;
   final DateTime createdTimestamp;
-  final String displayName;
+  final String? displayName;
   final DateTime lastModifiedTimestamp;
-  final String nick;
+  final String? nick;
   final ChatLogParticipant chatLogParticipant;
   final ChatLogDeliveryStatus chatLogDeliveryStatus;
   final ChatLogType chatLogType;
@@ -148,8 +148,8 @@ class ChatLog {
   );
 
   factory ChatLog.fromJson(Map map) {
-    bool createdByVisitor = map['createdByVisitor'];
-    String displayName = map['displayName'];
+    bool? createdByVisitor = map['createdByVisitor'];
+    String? displayName = map['displayName'];
 
     final mCreatedTimestamp = map['createdTimestamp'];
     final mLastModifiedTimestamp = map['lastModifiedTimestamp'];
@@ -164,7 +164,7 @@ class ChatLog {
             ? mLastModifiedTimestamp.toInt()
             : mLastModifiedTimestamp);
 
-    String nick = map['nick'];
+    String? nick = map['nick'];
     ChatLogParticipant chatLogParticipant =
         ChatLogParticipant.fromJson(map['participant'] ?? {});
     ChatLogDeliveryStatus chatLogDeliveryStatus =
@@ -184,13 +184,13 @@ class ChatLog {
 }
 
 class ChatLogParticipant {
-  final CHAT_PARTICIPANT chatParticipant;
+  final CHAT_PARTICIPANT? chatParticipant;
 
   ChatLogParticipant(this.chatParticipant);
 
   factory ChatLogParticipant.fromJson(Map map) {
-    CHAT_PARTICIPANT chatParticipant;
-    String mChatParticipant = map['chatParticipant'];
+    CHAT_PARTICIPANT? chatParticipant;
+    String? mChatParticipant = map['chatParticipant'];
 
     switch (mChatParticipant) {
       case 'AGENT':
@@ -212,16 +212,16 @@ class ChatLogParticipant {
 }
 
 class ChatLogDeliveryStatus {
-  final bool isFailed;
-  final DELIVERY_STATUS deliveryStatus;
+  final bool? isFailed;
+  final DELIVERY_STATUS? deliveryStatus;
 
   ChatLogDeliveryStatus(this.isFailed, this.deliveryStatus);
 
   factory ChatLogDeliveryStatus.fromJson(Map map) {
-    bool isFailed = map['isFailed'];
+    bool? isFailed = map['isFailed'];
 
-    String mDeliveryStatus = map['status'];
-    DELIVERY_STATUS deliveryStatus;
+    String? mDeliveryStatus = map['status'];
+    DELIVERY_STATUS? deliveryStatus;
 
     switch (mDeliveryStatus) {
       case 'DELIVERED':
@@ -240,7 +240,7 @@ class ChatLogDeliveryStatus {
 }
 
 class ChatLogType {
-  final LOG_TYPE logType;
+  final LOG_TYPE? logType;
   final ChatMessage chatMessage;
   final ChatOptionsMessage chatOptionsMessage;
   final ChatAttachment chatAttachment;
@@ -257,7 +257,7 @@ class ChatLogType {
   );
 
   factory ChatLogType.fromJson(Map map) {
-    String mLogType = map['type'];
+    String? mLogType = map['type'];
     ChatMessage chatMessage = ChatMessage.fromJson(map['chatMessage'] ?? {});
     ChatOptionsMessage chatOptionsMessage =
         ChatOptionsMessage.fromJson(map['chatOptionsMessage'] ?? {});
@@ -265,7 +265,7 @@ class ChatLogType {
         ChatAttachment.fromJson(map['chatAttachment'] ?? {});
     ChatComment chatComment = ChatComment.fromJson(map['chatComment'] ?? {});
     ChatRating chatRating = ChatRating.fromJson(map['chatRating'] ?? {});
-    LOG_TYPE logType;
+    LOG_TYPE? logType;
 
     switch (mLogType) {
       case 'ATTACHMENT_MESSAGE':
@@ -309,8 +309,8 @@ class ChatLogType {
 }
 
 class ChatMessage {
-  final String id;
-  final String message;
+  final String? id;
+  final String? message;
 
   ChatMessage(
     this.id,
@@ -318,20 +318,20 @@ class ChatMessage {
   );
 
   factory ChatMessage.fromJson(Map map) {
-    String id = map['id'];
-    String message = map['message'];
+    String? id = map['id'];
+    String? message = map['message'];
     return ChatMessage(id, message);
   }
 }
 
 class ChatOptionsMessage {
-  final String message;
+  final String? message;
   final List<String> options;
 
   ChatOptionsMessage(this.message, this.options);
 
   factory ChatOptionsMessage.fromJson(Map map) {
-    final String message = map['message'];
+    final String? message = map['message'];
     final List<String> options =
         ((map['options'] ?? []) as Iterable).map((e) => e.toString()).toList();
     return ChatOptionsMessage(message, options);
@@ -339,14 +339,14 @@ class ChatOptionsMessage {
 }
 
 class ChatComment {
-  final String comment;
-  final String newComment;
+  final String? comment;
+  final String? newComment;
 
   ChatComment(this.comment, this.newComment);
 
   factory ChatComment.fromJson(Map map) {
-    String comment = map['comment'];
-    String newComment = map['newComment'];
+    String? comment = map['comment'];
+    String? newComment = map['newComment'];
     return ChatComment(comment, newComment);
   }
 }
@@ -357,7 +357,7 @@ class ChatRating {
   ChatRating(this.rating);
 
   factory ChatRating.fromJson(Map map) {
-    String mRating = map['rating'];
+    String? mRating = map['rating'];
 
     RATING rating;
     switch (mRating) {
@@ -376,9 +376,9 @@ class ChatRating {
 }
 
 class ChatAttachment {
-  final String id;
-  final String message;
-  final String url;
+  final String? id;
+  final String? message;
+  final String? url;
   final ChatAttachmentAttachment chatAttachmentAttachment;
 
   ChatAttachment(
@@ -389,9 +389,9 @@ class ChatAttachment {
   );
 
   factory ChatAttachment.fromJson(Map map) {
-    String id = map['id'];
-    String message = map['message'];
-    String url = map['url'];
+    String? id = map['id'];
+    String? message = map['message'];
+    String? url = map['url'];
     ChatAttachmentAttachment chatAttachmentAttachment =
         ChatAttachmentAttachment.fromJson(
             map['chatAttachmentAttachment'] ?? {});
@@ -400,11 +400,11 @@ class ChatAttachment {
 }
 
 class ChatAttachmentAttachment {
-  final String name;
-  final String localUrl;
-  final String mimeType;
-  final int size;
-  final String url;
+  final String? name;
+  final String? localUrl;
+  final String? mimeType;
+  final int? size;
+  final String? url;
   final ATTACHMENT_ERROR attachmentError;
 
   ChatAttachmentAttachment(
@@ -417,12 +417,12 @@ class ChatAttachmentAttachment {
   );
 
   factory ChatAttachmentAttachment.fromJson(Map map) {
-    String name = map['name'];
-    String localUrl = map['localUrl'];
-    String mimeType = map['mimeType'];
-    int size = map['size'];
-    String url = map['url'];
-    String mAttachmentError = map['error'];
+    String? name = map['name'];
+    String? localUrl = map['localUrl'];
+    String? mimeType = map['mimeType'];
+    int? size = map['size'];
+    String? url = map['url'];
+    String? mAttachmentError = map['error'];
 
     ATTACHMENT_ERROR attachmentError;
     switch (mAttachmentError) {

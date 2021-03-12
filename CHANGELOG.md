@@ -1,3 +1,11 @@
+## 1.4.0
+
+* Migrated to NNBD
+
+* Min Dart 2.10
+
+* Min Flutter version 1.20+
+
 ## 1.3.0
 
 * Fixed Android bug, removed `endChat()` on `dispose()`
