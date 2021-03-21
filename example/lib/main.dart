@@ -84,24 +84,11 @@ class _Home extends State<Home> {
       body: Center(
         child: Text('Press on FAB to start chat'),
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'nativeChat',
-            icon: Icon(Icons.chat),
-            label: Text('Native Chat'),
-            onPressed: () => zendesk(true, context),
-          ),
-          SizedBox(height: 20),
-          FloatingActionButton.extended(
-            heroTag: 'customChat',
-            icon: Icon(FontAwesomeIcons.comments),
-            label: Text('Custom Chat'),
-            onPressed: () => zendesk(false, context),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'customChat',
+        icon: Icon(FontAwesomeIcons.comments),
+        label: Text('Custom Chat'),
+        onPressed: () => zendesk(false, context),
       ),
     );
   }

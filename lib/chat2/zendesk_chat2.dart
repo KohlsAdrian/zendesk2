@@ -1,10 +1,5 @@
+import 'package:flutter/material.dart';
 import 'package:zendesk2/zendesk2.dart';
-
-enum PRE_CHAT_FIELD_STATUS {
-  OPTIONAL,
-  HIDDEN,
-  REQUIRED,
-}
 
 class Zendesk2Chat {
   Zendesk2Chat._();
@@ -35,7 +30,8 @@ class Zendesk2Chat {
   Future<void> init(
     String accountKey,
     String appId, {
-    Color? iosThemeColor,
+    @Deprecated('Prefer to use custom UI chat providers')
+        Color iosThemeColor = Colors.indigo,
   }) async {
     Map arguments = {
       'accountKey': accountKey,
@@ -64,18 +60,18 @@ class Zendesk2Chat {
   ///
   /// ```tags``` The list of tags to represent the chat context
   Future<void> setVisitorInfo({
-    String? name,
-    String? email,
-    String? phoneNumber,
-    String? departmentName,
-    List<String>? tags,
+    String name = '',
+    String email = '',
+    String phoneNumber = '',
+    String departmentName = '',
+    List<String> tags = const [],
   }) async {
     Map arguments = {
-      if (name != null) 'name': name,
-      if (email != null) 'email': email,
-      if (phoneNumber != null) 'phoneNumber': phoneNumber,
-      if (departmentName != null) 'departmentName': departmentName,
-      if (tags != null) 'tags': tags,
+      'name': name,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'departmentName': departmentName,
+      'tags': tags,
     };
     try {
       final result = await _channel.invokeMethod('setVisitorInfo', arguments);
@@ -197,6 +193,7 @@ class Zendesk2Chat {
   /// ```botLabel``` text to represent the BOT name
   ///
   /// ```backButtonLabel``` button text to represent iOS back button
+  @Deprecated('Prefer to use the startChatProviders() method')
   Future<void> startChat({
     String toolbarTitle = 'Zendesk NativeChat',
     String botLabel = 'Z',
