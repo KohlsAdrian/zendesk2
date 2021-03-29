@@ -1,3 +1,7 @@
+## 1.4.0+1
+
+* Fixes breaking kotlin file on Android
+
 ## 1.4.0
 
 * Migrated to NNBD
