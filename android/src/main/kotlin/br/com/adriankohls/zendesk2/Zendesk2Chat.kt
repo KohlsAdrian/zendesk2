@@ -73,7 +73,7 @@ class Zendesk2Chat(private val activity: Activity?) {
         }
 
         return mapOf<String, Any>(
-                "zendesk_agent_availability" to agentAvailability,
+                "zendesk_agent_availability" to agentAvailability
         )
     }
 
