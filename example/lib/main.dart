@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zendesk2/zendesk2.dart';
@@ -38,40 +39,43 @@ class _Home extends State<Home> {
 
     Zendesk2Chat z = Zendesk2Chat.instance;
 
-    await z.logger(true);
-
-    await z.init(accountKey, appId, iosThemeColor: Colors.yellow);
-
-    await z.setVisitorInfo(
-      name: name,
-      email: email,
-      phoneNumber: phoneNumber,
-      tags: ['app', 'zendesk2_plugin'],
-    );
-    await z.customize(
-      departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      emailFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      nameFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      phoneFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      transcriptChatEnabled: true,
-      agentAvailability: false,
-      endChatEnabled: true,
-      offlineForms: true,
-      preChatForm: true,
-      transcript: true,
-    );
-
-    if (isNativeChat) {
-      await z.startChat(
-        toolbarTitle: 'Talk to us',
-        backButtonLabel: 'Back',
-        botLabel: 'bip bop boting',
-      );
+    if (kIsWeb) {
     } else {
-      await Zendesk2Chat.instance.startChatProviders();
+      await z.logger(true);
 
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
+      await z.init(accountKey, appId);
+
+      await z.setVisitorInfo(
+        name: name,
+        email: email,
+        phoneNumber: phoneNumber,
+        tags: ['app', 'zendesk2_plugin'],
+      );
+      await z.customize(
+        departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
+        emailFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
+        nameFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
+        phoneFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
+        transcriptChatEnabled: true,
+        agentAvailability: false,
+        endChatEnabled: true,
+        offlineForms: true,
+        preChatForm: true,
+        transcript: true,
+      );
+
+      if (isNativeChat) {
+        await z.startChat(
+          toolbarTitle: 'Talk to us',
+          backButtonLabel: 'Back',
+          botLabel: 'bip bop boting',
+        );
+      } else {
+        await Zendesk2Chat.instance.startChatProviders();
+
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
+      }
     }
   }
 

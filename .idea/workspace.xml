@@ -2,34 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e0a8cfd2-1eaa-42c4-8897-50abe4e31079" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/br/com/adriankohls/zendesk2/Zendesk2Chat.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/br/com/adriankohls/zendesk2/Zendesk2Chat.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/br/com/adriankohls/zendesk2/Zendesk2Plugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/br/com/adriankohls/zendesk2/Zendesk2Plugin.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/android/src/main/kotlin/br/com/adriankohls/zendesk2/Zendesk2Chat.kt" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/android/src/main/kotlin/br/com/adriankohls/zendesk2/Zendesk2Chat.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/android/src/main/kotlin/br/com/adriankohls/zendesk2/Zendesk2Plugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/android/src/main/kotlin/br/com/adriankohls/zendesk2/Zendesk2Plugin.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/example/ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/example/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/example/lib/zendesk_chat.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/example/lib/zendesk_chat.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/example/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/ios/Classes/SwiftZendesk2Chat.swift" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/ios/Classes/SwiftZendesk2Chat.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/ios/Classes/SwiftZendesk2Plugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/ios/Classes/SwiftZendesk2Plugin.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/lib/chat2/zendesk_chat2.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/lib/chat2/zendesk_chat2.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/zendesk2/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/zendesk_chat.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/zendesk_chat.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Classes/SwiftZendesk2Chat.swift" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/SwiftZendesk2Chat.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Classes/SwiftZendesk2Plugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/SwiftZendesk2Plugin.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/chat2/zendesk_chat2.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/chat2/zendesk_chat2.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
