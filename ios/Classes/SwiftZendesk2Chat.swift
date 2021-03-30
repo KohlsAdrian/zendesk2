@@ -35,6 +35,10 @@ public class SwiftZendesk2Chat {
     private var messageIds: Array<String> = []
     
     init() {
+        initNavigationController()
+    }
+    /// Assign navigationController for Zendesk Messaging
+    func initNavigationController(){
         let rootViewController = UIApplication.shared.keyWindow?.rootViewController as? UINavigationController
         self.navigationController = rootViewController
     }
@@ -132,6 +136,10 @@ public class SwiftZendesk2Chat {
             messagingConfiguration.name = botLabel
             
             do {
+
+                 if self.navigationController == nil {
+                    initNavigationController()
+                }
                 let chatEngine = try ChatEngine.engine()
                 let messaging = Messaging.instance
                 
