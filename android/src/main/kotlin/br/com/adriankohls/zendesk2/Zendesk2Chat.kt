@@ -5,6 +5,7 @@ import com.zendesk.logger.Logger
 import com.zendesk.service.ErrorResponse
 import com.zendesk.service.ZendeskCallback
 import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
 import zendesk.chat.*
 import zendesk.messaging.MessagingActivity
 import java.io.File
@@ -153,28 +154,28 @@ class Zendesk2Chat(private val activity: Activity?) {
         })
     }
 
-    fun startChatProviders() {
+    fun startChatProviders(channel: MethodChannel) {
         if (chatConfiguration == null) {
             throw Exception("You must call '.customize' and add more information")
         }
-        startProviders()
+        startProviders(channel)
 
         val providers = Chat.INSTANCE.providers()
         providers?.connectionProvider()?.connect()
     }
 
-    private fun startProviders() {
+    private fun startProviders(channel: MethodChannel) {
         if (chatProviderObservationToken == null)
-            chatProviderStart()
+            chatProviderStart(channel)
         if (accountProviderObservationToken == null)
-            accountProviderStart()
+            accountProviderStart(channel)
         if (settingsProviderObservationToken == null)
-            settingsProviderStart()
+            settingsProviderStart(channel)
         if (connectionProviderObservationToken == null)
-            connectionProviderStart()
+            connectionProviderStart(channel)
     }
 
-    private fun chatProviderStart() {
+    private fun chatProviderStart(channel: MethodChannel) {
         chatProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(chatProviderObservationToken!!) {
             this.agents = it.agents
@@ -186,10 +187,13 @@ class Zendesk2Chat(private val activity: Activity?) {
             this.isChatting = it.isChatting
             this.chatSessionStatus = it.chatSessionStatus.name.split('.').last()
             this.comment = it.chatComment
+
+            sendChatProvidersResult(channel)
+
         }
     }
 
-    private fun accountProviderStart() {
+    private fun accountProviderStart(channel: MethodChannel) {
         accountProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!) {
             when (it.status) {
@@ -202,12 +206,17 @@ class Zendesk2Chat(private val activity: Activity?) {
                     this.hasAgents = this.agents.isNotEmpty()
                 }
             }
+            sendChatProvidersResult(channel)
+
         }
 
         Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
             override fun onSuccess(a: Account?) {
                 hasAgents = true
                 isOnline = a?.status == AccountStatus.ONLINE
+
+                sendChatProvidersResult(channel)
+
             }
 
             override fun onError(e: ErrorResponse?) {
@@ -216,20 +225,25 @@ class Zendesk2Chat(private val activity: Activity?) {
         })
     }
 
-    private fun settingsProviderStart() {
+    private fun settingsProviderStart(channel: MethodChannel) {
         settingsProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(settingsProviderObservationToken!!) {
             this.isFileSendingEnabled = it.isFileSendingEnabled
+            sendChatProvidersResult(channel)
+
         }
     }
 
-    private fun connectionProviderStart() {
+    private fun connectionProviderStart(channel: MethodChannel) {
         connectionProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
             this.connectionStatus = it.name.split('.').last()
+            sendChatProvidersResult(channel)
         }
     }
-
+    private fun sendChatProvidersResult(channel: MethodChannel) {
+        channel.invokeMethod("sendChatProvidersResult", getChatProviders())
+    }
     fun sendMessage(call: MethodCall) {
         val message = call.argument<String>("message")
 

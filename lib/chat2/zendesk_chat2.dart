@@ -15,8 +15,10 @@ class Zendesk2Chat {
   /// Listen to all parameters of the connected Live Chat
   ///
   /// Stream is updated at Duration provided on ```startChatProviders```
-  Stream<ProviderModel> get providersStream =>
-      _providersStream!.stream.asBroadcastStream();
+  Stream<ProviderModel> get providersStream {
+    _getChatProviders();
+    return _providersStream!.stream.asBroadcastStream();
+  }
 
   Timer? _getProvidersTimer;
 
@@ -217,8 +219,7 @@ class Zendesk2Chat {
   /// Start chat providers for custom UI handling
   ///
   /// ```periodicRetrieve``` periodic time to update the ```providersStream```
-  Future<void> startChatProviders(
-      {Duration periodicRetrieve = const Duration(milliseconds: 300)}) async {
+  Future<void> startChatProviders() async {
     try {
       if (_providersStream != null) {
         await _providersStream!.sink.close();
@@ -226,8 +227,19 @@ class Zendesk2Chat {
       }
       _providersStream = StreamController<ProviderModel>();
       final result = await _channel.invokeMethod('startChatProviders');
-      _getProvidersTimer =
-          Timer.periodic(periodicRetrieve, (timer) => _getChatProviders());
+      _channel.setMethodCallHandler((call) async {
+        if (call.method == "sendChatProvidersResult") {
+          if (_isLoggerEnabled)
+            print(
+                'zendesk2 [sendChatProvidersResult]:  arguments- ${call.arguments}');
+          try {
+            final providerModel = ProviderModel.fromJson(call.arguments);
+            _providersStream?.sink.add(providerModel);
+          } catch (e) {
+            print(e);
+          }
+        }
+      });
 
       if (_isLoggerEnabled) {
         print('zendesk2: $result');

@@ -9,6 +9,7 @@ import ChatSDK
 import MessagingSDK
 import ChatProvidersSDK
 import CommonUISDK
+import Flutter
 
 public class SwiftZendesk2Chat {
     
@@ -182,11 +183,11 @@ public class SwiftZendesk2Chat {
     }
     
     /// startChat v2 Zendesk API Providers
-    func startChatProviders() -> Dictionary<String, Any>? {
+    func startChatProviders(_ channel: FlutterMethodChannel) -> Dictionary<String, Any>? {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        startProviders()
+        startProviders(channel)
         Chat.connectionProvider?.connect()
         
         if !Logger.isEnabled {
@@ -295,23 +296,23 @@ public class SwiftZendesk2Chat {
         Chat.connectionProvider?.disconnect()
     }
     
-    private func startProviders() -> Void {
+    private func startProviders(_ channel: FlutterMethodChannel) -> Void {
         /// Chat providers
         print("zendesk_chatProviderStart")
-        chatProviderStart()
+        chatProviderStart(channel)
         /// Account providers
         print("zendesk_accountProviderStart")
-        accountProviderStart()
+        accountProviderStart(channel)
         /// Settings providers
         print("zendesk_settingsProviderStart")
-        settingsProviderStart()
+        settingsProviderStart(channel)
         /// Connection providers
         print("zendesk_connectionProviderStart")
-        connectionProviderStart()
+        connectionProviderStart(channel)
     }
     
     
-    private func chatProviderStart() -> Void {
+    private func chatProviderStart(_ channel: FlutterMethodChannel) -> Void {
         Chat.chatProvider?.getChatInfo { (result) in
             switch result {
             case .success(let chatInfo):
@@ -321,6 +322,9 @@ public class SwiftZendesk2Chat {
             case .failure(let error):
                 print(error)
             }
+
+            self.sendChatProvidersResult(channel)
+
         }
         
         observeChatStateToken = Chat.chatProvider?.observeChatState { (chatState) in
@@ -349,14 +353,17 @@ public class SwiftZendesk2Chat {
             case .started: self.chatSessionStatus = "STARTED"
             default: self.chatSessionStatus = "UNKNOWN"
             }
+            self.sendChatProvidersResult(channel)
+            
         }
     }
     
-    private func accountProviderStart() -> Void {
+    private func accountProviderStart(_ channel: FlutterMethodChannel) -> Void {
         observeAccoutToken = Chat.accountProvider?.observeAccount { (account) in
             let accountStatus = account.accountStatus
             self.isOnline = accountStatus == .online
             self.hasAgents = self.isOnline
+            self.sendChatProvidersResult(channel)
         }
         
         Chat.accountProvider?.getAccount { (result) in
@@ -367,16 +374,20 @@ public class SwiftZendesk2Chat {
             case .failure(let error):
                 print(error)
             }
+            self.sendChatProvidersResult(channel)
+
         }
     }
     
-    private func settingsProviderStart() -> Void {
+    private func settingsProviderStart(_ channel: FlutterMethodChannel) -> Void {
         observeChatSettingsToken = Chat.settingsProvider?.observeChatSettings { (settings) in
             self.isFileSendingEnabled = settings.isFileSendingEnabled
+            self.sendChatProvidersResult(channel)
+
         }
     }
     
-    private func connectionProviderStart() -> Void {
+    private func connectionProviderStart(_ channel: FlutterMethodChannel) -> Void {
         observeConnectionStatusToken = Chat.connectionProvider?.observeConnectionStatus { (status) in
             switch status {
             case .connected:
@@ -400,7 +411,13 @@ public class SwiftZendesk2Chat {
             default:
                 self.connectionStatus = "UNKNOWN"
             }
+
+            self.sendChatProvidersResult(channel)
         }
+    }
+
+    private func sendChatProvidersResult(_ channel:FlutterMethodChannel) -> Void{
+        channel.invokeMethod("sendChatProvidersResult", arguments: getChatProviders())
     }
     
     func sendMessage(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
