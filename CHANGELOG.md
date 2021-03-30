@@ -1,3 +1,7 @@
+## 1.4.1
+
+* Fixes bug on iOS opening (deprecated) native chat only once
+
 ## 1.4.0+1
 
 * Fixes breaking kotlin file on Android
