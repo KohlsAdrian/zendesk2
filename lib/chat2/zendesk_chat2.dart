@@ -2,9 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:zendesk2/zendesk2.dart';
 
 class Zendesk2Chat {
-  Zendesk2Chat._();
+  Zendesk2Chat._() {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == "sendChatProvidersResult") {
+        if (_isLoggerEnabled)
+          print(
+              'zendesk2 [sendChatProvidersResult]:  arguments- ${call.arguments}');
+        try {
+          final providerModel = ProviderModel.fromJson(call.arguments);
+          _providersStream?.sink.add(providerModel);
+        } catch (e) {
+          print(e);
+        }
+      }
+    });
+  }
   static final Zendesk2Chat instance = Zendesk2Chat._();
-
+  
   static const _channel = const MethodChannel('zendesk2');
 
   // ignore: close_sinks
@@ -227,19 +241,6 @@ class Zendesk2Chat {
       }
       _providersStream = StreamController<ProviderModel>();
       final result = await _channel.invokeMethod('startChatProviders');
-      _channel.setMethodCallHandler((call) async {
-        if (call.method == "sendChatProvidersResult") {
-          if (_isLoggerEnabled)
-            print(
-                'zendesk2 [sendChatProvidersResult]:  arguments- ${call.arguments}');
-          try {
-            final providerModel = ProviderModel.fromJson(call.arguments);
-            _providersStream?.sink.add(providerModel);
-          } catch (e) {
-            print(e);
-          }
-        }
-      });
 
       if (_isLoggerEnabled) {
         print('zendesk2: $result');
