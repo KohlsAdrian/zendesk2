@@ -1,3 +1,11 @@
+## 2.0.0
+
+* Deprecated: native chat, prefer using Chat Providers (Custom UI)
+
+* Supports Flutter WEB
+
+* Added Zendesk WEB SDK
+
 ## 1.4.0
 
 * Migrated to NNBD
