@@ -1,10 +1,10 @@
-## 2.0.0
+## 1.4.1
 
-* Deprecated: native chat, prefer using Chat Providers (Custom UI)
+* Fixes bug on iOS opening (deprecated) native chat only once
 
-* Supports Flutter WEB
+## 1.4.0+1
 
-* Added Zendesk WEB SDK
+* Fixes breaking kotlin file on Android
 
 ## 1.4.0
 
