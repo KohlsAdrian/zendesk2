@@ -1,6 +1,6 @@
 name: zendesk2
 description: Zendesk Android and iOS SDK port for Flutter, easily open native chat or manipulate providers for custom UI
-version: 1.4.0
+version: 1.4.1
 homepage: https://github.com/KohlsAdrian/zendesk2
 
 environment:
