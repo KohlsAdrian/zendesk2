@@ -11,7 +11,7 @@ import zendesk.messaging.MessagingActivity
 import java.io.File
 
 
-class Zendesk2Chat(private val activity: Activity?) {
+class Zendesk2Chat(private val activity: Activity?, private val channel: MethodChannel) {
 
     private var chatConfiguration: ChatConfiguration? = null
     private var isOnline: Boolean = false
@@ -154,28 +154,28 @@ class Zendesk2Chat(private val activity: Activity?) {
         })
     }
 
-    fun startChatProviders(channel: MethodChannel) {
+    fun startChatProviders() {
         if (chatConfiguration == null) {
             throw Exception("You must call '.customize' and add more information")
         }
-        startProviders(channel)
+        startProviders()
 
         val providers = Chat.INSTANCE.providers()
         providers?.connectionProvider()?.connect()
     }
 
-    private fun startProviders(channel: MethodChannel) {
+    private fun startProviders() {
         if (chatProviderObservationToken == null)
-            chatProviderStart(channel)
+            chatProviderStart()
         if (accountProviderObservationToken == null)
-            accountProviderStart(channel)
+            accountProviderStart()
         if (settingsProviderObservationToken == null)
-            settingsProviderStart(channel)
+            settingsProviderStart()
         if (connectionProviderObservationToken == null)
-            connectionProviderStart(channel)
+            connectionProviderStart()
     }
 
-    private fun chatProviderStart(channel: MethodChannel) {
+    private fun chatProviderStart() {
         chatProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(chatProviderObservationToken!!) {
             this.agents = it.agents
@@ -188,12 +188,12 @@ class Zendesk2Chat(private val activity: Activity?) {
             this.chatSessionStatus = it.chatSessionStatus.name.split('.').last()
             this.comment = it.chatComment
 
-            sendChatProvidersResult(channel)
+            sendChatProvidersResult()
 
         }
     }
 
-    private fun accountProviderStart(channel: MethodChannel) {
+    private fun accountProviderStart() {
         accountProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!) {
             when (it.status) {
@@ -206,7 +206,7 @@ class Zendesk2Chat(private val activity: Activity?) {
                     this.hasAgents = this.agents.isNotEmpty()
                 }
             }
-            sendChatProvidersResult(channel)
+            sendChatProvidersResult()
 
         }
 
@@ -215,7 +215,7 @@ class Zendesk2Chat(private val activity: Activity?) {
                 hasAgents = true
                 isOnline = a?.status == AccountStatus.ONLINE
 
-                sendChatProvidersResult(channel)
+                sendChatProvidersResult()
 
             }
 
@@ -225,23 +225,23 @@ class Zendesk2Chat(private val activity: Activity?) {
         })
     }
 
-    private fun settingsProviderStart(channel: MethodChannel) {
+    private fun settingsProviderStart() {
         settingsProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(settingsProviderObservationToken!!) {
             this.isFileSendingEnabled = it.isFileSendingEnabled
-            sendChatProvidersResult(channel)
+            sendChatProvidersResult()
 
         }
     }
 
-    private fun connectionProviderStart(channel: MethodChannel) {
+    private fun connectionProviderStart() {
         connectionProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
             this.connectionStatus = it.name.split('.').last()
-            sendChatProvidersResult(channel)
+            sendChatProvidersResult()
         }
     }
-    private fun sendChatProvidersResult(channel: MethodChannel) {
+    private fun sendChatProvidersResult() {
         channel.invokeMethod("sendChatProvidersResult", getChatProviders())
     }
     fun sendMessage(call: MethodCall) {
