@@ -5,17 +5,22 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
     private var navigationController: UINavigationController? = nil
     private var zendesk2Chat: SwiftZendesk2Chat? = nil
-    private static var channel: FlutterMethodChannel? = nil
+    private var channel: FlutterMethodChannel
     
     public static func register(with registrar: FlutterPluginRegistrar) -> Void {
-        let instance = SwiftZendesk2Plugin()
-        channel = FlutterMethodChannel(name: "zendesk2", binaryMessenger: registrar.messenger())
-        registrar.addMethodCallDelegate(instance, channel: channel!)
+        let channel = FlutterMethodChannel(name: "zendesk2", binaryMessenger: registrar.messenger())
+        let instance = SwiftZendesk2Plugin(channel: channel)
+
+        registrar.addMethodCallDelegate(instance, channel: channel)
+    }
+
+     init(channel: FlutterMethodChannel) {
+        self.channel = channel
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
         if zendesk2Chat == nil {
-            zendesk2Chat = SwiftZendesk2Chat()
+            zendesk2Chat = SwiftZendesk2Chat(channel: channel)
         }
         
         let arguments = call.arguments as? Dictionary<String, Any>
@@ -34,7 +39,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             mResult = zendesk2Chat?.startChat(arguments)
             break
         case "startChatProviders":
-            mResult = zendesk2Chat?.startChatProviders(SwiftZendesk2Plugin.channel!)
+            mResult = zendesk2Chat?.startChatProviders()
             break
         case "dispose":
             mResult = zendesk2Chat?.dispose()

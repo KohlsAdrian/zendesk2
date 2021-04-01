@@ -13,6 +13,8 @@ import Flutter
 
 public class SwiftZendesk2Chat {
     
+    private var channel: FlutterMethodChannel
+
     private var chatConfiguration: ChatConfiguration? = nil
     private var navigationController: UINavigationController? = nil
     private var observeAccoutToken: ObservationToken? = nil
@@ -35,7 +37,8 @@ public class SwiftZendesk2Chat {
     private var messageId: String? = nil
     private var messageIds: Array<String> = []
     
-    init() {
+    init(channel: FlutterMethodChannel) {
+        self.channel = channel
         initNavigationController()
     }
     /// Assign navigationController for Zendesk Messaging
@@ -183,11 +186,11 @@ public class SwiftZendesk2Chat {
     }
     
     /// startChat v2 Zendesk API Providers
-    func startChatProviders(_ channel: FlutterMethodChannel) -> Dictionary<String, Any>? {
+    func startChatProviders() -> Dictionary<String, Any>? {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
-        startProviders(channel)
+        startProviders()
         Chat.connectionProvider?.connect()
         
         if !Logger.isEnabled {
@@ -296,23 +299,23 @@ public class SwiftZendesk2Chat {
         Chat.connectionProvider?.disconnect()
     }
     
-    private func startProviders(_ channel: FlutterMethodChannel) -> Void {
+    private func startProviders() -> Void {
         /// Chat providers
         print("zendesk_chatProviderStart")
-        chatProviderStart(channel)
+        chatProviderStart()
         /// Account providers
         print("zendesk_accountProviderStart")
-        accountProviderStart(channel)
+        accountProviderStart()
         /// Settings providers
         print("zendesk_settingsProviderStart")
-        settingsProviderStart(channel)
+        settingsProviderStart()
         /// Connection providers
         print("zendesk_connectionProviderStart")
-        connectionProviderStart(channel)
+        connectionProviderStart()
     }
     
     
-    private func chatProviderStart(_ channel: FlutterMethodChannel) -> Void {
+    private func chatProviderStart() -> Void {
         Chat.chatProvider?.getChatInfo { (result) in
             switch result {
             case .success(let chatInfo):
@@ -323,7 +326,7 @@ public class SwiftZendesk2Chat {
                 print(error)
             }
 
-            self.sendChatProvidersResult(channel)
+            self.sendChatProvidersResult()
 
         }
         
@@ -353,17 +356,17 @@ public class SwiftZendesk2Chat {
             case .started: self.chatSessionStatus = "STARTED"
             default: self.chatSessionStatus = "UNKNOWN"
             }
-            self.sendChatProvidersResult(channel)
+            self.sendChatProvidersResult()
             
         }
     }
     
-    private func accountProviderStart(_ channel: FlutterMethodChannel) -> Void {
+    private func accountProviderStart() -> Void {
         observeAccoutToken = Chat.accountProvider?.observeAccount { (account) in
             let accountStatus = account.accountStatus
             self.isOnline = accountStatus == .online
             self.hasAgents = self.isOnline
-            self.sendChatProvidersResult(channel)
+            self.sendChatProvidersResult()
         }
         
         Chat.accountProvider?.getAccount { (result) in
@@ -374,20 +377,20 @@ public class SwiftZendesk2Chat {
             case .failure(let error):
                 print(error)
             }
-            self.sendChatProvidersResult(channel)
+            self.sendChatProvidersResult()
 
         }
     }
     
-    private func settingsProviderStart(_ channel: FlutterMethodChannel) -> Void {
+    private func settingsProviderStart() -> Void {
         observeChatSettingsToken = Chat.settingsProvider?.observeChatSettings { (settings) in
             self.isFileSendingEnabled = settings.isFileSendingEnabled
-            self.sendChatProvidersResult(channel)
+            self.sendChatProvidersResult()
 
         }
     }
     
-    private func connectionProviderStart(_ channel: FlutterMethodChannel) -> Void {
+    private func connectionProviderStart() -> Void {
         observeConnectionStatusToken = Chat.connectionProvider?.observeConnectionStatus { (status) in
             switch status {
             case .connected:
@@ -412,11 +415,11 @@ public class SwiftZendesk2Chat {
                 self.connectionStatus = "UNKNOWN"
             }
 
-            self.sendChatProvidersResult(channel)
+            self.sendChatProvidersResult()
         }
     }
 
-    private func sendChatProvidersResult(_ channel:FlutterMethodChannel) -> Void{
+    private func sendChatProvidersResult() -> Void{
         channel.invokeMethod("sendChatProvidersResult", arguments: getChatProviders())
     }
     
