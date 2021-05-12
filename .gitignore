@@ -10,4 +10,5 @@ build/
 .idea/workspace.xml
 pubspec.lock
 example/pubspec.lock
+pubspec.lock
 example/ios/Podfile.lock

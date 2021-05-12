@@ -1,3 +1,9 @@
+## 1.5.0
+
+* [Breaking change] replaced `Timer.periodic` by `invokeMethod`
+
+Optimisation made by https://github.com/kiplelive-zariman
+
 ## 1.4.1
 
 * Fixes bug on iOS opening (deprecated) native chat only once
