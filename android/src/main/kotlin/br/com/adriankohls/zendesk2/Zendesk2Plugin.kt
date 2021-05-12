@@ -24,7 +24,7 @@ class Zendesk2Plugin: ActivityAware, FlutterPlugin, MethodCallHandler {
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     if(zendesk2Chat == null){
-      zendesk2Chat = Zendesk2Chat(activity)
+      zendesk2Chat = Zendesk2Chat(activity, channel)
     }
 
     val data: Any? =

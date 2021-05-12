@@ -5,16 +5,22 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
     private var navigationController: UINavigationController? = nil
     private var zendesk2Chat: SwiftZendesk2Chat? = nil
+    private var channel: FlutterMethodChannel
     
     public static func register(with registrar: FlutterPluginRegistrar) -> Void {
         let channel = FlutterMethodChannel(name: "zendesk2", binaryMessenger: registrar.messenger())
-        let instance = SwiftZendesk2Plugin()
+        let instance = SwiftZendesk2Plugin(channel: channel)
+
         registrar.addMethodCallDelegate(instance, channel: channel)
+    }
+
+     init(channel: FlutterMethodChannel) {
+        self.channel = channel
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
         if zendesk2Chat == nil {
-            zendesk2Chat = SwiftZendesk2Chat()
+            zendesk2Chat = SwiftZendesk2Chat(channel: channel)
         }
         
         let arguments = call.arguments as? Dictionary<String, Any>

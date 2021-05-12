@@ -5,12 +5,13 @@ import com.zendesk.logger.Logger
 import com.zendesk.service.ErrorResponse
 import com.zendesk.service.ZendeskCallback
 import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
 import zendesk.chat.*
 import zendesk.messaging.MessagingActivity
 import java.io.File
 
 
-class Zendesk2Chat(private val activity: Activity?) {
+class Zendesk2Chat(private val activity: Activity?, private val channel: MethodChannel) {
 
     private var chatConfiguration: ChatConfiguration? = null
     private var isOnline: Boolean = false
@@ -186,6 +187,9 @@ class Zendesk2Chat(private val activity: Activity?) {
             this.isChatting = it.isChatting
             this.chatSessionStatus = it.chatSessionStatus.name.split('.').last()
             this.comment = it.chatComment
+
+            sendChatProvidersResult()
+
         }
     }
 
@@ -202,12 +206,17 @@ class Zendesk2Chat(private val activity: Activity?) {
                     this.hasAgents = this.agents.isNotEmpty()
                 }
             }
+            sendChatProvidersResult()
+
         }
 
         Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
             override fun onSuccess(a: Account?) {
                 hasAgents = true
                 isOnline = a?.status == AccountStatus.ONLINE
+
+                sendChatProvidersResult()
+
             }
 
             override fun onError(e: ErrorResponse?) {
@@ -220,6 +229,8 @@ class Zendesk2Chat(private val activity: Activity?) {
         settingsProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(settingsProviderObservationToken!!) {
             this.isFileSendingEnabled = it.isFileSendingEnabled
+            sendChatProvidersResult()
+
         }
     }
 
@@ -227,9 +238,12 @@ class Zendesk2Chat(private val activity: Activity?) {
         connectionProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
             this.connectionStatus = it.name.split('.').last()
+            sendChatProvidersResult()
         }
     }
-
+    private fun sendChatProvidersResult() {
+        channel.invokeMethod("sendChatProvidersResult", getChatProviders())
+    }
     fun sendMessage(call: MethodCall) {
         val message = call.argument<String>("message")
 

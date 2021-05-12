@@ -9,9 +9,12 @@ import ChatSDK
 import MessagingSDK
 import ChatProvidersSDK
 import CommonUISDK
+import Flutter
 
 public class SwiftZendesk2Chat {
     
+    private var channel: FlutterMethodChannel
+
     private var chatConfiguration: ChatConfiguration? = nil
     private var navigationController: UINavigationController? = nil
     private var observeAccoutToken: ObservationToken? = nil
@@ -34,7 +37,8 @@ public class SwiftZendesk2Chat {
     private var messageId: String? = nil
     private var messageIds: Array<String> = []
     
-    init() {
+    init(channel: FlutterMethodChannel) {
+        self.channel = channel
         initNavigationController()
     }
     /// Assign navigationController for Zendesk Messaging
@@ -321,6 +325,9 @@ public class SwiftZendesk2Chat {
             case .failure(let error):
                 print(error)
             }
+
+            self.sendChatProvidersResult()
+
         }
         
         observeChatStateToken = Chat.chatProvider?.observeChatState { (chatState) in
@@ -349,6 +356,8 @@ public class SwiftZendesk2Chat {
             case .started: self.chatSessionStatus = "STARTED"
             default: self.chatSessionStatus = "UNKNOWN"
             }
+            self.sendChatProvidersResult()
+            
         }
     }
     
@@ -357,6 +366,7 @@ public class SwiftZendesk2Chat {
             let accountStatus = account.accountStatus
             self.isOnline = accountStatus == .online
             self.hasAgents = self.isOnline
+            self.sendChatProvidersResult()
         }
         
         Chat.accountProvider?.getAccount { (result) in
@@ -367,12 +377,16 @@ public class SwiftZendesk2Chat {
             case .failure(let error):
                 print(error)
             }
+            self.sendChatProvidersResult()
+
         }
     }
     
     private func settingsProviderStart() -> Void {
         observeChatSettingsToken = Chat.settingsProvider?.observeChatSettings { (settings) in
             self.isFileSendingEnabled = settings.isFileSendingEnabled
+            self.sendChatProvidersResult()
+
         }
     }
     
@@ -400,7 +414,13 @@ public class SwiftZendesk2Chat {
             default:
                 self.connectionStatus = "UNKNOWN"
             }
+
+            self.sendChatProvidersResult()
         }
+    }
+
+    private func sendChatProvidersResult() -> Void{
+        channel.invokeMethod("sendChatProvidersResult", arguments: getChatProviders())
     }
     
     func sendMessage(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
