@@ -51,7 +51,7 @@ class Zendesk2Chat {
     Map arguments = {
       'accountKey': accountKey,
       'appId': appId,
-      if (iosThemeColor != null) 'iosThemeColor': iosThemeColor.value,
+      'iosThemeColor': iosThemeColor.value,
     };
     try {
       final result = await _channel.invokeMethod('init', arguments);
@@ -232,15 +232,44 @@ class Zendesk2Chat {
   /// Start chat providers for custom UI handling
   ///
   /// ```periodicRetrieve``` periodic time to update the ```providersStream```
-  Future<void> startChatProviders() async {
+  /// ```connect``` Determines if you also want to connect the chat socket
+  /// The user will not receive push notifications while connected
+  Future<void> startChatProviders({bool connect = true}) async {
     try {
       if (_providersStream != null) {
         await _providersStream!.sink.close();
         await _providersStream!.close();
       }
       _providersStream = StreamController<ProviderModel>();
-      final result = await _channel.invokeMethod('startChatProviders');
+      final result = await _channel
+          .invokeMethod('startChatProviders', {'connect': connect});
 
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// Mark the user as connected, Call this method if you did not connect while initializing startChatProviders or when resuming from background state.
+  /// The user will also stop receiving push notifications for new messages.
+  Future<void> connect() async {
+    try {
+      final result = await _channel.invokeMethod('connect');
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// Disconect the web socket, important to call this to preserve battery power when app goes to background.
+  ///  Usefull when going to background inside the chat screeen. The user will start receiving push notifications for new messages.
+  Future<void> disconnect() async {
+    try {
+      final result = await _channel.invokeMethod('disconnect');
       if (_isLoggerEnabled) {
         print('zendesk2: $result');
       }
@@ -369,5 +398,18 @@ class Zendesk2Chat {
       print(e);
     }
     return null;
+  }
+
+  /// Register FCM Token for android push notifications
+  Future<void> registerFCMToken(String token) async {
+    try {
+      final result =
+          await _channel.invokeMethod('registerToken', {"token": token});
+      if (_isLoggerEnabled) {
+        print('zendesk2: $result');
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 }

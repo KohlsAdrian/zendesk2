@@ -1,6 +1,7 @@
 package br.com.adriankohls.zendesk2
 
 import android.app.Activity
+import android.util.Log
 import com.zendesk.logger.Logger
 import com.zendesk.service.ErrorResponse
 import com.zendesk.service.ZendeskCallback
@@ -154,14 +155,21 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         })
     }
 
-    fun startChatProviders() {
+    fun startChatProviders(call: MethodCall) {
         if (chatConfiguration == null) {
             throw Exception("You must call '.customize' and add more information")
         }
         startProviders()
 
-        val providers = Chat.INSTANCE.providers()
-        providers?.connectionProvider()?.connect()
+        if (call.argument<Boolean>("connect") != false) {
+            Chat.INSTANCE.providers()?.connectionProvider()?.connect()
+        }
+    }
+    fun connect(){
+        Chat.INSTANCE.providers()?.connectionProvider()?.connect()
+    }
+    fun disconnect(){
+        Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
     }
 
     private fun startProviders() {
@@ -179,7 +187,7 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         chatProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(chatProviderObservationToken!!) {
             this.agents = it.agents
-            this.hasAgents = it.agents.isNotEmpty()
+            // this.hasAgents = it.agents.isNotEmpty()
             this.logs = it.chatLogs
             this.chatId = it.chatId
             this.rating = it.chatRating
@@ -196,18 +204,9 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
     private fun accountProviderStart() {
         accountProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!) {
-            when (it.status) {
-                AccountStatus.ONLINE -> {
-                    this.isOnline = it.status == AccountStatus.ONLINE
-                    this.hasAgents = this.agents.isNotEmpty()
-                }
-                AccountStatus.OFFLINE -> {
-                    this.isOnline = false
-                    this.hasAgents = this.agents.isNotEmpty()
-                }
-            }
+            this.isOnline = it.status == AccountStatus.ONLINE
+            this.hasAgents = this.isOnline
             sendChatProvidersResult()
-
         }
 
         Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
@@ -238,6 +237,7 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         connectionProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
             this.connectionStatus = it.name.split('.').last()
+            Log.d("Zendesk", this.connectionStatus)
             sendChatProvidersResult()
         }
     }
@@ -424,6 +424,14 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         }
         if (rating != null)
             Chat.INSTANCE.providers()?.chatProvider()?.sendChatRating(rating, null)
+    }
+    
+    fun registerToken(call: MethodCall){
+        val token = call.argument<String>("token")
+        val pushProvider = Chat.INSTANCE.providers()?.pushNotificationsProvider()
+        if(pushProvider != null && token != null){
+            pushProvider.registerPushToken(token)
+        }
     }
 
     private fun releaseTokens() {

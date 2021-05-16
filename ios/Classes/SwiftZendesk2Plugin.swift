@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import ChatProvidersSDK
 
 public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
@@ -12,6 +13,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         let instance = SwiftZendesk2Plugin(channel: channel)
 
         registrar.addMethodCallDelegate(instance, channel: channel)
+        registrar.addApplicationDelegate(instance)
     }
 
      init(channel: FlutterMethodChannel) {
@@ -39,7 +41,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             mResult = zendesk2Chat?.startChat(arguments)
             break
         case "startChatProviders":
-            mResult = zendesk2Chat?.startChatProviders()
+            mResult = zendesk2Chat?.startChatProviders(arguments)
             break
         case "dispose":
             mResult = zendesk2Chat?.dispose()
@@ -70,6 +72,10 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             break
         case "sendIsTyping":
             mResult = zendesk2Chat?.sendTyping(arguments)
+        case "connect":
+            mResult = zendesk2Chat?.connect()
+        case "disconnect":
+            mResult = zendesk2Chat?.disconnect()
         default:
             break
         }
@@ -79,5 +85,25 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         }
         
         result(0)
+    }
+    
+    
+    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
+        
+        if Chat.pushNotificationsProvider?.isChatPushNotification(userInfo) ?? false {
+            let application = UIApplication.shared
+            Chat.didReceiveRemoteNotification(userInfo, in: application)
+            completionHandler(.noData)
+            return true
+        }
+        return false
+    }
+    
+    public func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                       willPresent notification: UNNotification,
+                                       withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        if Chat.pushNotificationsProvider?.isChatPushNotification(notification.request.content.userInfo) ?? false {
+            completionHandler([.alert, .sound, .badge])
+        }
     }
 }
