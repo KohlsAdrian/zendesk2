@@ -353,6 +353,7 @@ public class SwiftZendesk2Chat {
             self.isChatting = isChatting
             self.chatId = chatId
             self.agents = agents
+            self.hasAgents = !agents.isEmpty
             self.logs = logs
             self.queuePosition = queuePosition
             self.rating = rating
@@ -375,7 +376,7 @@ public class SwiftZendesk2Chat {
         observeAccoutToken = Chat.accountProvider?.observeAccount { (account) in
             let accountStatus = account.accountStatus
             self.isOnline = accountStatus == .online
-            self.hasAgents = self.isOnline
+            self.hasAgents = !self.agents.isEmpty
             self.sendChatProvidersResult()
         }
         

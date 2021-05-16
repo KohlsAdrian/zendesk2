@@ -1,3 +1,8 @@
+## 1.6.0
+* Support for push notifications
+
+Pull request from https://github.com/diegogarciar
+
 ## 1.5.0
 
 * [Breaking change] replaced `Timer.periodic` by `invokeMethod`

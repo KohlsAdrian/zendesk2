@@ -84,6 +84,46 @@ Easy and fast to use
       /// this stream retrieve all Chat data and Logs from SDK
       _providerModel = providerModel;
     });
+    /// It is also important to disconnect and reconnect and when the app enters  and exits background, to do this you can simply calll
+    z.disconnect() 
+    z.connect()
+# Push Notifications
+   To configure chat notifications, you will need to do the following configuration per platform
+
+## iOS
+  Inside your AppDelegate.swift import the ChatSdk
+  `import ChatProvidersSDK`
+
+  Add the following method
+  ``` swift
+    override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        //Messaging.messaging().apnsToken = deviceToken  /// You might already have this if you are using firebase messaging
+        
+        Chat.registerPushToken(deviceToken)
+    }
+  ```
+### Android
+
+Using FCM messaging, get your FCM token and register it as follows:
+``` dart
+Zendesk2Chat z = Zendesk2Chat.instance;
+await z.registerFCMToken(fcmToken);
+```
+(calling this function has no effect on iOS)
+
+To display the notifications, you will need to register your own `FirebaseMessagingService` as a service inside the `application` tag of android/app/src/main/AndroidManifest.xml
+
+``` xml
+<service
+    android:name="br.com.adriankohls.zendesk2.fcm"
+    android:stopWithTask="false">
+    <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+    </intent-filter>
+</service>
+```
+You can use the one mentioned above or you can copy the file to create your own service that better fits your needs.
+
 
 # What you need
 

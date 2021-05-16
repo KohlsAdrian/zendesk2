@@ -1,7 +1,6 @@
 package br.com.adriankohls.zendesk2
 
 import android.app.Activity
-import android.util.Log
 import com.zendesk.logger.Logger
 import com.zendesk.service.ErrorResponse
 import com.zendesk.service.ZendeskCallback
@@ -187,7 +186,7 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         chatProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(chatProviderObservationToken!!) {
             this.agents = it.agents
-            // this.hasAgents = it.agents.isNotEmpty()
+            this.hasAgents = it.agents.isNotEmpty()
             this.logs = it.chatLogs
             this.chatId = it.chatId
             this.rating = it.chatRating
@@ -211,7 +210,7 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
 
         Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
             override fun onSuccess(a: Account?) {
-                hasAgents = true
+                hasAgents = this.agents.isNotEmpty()
                 isOnline = a?.status == AccountStatus.ONLINE
 
                 sendChatProvidersResult()
@@ -237,7 +236,6 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         connectionProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
             this.connectionStatus = it.name.split('.').last()
-            Log.d("Zendesk", this.connectionStatus)
             sendChatProvidersResult()
         }
     }
