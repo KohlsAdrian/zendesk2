@@ -154,14 +154,21 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         })
     }
 
-    fun startChatProviders() {
+    fun startChatProviders(call: MethodCall) {
         if (chatConfiguration == null) {
             throw Exception("You must call '.customize' and add more information")
         }
         startProviders()
 
-        val providers = Chat.INSTANCE.providers()
-        providers?.connectionProvider()?.connect()
+        if (call.argument<Boolean>("connect") != false) {
+            Chat.INSTANCE.providers()?.connectionProvider()?.connect()
+        }
+    }
+    fun connect(){
+        Chat.INSTANCE.providers()?.connectionProvider()?.connect()
+    }
+    fun disconnect(){
+        Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
     }
 
     private fun startProviders() {
@@ -196,23 +203,14 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
     private fun accountProviderStart() {
         accountProviderObservationToken = ObservationScope()
         Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!) {
-            when (it.status) {
-                AccountStatus.ONLINE -> {
-                    this.isOnline = it.status == AccountStatus.ONLINE
-                    this.hasAgents = this.agents.isNotEmpty()
-                }
-                AccountStatus.OFFLINE -> {
-                    this.isOnline = false
-                    this.hasAgents = this.agents.isNotEmpty()
-                }
-            }
+            this.isOnline = it.status == AccountStatus.ONLINE
+            this.hasAgents = this.isOnline
             sendChatProvidersResult()
-
         }
 
         Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
             override fun onSuccess(a: Account?) {
-                hasAgents = true
+                hasAgents = this.agents.isNotEmpty()
                 isOnline = a?.status == AccountStatus.ONLINE
 
                 sendChatProvidersResult()
@@ -424,6 +422,14 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         }
         if (rating != null)
             Chat.INSTANCE.providers()?.chatProvider()?.sendChatRating(rating, null)
+    }
+    
+    fun registerToken(call: MethodCall){
+        val token = call.argument<String>("token")
+        val pushProvider = Chat.INSTANCE.providers()?.pushNotificationsProvider()
+        if(pushProvider != null && token != null){
+            pushProvider.registerPushToken(token)
+        }
     }
 
     private fun releaseTokens() {

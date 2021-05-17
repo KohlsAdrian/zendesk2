@@ -33,7 +33,7 @@ class Zendesk2Plugin: ActivityAware, FlutterPlugin, MethodCallHandler {
               "logger" -> zendesk2Chat?.logger(call)
               "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
               "startChat" -> zendesk2Chat?.startChat(call)
-              "startChatProviders" -> zendesk2Chat?.startChatProviders()
+              "startChatProviders" -> zendesk2Chat?.startChatProviders(call)
               "dispose" -> zendesk2Chat?.dispose()
               "customize" -> zendesk2Chat?.customize(call)
               "getChatProviders" -> zendesk2Chat?.getChatProviders()!!
@@ -44,6 +44,9 @@ class Zendesk2Plugin: ActivityAware, FlutterPlugin, MethodCallHandler {
               "sendRatingComment" -> zendesk2Chat?.sendRatingComment(call)
               "sendRatingReview" -> zendesk2Chat?.sendRatingReview(call)
               "sendIsTyping" -> zendesk2Chat?.sendTyping(call)
+              "registerToken"-> zendesk2Chat?.registerToken(call)
+              "connect"-> zendesk2Chat?.connect()
+              "disconnect"-> zendesk2Chat?.disconnect()
               else -> print("method not implemented")
             }
     if(data is Map<*, *> || data is Array<*>)

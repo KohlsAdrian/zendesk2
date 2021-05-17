@@ -186,12 +186,15 @@ public class SwiftZendesk2Chat {
     }
     
     /// startChat v2 Zendesk API Providers
-    func startChatProviders() -> Dictionary<String, Any>? {
+    func startChatProviders(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
         startProviders()
-        Chat.connectionProvider?.connect()
+        
+        if arguments?["connect"] as? Bool != false{
+            Chat.connectionProvider?.connect()
+        }
         
         if !Logger.isEnabled {
             return nil
@@ -200,6 +203,13 @@ public class SwiftZendesk2Chat {
         var result = Dictionary<String, Any>()
         result["zendesk_start_chat_providers"] = "STARTING"
         return result
+    }
+    
+    func connect(){
+        Chat.connectionProvider?.connect()
+    }
+    func disconnect(){
+        Chat.connectionProvider?.disconnect()
     }
     
     /// customize Zendesk API
@@ -343,6 +353,7 @@ public class SwiftZendesk2Chat {
             self.isChatting = isChatting
             self.chatId = chatId
             self.agents = agents
+            self.hasAgents = !agents.isEmpty
             self.logs = logs
             self.queuePosition = queuePosition
             self.rating = rating
@@ -365,7 +376,7 @@ public class SwiftZendesk2Chat {
         observeAccoutToken = Chat.accountProvider?.observeAccount { (account) in
             let accountStatus = account.accountStatus
             self.isOnline = accountStatus == .online
-            self.hasAgents = self.isOnline
+            self.hasAgents = !self.agents.isEmpty
             self.sendChatProvidersResult()
         }
         
