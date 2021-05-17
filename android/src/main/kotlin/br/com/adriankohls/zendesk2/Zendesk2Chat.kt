@@ -210,7 +210,7 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
 
         Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
             override fun onSuccess(a: Account?) {
-                hasAgents = this.agents.isNotEmpty()
+                hasAgents = agents.isNotEmpty()
                 isOnline = a?.status == AccountStatus.ONLINE
 
                 sendChatProvidersResult()

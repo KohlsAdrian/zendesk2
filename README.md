@@ -117,18 +117,17 @@ await z.registerFCMToken(fcmToken);
 ```
 (calling this function has no effect on iOS)
 
-To display the notifications, you will need to register your own `FirebaseMessagingService` as a service inside the `application` tag of android/app/src/main/AndroidManifest.xml
+To display the notifications, you will need to register your own `FirebaseMessagingService` as a service inside the `application`. You can follow the Firebase Android Docs for this. An example file that you can copy and customize can be found in the main github repo. Overally you will add the file to your application and register the service as follows:
 
 ``` xml
 <service
-    android:name="br.com.adriankohls.zendesk2.fcm"
+    android:name="{your package name}"
     android:stopWithTask="false">
     <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT" />
     </intent-filter>
 </service>
 ```
-You can use the one mentioned above or you can copy the file to create your own service that better fits your needs.
 
 
 # What you need

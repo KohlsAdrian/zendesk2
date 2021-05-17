@@ -1,4 +1,4 @@
-## 1.6.0+0 - 1.6.0+1
+## 1.6.0+0 - 1.6.0+2
 
 * Support for push notifications
 
