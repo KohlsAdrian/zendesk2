@@ -1,4 +1,5 @@
 ## 1.6.0
+
 * Support for push notifications
 
 Pull request from https://github.com/diegogarciar
