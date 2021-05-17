@@ -1,8 +1,10 @@
-## 1.6.0
+## 1.6.0+0 - 1.6.0+1
 
 * Support for push notifications
 
 Pull request from https://github.com/diegogarciar
+
+Fix README.md
 
 ## 1.5.0
 

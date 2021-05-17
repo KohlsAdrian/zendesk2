@@ -2,12 +2,15 @@
 
 An Android and iOS SDK port of Zendesk for Flutter
 
+Android min SDK 16 and iOS min OS Version 10.0
+
 Easy and fast to use
 
-# Setup for Native Chat
+# <del>Setup for Native Chat</del> 
+(Native chat is obsolete and is discouraged to be used)
 
 <details>
-  <summary>Android Min SDK - 21</summary>
+  <summary><del>Android Min SDK - 16</del></summary>
 
 
   android/app/src/main/res/values/styles.xml
@@ -32,7 +35,7 @@ Easy and fast to use
 </details>
 
 <details>
-  <summary>iOS Min OS Version - 10.0</summary>
+  <summary><del>iOS Min OS Version - 10.0</del></summary>
   
   In AppDelegate.swift should look like this
   
@@ -57,17 +60,13 @@ Easy and fast to use
   
 </details>
 
-# Setup for custom UI
+# Custom UI (Providers)
 
     /// Zendesk Chat instance
     Zendesk2Chat z = Zendesk2Chat.instance;
 
     /// Initialize Zendesk SDK
-    await z.init(
-      accountKey,
-      appId,
-      iosThemeColor: Constants.IZA_YELLOW,
-    );
+    await z.init(accountKey, appId);
     
     /// Optional Visitor Info information
     await z.setVisitorInfo(
@@ -84,13 +83,19 @@ Easy and fast to use
       /// this stream retrieve all Chat data and Logs from SDK
       _providerModel = providerModel;
     });
+
     /// It is also important to disconnect and reconnect and when the app enters  and exits background, to do this you can simply calll
     z.disconnect() 
     z.connect()
+
+
+
 # Push Notifications
+
    To configure chat notifications, you will need to do the following configuration per platform
 
 ## iOS
+
   Inside your AppDelegate.swift import the ChatSdk
   `import ChatProvidersSDK`
 
@@ -105,6 +110,7 @@ Easy and fast to use
 ### Android
 
 Using FCM messaging, get your FCM token and register it as follows:
+
 ``` dart
 Zendesk2Chat z = Zendesk2Chat.instance;
 await z.registerFCMToken(fcmToken);
