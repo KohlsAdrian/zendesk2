@@ -33,8 +33,6 @@ class Zendesk2Chat {
     return _providersStream!.stream.asBroadcastStream();
   }
 
-  Timer? _getProvidersTimer;
-
   /// Initialize the Zendesk SDK
   ///
   /// ```accountKey``` the zendesk created account key, unique by organization
@@ -188,7 +186,6 @@ class Zendesk2Chat {
   /// Close connection and release resources
   Future<void> dispose() async {
     try {
-      _getProvidersTimer?.cancel();
       await _providersStream!.sink.close();
       await _providersStream!.close();
       _providersStream = null;
