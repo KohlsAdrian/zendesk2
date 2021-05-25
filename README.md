@@ -62,31 +62,33 @@ Easy and fast to use
 
 # Custom UI (Providers)
 
-    /// Zendesk Chat instance
-    Zendesk2Chat z = Zendesk2Chat.instance;
+```dart
+/// Zendesk Chat instance
+Zendesk2Chat z = Zendesk2Chat.instance;
 
-    /// Initialize Zendesk SDK
-    await z.init(accountKey, appId);
-    
-    /// Optional Visitor Info information
-    await z.setVisitorInfo(
-        name: name,
-        email: email,
-        phoneNumber: phoneNumber,
-      );
-      
-    /// Very important, for custom UI, prepare Stream for ProviderModel
-    await z.startChatProviders();
-    
-    /// Get the updated provider Model from SDK
-    z.providersStream.listen((providerModel) {
-      /// this stream retrieve all Chat data and Logs from SDK
-      _providerModel = providerModel;
-    });
+/// Initialize Zendesk SDK
+await z.init(accountKey, appId);
 
-    /// It is also important to disconnect and reconnect and when the app enters  and exits background, to do this you can simply calll
-    z.disconnect() 
-    z.connect()
+/// Optional Visitor Info information
+await z.setVisitorInfo(
+    name: name,
+    email: email,
+    phoneNumber: phoneNumber,
+  );
+
+/// Very important, for custom UI, prepare Stream for ProviderModel
+await z.startChatProviders();
+
+/// Get the updated provider Model from SDK
+z.providersStream.listen((providerModel) {
+  /// this stream retrieve all Chat data and Logs from SDK
+  _providerModel = providerModel;
+});
+
+/// It is also important to disconnect and reconnect and when the app enters  and exits background, to do this you can simply calll
+z.disconnect() 
+z.connect()  
+```
 
 
 
