@@ -15,7 +15,7 @@ class _ZendeskChat extends State<ZendeskChat> {
   final Zendesk2Chat _z = Zendesk2Chat.instance;
 
   final _tecM = TextEditingController();
-  ProviderModel _providerModel;
+  ProviderModel? _providerModel;
 
   @override
   void dispose() {
@@ -80,7 +80,9 @@ class _ZendeskChat extends State<ZendeskChat> {
 
       final path = file is PlatformFile ? file.path : (file as PickedFile).path;
 
-      _z.sendFile(path);
+      if (path != null) {
+        _z.sendFile(path);
+      }
     }
   }
 
@@ -253,14 +255,14 @@ class _ZendeskChat extends State<ZendeskChat> {
 
   Widget _chat() => ListView.builder(
         padding: EdgeInsets.only(bottom: 200),
-        itemCount: _providerModel.logs.length,
+        itemCount: _providerModel!.logs.length,
         itemBuilder: (context, index) {
-          ChatLog log = _providerModel.logs[index];
+          ChatLog log = _providerModel!.logs[index];
           ChatMessage chatMessage = log.chatLogType.chatMessage;
 
-          String message = chatMessage?.message ?? '';
+          String message = chatMessage.message ?? '';
 
-          String name = log.displayName;
+          String name = log.displayName ?? '';
 
           bool isAttachment = false;
           bool isJoinOrLeave = false;
@@ -269,11 +271,10 @@ class _ZendeskChat extends State<ZendeskChat> {
           bool isAgent =
               log.chatLogParticipant.chatParticipant == CHAT_PARTICIPANT.AGENT;
 
-          Agent agent;
+          Agent? agent;
           if (isAgent)
-            agent = _providerModel.agents.firstWhere(
-                (element) => element.displayName == name,
-                orElse: () => null);
+            agent = _providerModel!.agents
+                .firstWhere((element) => element.displayName == name);
 
           switch (log.chatLogType.logType) {
             case LOG_TYPE.ATTACHMENT_MESSAGE:
@@ -315,15 +316,18 @@ class _ZendeskChat extends State<ZendeskChat> {
             case LOG_TYPE.UNKNOWN:
               message = 'Unknown';
               break;
+            case null:
+              message = 'LogType=null';
+              break;
           }
 
           bool isVisitor = log.chatLogParticipant.chatParticipant ==
               CHAT_PARTICIPANT.VISITOR;
 
-          final imageUrl = log.chatLogType?.chatAttachment?.url;
+          final imageUrl = log.chatLogType.chatAttachment.url;
 
           final mimeType = log
-              .chatLogType?.chatAttachment?.chatAttachmentAttachment?.mimeType
+              .chatLogType.chatAttachment.chatAttachmentAttachment.mimeType
               ?.toLowerCase();
           final isImage = mimeType == null
               ? false
@@ -356,7 +360,8 @@ class _ZendeskChat extends State<ZendeskChat> {
                         children: [
                           if (isAgent)
                             agent?.avatar != null
-                                ? CachedNetworkImage(imageUrl: agent.avatar)
+                                ? CachedNetworkImage(
+                                    imageUrl: agent!.avatar ?? '')
                                 : Icon(Icons.person),
                           Card(
                             shape: RoundedRectangleBorder(
@@ -369,13 +374,14 @@ class _ZendeskChat extends State<ZendeskChat> {
                                   if (isAttachment)
                                     GestureDetector(
                                       onTap: () => launch(log
-                                          .chatLogType
-                                          .chatAttachment
-                                          .chatAttachmentAttachment
-                                          .url),
+                                              .chatLogType
+                                              .chatAttachment
+                                              .chatAttachmentAttachment
+                                              .url ??
+                                          ''),
                                       child: isImage
                                           ? CachedNetworkImage(
-                                              imageUrl: imageUrl,
+                                              imageUrl: imageUrl ?? '',
                                               placeholder: (context, url) =>
                                                   CircularProgressIndicator(),
                                             )
@@ -383,10 +389,11 @@ class _ZendeskChat extends State<ZendeskChat> {
                                               children: [
                                                 Icon(FontAwesomeIcons.file),
                                                 Text(log
-                                                    .chatLogType
-                                                    .chatAttachment
-                                                    .chatAttachmentAttachment
-                                                    .name)
+                                                        .chatLogType
+                                                        .chatAttachment
+                                                        .chatAttachmentAttachment
+                                                        .name ??
+                                                    '')
                                               ],
                                             ),
                                     ),
@@ -413,13 +420,13 @@ class _ZendeskChat extends State<ZendeskChat> {
           if (_providerModel != null)
             Icon(
               Icons.circle,
-              color:
-                  _providerModel.connectionStatus == CONNECTION_STATUS.CONNECTED
-                      ? Colors.green
-                      : _providerModel.connectionStatus ==
-                              CONNECTION_STATUS.CONNECTING
-                          ? Colors.yellow
-                          : Colors.red,
+              color: _providerModel!.connectionStatus ==
+                      CONNECTION_STATUS.CONNECTED
+                  ? Colors.green
+                  : _providerModel!.connectionStatus ==
+                          CONNECTION_STATUS.CONNECTING
+                      ? Colors.yellow
+                      : Colors.red,
             )
         ],
       ),
@@ -428,16 +435,17 @@ class _ZendeskChat extends State<ZendeskChat> {
           : Stack(
               alignment: Alignment.bottomCenter,
               children: [
-                _chat(),
+                if (_providerModel != null) _chat(),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (_providerModel.agents.isNotEmpty &&
-                        _providerModel.agents.first.isTyping)
-                      Text(
-                        'Agent is typing...',
-                        textAlign: TextAlign.start,
-                      ),
+                    if (_providerModel != null &&
+                        _providerModel!.agents.isNotEmpty)
+                      if (_providerModel!.agents.first.isTyping ?? false)
+                        Text(
+                          'Agent is typing...',
+                          textAlign: TextAlign.start,
+                        ),
                     _userWidget(),
                   ],
                 ),
