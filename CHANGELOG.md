@@ -1,4 +1,8 @@
-## 1.6.0+0 - 1.6.0+1 - 1.6.0+2
+# 1.6.0+3
+
+* Code cleanup and fixed ./example to nullsafety
+
+## 1.6.0+0 - 1.6.0+1 - 1.6.0+2 
 
 * Support for push notifications
 
