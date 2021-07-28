@@ -1,3 +1,7 @@
+# 1.6.1+0
+
+* [Not-breaking][Android] fixed setVisitorInfo on MethodChannel where Name, Email and Phone were conflicting with duplicate setup usage.
+
 # 1.6.0+3
 
 * Code cleanup and fixed ./example to nullsafety

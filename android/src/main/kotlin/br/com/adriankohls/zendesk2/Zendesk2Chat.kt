@@ -126,32 +126,19 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
 
         val tags = call.argument<List<String>>("tags")?.toList() ?: listOf()
 
+        val providers = Chat.INSTANCE.providers()?.chatProvider()
         val profileProvider = Chat.INSTANCE.providers()?.profileProvider()
         profileProvider?.addVisitorTags(tags, null)
 
         val visitorInfoBuilder = VisitorInfo.builder()
                 .withName(name ?: "")
                 .withEmail(email ?: "")
-                .withPhoneNumber(phoneNumber)
+                .withPhoneNumber(phoneNumber ?: "")
 
         val visitorInfo = visitorInfoBuilder.build()
 
-        val chatProvidersConfigurationBuilder = ChatProvidersConfiguration.builder()
-                .withVisitorInfo(visitorInfo)
-                .withDepartment(departmentName)
-
-        val chatProvidersConfiguration = chatProvidersConfigurationBuilder.build()
-
-        Chat.INSTANCE.chatProvidersConfiguration = chatProvidersConfiguration
-        Chat.INSTANCE.providers()?.profileProvider()?.setVisitorInfo(visitorInfo, object : ZendeskCallback<Void>() {
-            override fun onSuccess(success: Void?) {
-                print("sucess")
-            }
-
-            override fun onError(error: ErrorResponse?) {
-                print(error)
-            }
-        })
+        profileProvider?.setVisitorInfo(visitorInfo, null)
+        providers?.setDepartment(departmentName ?: "", null)
     }
 
     fun startChatProviders(call: MethodCall) {
