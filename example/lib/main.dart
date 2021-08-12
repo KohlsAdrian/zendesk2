@@ -37,20 +37,23 @@ class _Home extends State<Home> {
     String email = '';
     String phoneNumber = '';
 
-    await Zendesk.instance.init(accountKey, appId);
+    final z = Zendesk.instance;
+    await z.init(accountKey, appId);
+    await z.initChatSDK();
+    await z.initAnswerSDK();
 
-    Zendesk2Chat z = Zendesk2Chat.instance;
+    Zendesk2Chat zChat = Zendesk2Chat.instance;
 
-    await z.logger(true);
+    await zChat.logger(true);
 
-    await z.setVisitorInfo(
+    await zChat.setVisitorInfo(
       name: name,
       email: email,
       phoneNumber: phoneNumber,
       tags: ['app', 'zendesk2_plugin'],
     );
 
-    await z.customize(
+    await zChat.customize(
       departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
       emailFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
       nameFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,

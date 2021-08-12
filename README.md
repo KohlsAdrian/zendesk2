@@ -24,8 +24,8 @@ await Zendesk2.instance.init(accountKey, appId);
 ```
 
 ````dart
-final z = Zendesk2.instance; // General Zendesk
-
+final z = Zendesk2.instance; // general Zendesk
+await z.init(accountKey, appId); // initialize the Zendesk SDK
 await z.initChatSDK(); // initialize the Chat SDK
 await z.initAnswerSDK(); // initialize the Answer SDK
 

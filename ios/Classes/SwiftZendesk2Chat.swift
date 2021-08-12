@@ -35,23 +35,14 @@ public class SwiftZendesk2Chat {
     }
     
     /// Logging  Zendesk API
-    func logger(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
+    func logger(_ arguments: Dictionary<String, Any>?) -> Void {
         let enabled: Bool = (arguments?["enabled"] ?? false) as! Bool
         Logger.isEnabled = enabled
         Logger.defaultLevel = .verbose
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_logger"] = Logger.isEnabled
-        result["zendesk_logger_level"] = Logger.defaultLevel.rawValue
-        return result
     }
     
     /// setVisitorInfo Zendesk API
-    func setVisitorInfo(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
+    func setVisitorInfo(_ arguments: Dictionary<String, Any>?) -> Void {
         
         let name: String = (arguments?["name"] ?? "") as! String
         let email: String = (arguments?["email"] ?? "") as! String
@@ -67,31 +58,11 @@ public class SwiftZendesk2Chat {
         chatAPIConfiguration.department = departmentName
         
         Chat.instance?.configuration = chatAPIConfiguration
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_visitor_name"] = Chat.instance?.configuration.visitorInfo?.name
-        result["zendesk_visitor_email"] = Chat.instance?.configuration.visitorInfo?.email
-        result["zendesk_visitor_phone"] = Chat.instance?.configuration.visitorInfo?.phoneNumber
-        result["zendesk_visitor_department"] = Chat.instance?.configuration.department
-        result["zendesk_visitor_tags"] = Chat.instance?.configuration.tags
-        return result
     }
     
     /// startChat v2 Zendesk API Providers
-    func startChatProviders() -> Dictionary<String, Any>? {
+    func startChatProviders() -> Void {
         startProviders()
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_start_chat_providers"] = "STARTING"
-        return result
     }
     
     func connect(){
@@ -102,7 +73,7 @@ public class SwiftZendesk2Chat {
     }
     
     /// Closes Zendesk Chat
-    @objc func dispose() -> Dictionary<String, Any>? {
+    @objc func dispose() -> Void {
         
         let chat = Chat.instance
         
@@ -111,15 +82,9 @@ public class SwiftZendesk2Chat {
             print("Identity reseted")
         })
         
-        var result: Dictionary<String, Any>? = endChat()
+        endChat()
         
         releaseProviders()
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        result?["zendesk_dispose"] = "DISPOSE"
-        return result
     }
     
     /// PROVIDERS FOR CUSTOM UI
@@ -253,7 +218,7 @@ public class SwiftZendesk2Chat {
         channel.invokeMethod("sendChatProvidersResult", arguments: getChatProviders())
     }
     
-    func sendMessage(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
+    func sendMessage(_ arguments: Dictionary<String, Any>?) -> Void {
         let message: String = (arguments?["message"] ?? "") as! String
         
         Chat.chatProvider?.sendMessage(message) { (result) in
@@ -269,17 +234,9 @@ public class SwiftZendesk2Chat {
                 }
             }
         }
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_send_message"] = message
-        return result
     }
     
-    func sendFile(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
+    func sendFile(_ arguments: Dictionary<String, Any>?) -> Void {
         let file: String = (arguments?["file"] ?? "") as! String
         
         let fileURL = URL(fileURLWithPath: file)
@@ -302,14 +259,6 @@ public class SwiftZendesk2Chat {
                 }
             }
         })
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_send_file"] = file
-        return result
     }
     
     func getAttachmentsExtension() -> Array<String> {
@@ -322,17 +271,9 @@ public class SwiftZendesk2Chat {
         return array
     }
     
-    func sendTyping(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
+    func sendTyping(_ arguments: Dictionary<String, Any>?) -> Void {
         let isTyping: Bool = (arguments?["isTyping"] ?? false) as! Bool
         Chat.chatProvider?.sendTyping(isTyping: isTyping)
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_is_typing"] = isTyping
-        return result
     }
     
     func getChatProviders() -> Dictionary<String, Any>? {
@@ -499,7 +440,7 @@ public class SwiftZendesk2Chat {
         return dictionary
     }
     
-    func endChat() -> Dictionary<String, Any>? {
+    func endChat() -> Void {
         Chat.chatProvider?.endChat({ (result) in
             switch result {
             case .failure(let error):
@@ -509,13 +450,5 @@ public class SwiftZendesk2Chat {
                 print(success)
             }
         })
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_end_chat"] = "ENDING"
-        return result
     }
 }

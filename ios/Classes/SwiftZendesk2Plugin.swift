@@ -14,29 +14,21 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
     public static func register(with registrar: FlutterPluginRegistrar) -> Void {
         let channel = FlutterMethodChannel(name: "zendesk2", binaryMessenger: registrar.messenger())
-    
+        
         let instance = SwiftZendesk2Plugin(channel: channel)
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
     }
-        
-     init(channel: FlutterMethodChannel) {
+    
+    init(channel: FlutterMethodChannel) {
         self.channel = channel
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
-        
-        if zendesk2Chat == nil {
-            zendesk2Chat = SwiftZendesk2Chat(channel: channel)
-        }
-        if zendesk2Answer == nil {
-            zendesk2Answer = SwiftZendesk2Answer(channel: channel)
-        }
-        
         let method = call.method
         let arguments = call.arguments as? Dictionary<String, Any>
-        var mResult: Any? = nil
         
+        var mResult: Any? = nil
         
         switch(method){
         case "init":
@@ -45,60 +37,68 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             break
         case "init_chat":
             if self.accountKey != nil && self.appId != nil {
-                Chat.initialize(accountKey: self.accountKey!, appId: self.appId!)
+                if zendesk2Chat == nil {
+                    zendesk2Chat = SwiftZendesk2Chat(channel: channel)
+                    Chat.initialize(accountKey: self.accountKey!, appId: self.appId!)
+                } else {
+                    print("Chat Already Initialized")
+                }
+            } else {
+                print("You should call Zendesk.instance.init first!")
             }
             break;
         case "init_answer":
             if self.accountKey != nil && self.appId != nil {
-                
+                if zendesk2Answer == nil {
+                    zendesk2Answer = SwiftZendesk2Answer(channel: channel)
+                } else {
+                    print("Answer Already Initialized")
+                }
+            } else {
+                print("You should call Zendesk.instance.init first!")
             }
             break;
         // chat sdk method channels
         case "logger":
-            mResult = zendesk2Chat?.logger(arguments)
+            zendesk2Chat?.logger(arguments)
             break
         case "setVisitorInfo":
-            mResult = zendesk2Chat?.setVisitorInfo(arguments)
+            zendesk2Chat?.setVisitorInfo(arguments)
             break
         case "startChatProviders":
-            mResult = zendesk2Chat?.startChatProviders()
+            zendesk2Chat?.startChatProviders()
             break
         case "dispose":
-            mResult = zendesk2Chat?.dispose()
+            zendesk2Chat?.dispose()
             break
         case "getChatProviders":
             mResult = zendesk2Chat?.getChatProviders()
             break
         case "sendMessage":
-            mResult = zendesk2Chat?.sendMessage(arguments)
+            zendesk2Chat?.sendMessage(arguments)
             break
         case "sendFile":
-            mResult = zendesk2Chat?.sendFile(arguments)
+            zendesk2Chat?.sendFile(arguments)
             break
         case "compatibleAttachmentsExtensions":
             mResult = zendesk2Chat?.getAttachmentsExtension()
             break
         case "endChat":
-            mResult = zendesk2Chat?.endChat()
+            zendesk2Chat?.endChat()
             break
         case "sendIsTyping":
-            mResult = zendesk2Chat?.sendTyping(arguments)
+            zendesk2Chat?.sendTyping(arguments)
         case "connect":
-            mResult = zendesk2Chat?.connect()
+            zendesk2Chat?.connect()
         case "disconnect":
-            mResult = zendesk2Chat?.disconnect()
+            zendesk2Chat?.disconnect()
         // answer sdk method channels
-        
-        
-        
         default:
             break
         }
-        
-        if mResult is Array<Any?> || mResult is Dictionary<String, Any?> {
+        if mResult != nil {
             result(mResult)
         }
-        
         result(0)
     }
     

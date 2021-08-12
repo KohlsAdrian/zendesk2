@@ -22,56 +22,58 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
     private var appId: String? = null
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        if (zendesk2Chat == null) {
-            zendesk2Chat = Zendesk2Chat(channel)
-        }
-        if (zendesk2Answer == null) {
-            zendesk2Answer = Zendesk2Answer(channel)
-        }
-
-        val data: Any? =
-                when (call.method) {
-                    "init" -> {
-                        accountKey = call.argument<String>("accountKey")!!
-                        appId = call.argument<String>("appId")!!
+        var mResult: Any? = null
+        when (call.method) {
+            "init" -> {
+                accountKey = call.argument<String>("accountKey")!!
+                appId = call.argument<String>("appId")!!
+            }
+            "init_chat" -> {
+                if (accountKey != null && appId != null) {
+                    if (zendesk2Chat == null) {
+                        zendesk2Chat = Zendesk2Chat(channel)
+                        Chat.INSTANCE.init(activity!!, accountKey!!, appId!!)
+                    } else {
+                        print("Chat Already Initialized")
                     }
-                    "init_chat" -> {
-                        if (accountKey != null && appId != null) {
-                            Chat.INSTANCE.init(activity!!, accountKey!!, appId!!)
-                        } else {
-
-                        }
-                    }
-                    "init_answer" -> {
-                        if (accountKey != null && appId != null) {
-
-                        } else {
-
-                        }
-                    }
-                    // chat sdk method channels
-                    "logger" -> zendesk2Chat?.logger(call)
-                    "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
-                    "startChatProviders" -> zendesk2Chat?.startChatProviders()
-                    "dispose" -> zendesk2Chat?.dispose()
-                    "getChatProviders" -> zendesk2Chat?.getChatProviders()!!
-                    "sendMessage" -> zendesk2Chat?.sendMessage(call)
-                    "sendFile" -> zendesk2Chat?.sendFile(call)
-                    "compatibleAttachmentsExtensions" -> result.success(zendesk2Chat?.getAttachmentsExtension())
-                    "endChat" -> zendesk2Chat?.endChat()
-                    "sendIsTyping" -> zendesk2Chat?.sendTyping(call)
-                    "registerToken" -> zendesk2Chat?.registerToken(call)
-                    "connect" -> zendesk2Chat?.connect()
-                    "disconnect" -> zendesk2Chat?.disconnect()
-                    // answer sdk method channels
-
-
-                    else -> print("method not implemented")
+                } else {
+                    print("You should call Zendesk.instance.init first!")
                 }
-        if (data is Map<*, *> || data is Array<*>)
-            result.success(data)
-        else
-            result.success(this.hashCode())
+            }
+            "init_answer" -> {
+                if (accountKey != null && appId != null) {
+                    if (zendesk2Answer == null) {
+                        zendesk2Answer = Zendesk2Answer(channel)
+                    } else {
+                        print("Answer Already Initialized")
+                    }
+                } else {
+                    print("You should call Zendesk.instance.init first!")
+                }
+            }
+            // chat sdk method channels
+            "logger" -> zendesk2Chat?.logger(call)
+            "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
+            "startChatProviders" -> zendesk2Chat?.startChatProviders()
+            "dispose" -> zendesk2Chat?.dispose()
+            "getChatProviders" -> mResult = zendesk2Chat?.getChatProviders()
+            "sendMessage" -> zendesk2Chat?.sendMessage(call)
+            "sendFile" -> zendesk2Chat?.sendFile(call)
+            "compatibleAttachmentsExtensions" -> mResult = zendesk2Chat?.getAttachmentsExtension()
+            "endChat" -> zendesk2Chat?.endChat()
+            "sendIsTyping" -> zendesk2Chat?.sendTyping(call)
+            "registerToken" -> zendesk2Chat?.registerToken(call)
+            "connect" -> zendesk2Chat?.connect()
+            "disconnect" -> zendesk2Chat?.disconnect()
+            // answer sdk method channels
+            else -> print("method not implemented")
+        }
+
+        if(mResult != null){
+            result.success(mResult)
+        } else {
+            result.success(0)
+        }
     }
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {

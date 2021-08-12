@@ -65,10 +65,10 @@ class _ZendeskChat extends State<ZendeskChat> {
         ],
       ),
     );
-    
+
     final compatibleExt = await _z.getAttachmentExtensions();
     final result = isPhoto
-        ? await ImagePicker().getImage(source: ImageSource.camera)
+        ? await ImagePicker().pickImage(source: ImageSource.camera)
         : await FilePicker.platform.pickFiles(
             allowMultiple: false,
             type: FileType.custom,
