@@ -1,14 +1,20 @@
 # 1.7.0+0
 
-* Features
+* [Features]
 
-* Answer SDK
+* Answer SDK providers
 
-* [BREAKING CHANGE]
+* Plugin wrapped features: Zendesk, ZendeskChat and ZendeskAnswer (see README.md)
 
-* Additional setup for Android API lower than 21 (Enable Multi DEX)
+* [BREAKING CHANGES]
 
 * Optimised null-safety on ProviderModel object
+
+* Moved SDK initialization to general Zendesk class (Flutter and Native side)
+
+* [OPTIMISATION]
+
+* Removed unused SDKs and unused code
 
 * Removed deprecated functions:
     

@@ -2,7 +2,6 @@ package br.com.adriankohls.zendesk2
 
 import android.app.Activity
 import androidx.annotation.NonNull
-import com.zendesk.logger.Logger
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -11,7 +10,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import zendesk.chat.*
-import zendesk.messaging.MessagingActivity
 
 class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -38,10 +36,9 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
                     // chat sdk method channels
                     "logger" -> zendesk2Chat?.logger(call)
                     "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
-                    "startChat" -> zendesk2Chat?.startChat(call)
                     "startChatProviders" -> zendesk2Chat?.startChatProviders()
                     "dispose" -> zendesk2Chat?.dispose()
-                    "customize" -> zendesk2Chat?.customize(call)
+                    //"customize" -> zendesk2Chat?.customize(call)
                     "getChatProviders" -> zendesk2Chat?.getChatProviders()!!
                     "sendMessage" -> zendesk2Chat?.sendMessage(call)
                     "sendFile" -> zendesk2Chat?.sendFile(call)

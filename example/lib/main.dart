@@ -37,11 +37,11 @@ class _Home extends State<Home> {
     String email = '';
     String phoneNumber = '';
 
+    await Zendesk.instance.init(accountKey, appId);
+
     Zendesk2Chat z = Zendesk2Chat.instance;
 
     await z.logger(true);
-
-    await z.init(accountKey, appId);
 
     await z.setVisitorInfo(
       name: name,
@@ -49,7 +49,7 @@ class _Home extends State<Home> {
       phoneNumber: phoneNumber,
       tags: ['app', 'zendesk2_plugin'],
     );
-    
+
     await z.customize(
       departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
       emailFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,

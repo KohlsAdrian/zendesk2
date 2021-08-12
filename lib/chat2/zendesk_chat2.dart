@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zendesk2/chat2/model/provider_enums.dart';
 import 'package:zendesk2/chat2/model/provider_model.dart';
 
 class Zendesk2Chat {
+  static const _channel = const MethodChannel('zendesk2Chat');
+
   Zendesk2Chat._() {
     _channel.setMethodCallHandler((call) async {
       if (call.method == "sendChatProvidersResult") {
@@ -22,8 +23,6 @@ class Zendesk2Chat {
   }
   static final Zendesk2Chat instance = Zendesk2Chat._();
 
-  static const _channel = const MethodChannel('zendesk2');
-
   /// added ignore so the source won't have warnings
   /// but don't forget to close or .dispose() when needed!!!
   /// ignore: close_sinks
@@ -37,32 +36,6 @@ class Zendesk2Chat {
   Stream<ProviderModel> get providersStream {
     _getChatProviders();
     return _providersStream!.stream.asBroadcastStream();
-  }
-
-  /// Initialize the Zendesk SDK
-  ///
-  /// ```accountKey``` the zendesk created account key, unique by organization
-  ///
-  /// ```appId``` the app ID created on Zendesk Panel
-  Future<void> init(
-    String accountKey,
-    String appId, {
-    @Deprecated('Prefer to use custom UI chat providers')
-        Color iosThemeColor = Colors.indigo,
-  }) async {
-    Map arguments = {
-      'accountKey': accountKey,
-      'appId': appId,
-      'iosThemeColor': iosThemeColor.value,
-    };
-    try {
-      final result = await _channel.invokeMethod('init', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-    } catch (e) {
-      print(e);
-    }
   }
 
   /// Set on Native/Custom chat user information
@@ -83,7 +56,7 @@ class Zendesk2Chat {
     String departmentName = '',
     List<String> tags = const [],
   }) async {
-    Map arguments = {
+    final arguments = {
       'name': name,
       'email': email,
       'phoneNumber': phoneNumber,
@@ -134,7 +107,7 @@ class Zendesk2Chat {
     bool endChatEnabled = false,
     bool transcriptChatEnabled = false,
   }) async {
-    Map arguments = {
+    final arguments = {
       'agentAvailability': agentAvailability,
       'transcript': transcriptChatEnabled,
       'preChatForm': preChatForm,
@@ -174,7 +147,7 @@ class Zendesk2Chat {
   /// ```enabled``` if enabled, shows detailed information about the SDK actions
   Future<void> logger(bool enabled) async {
     _isLoggerEnabled = enabled;
-    Map arguments = {
+    final arguments = {
       'enabled': enabled,
     };
     try {
@@ -258,7 +231,7 @@ class Zendesk2Chat {
   ///
   /// ```message``` the message text that represents on live chat
   Future<void> sendMessage(String message) async {
-    Map arguments = {
+    final arguments = {
       'message': message,
     };
     try {
@@ -276,7 +249,7 @@ class Zendesk2Chat {
   /// ```isTyping``` if true Zendesk panel will know that user is typing,
   /// otherwise not
   Future<void> sendTyping(bool isTyping) async {
-    Map arguments = {
+    final arguments = {
       'isTyping': isTyping,
     };
     try {
@@ -314,7 +287,7 @@ class Zendesk2Chat {
   ///
   /// ```path``` the file path, that will represent the file attachment on live chat
   Future<void> sendFile(String path) async {
-    Map arguments = {
+    final arguments = {
       'file': path,
     };
     try {
@@ -344,8 +317,10 @@ class Zendesk2Chat {
   /// Register FCM Token for android push notifications
   Future<void> registerFCMToken(String token) async {
     try {
-      final result =
-          await _channel.invokeMethod('registerToken', {"token": token});
+      final arguments = {
+        'token': token,
+      };
+      final result = await _channel.invokeMethod('registerToken', arguments);
       if (_isLoggerEnabled) {
         print('zendesk2: $result');
       }

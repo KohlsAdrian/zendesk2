@@ -8,86 +8,49 @@ Android min SDK 16 and iOS min OS Version 10.0
 Easy and fast to use
 ````
 
-# Setup
+# Setup ( `yourdomain` - your company zendesk domain)
 
-* AccountKey (https://{yourcompanydomain}.zendesk.com/chat/agent#home > Profile Picture > Check Connection)
+* AccountKey - https://yourdomain.zendesk.com/chat/agent#home > Profile Picture > Check Connection
 
-* AppId (https://{yourcompanydomain}.zendesk.com/agent/admin/mobile_sdk)
+* AppId - https://yourdomain.zendesk.com/agent/admin/mobile_sdk
  
 * Update Cocoapods to latest version
 
-#
 
-# WARNING - MULTIDEX ENABLED - MANY SDKs IN THE PLUGIN
+## Initialize the Zendesk SDK
 
-You should create a file `App.kt` for application module
-and set the following code
-
-```kotlin
-import io.flutter.app.FlutterApplication
-import android.content.Context
-import androidx.multidex.MultiDex
-
-class App : FlutterApplication() {
-
-    override fun attachBaseContext(base: Context) {
-        super.attachBaseContext(base)
-        MultiDex.install(this)
-    }
-
-}
+```dart
+await Zendesk2.instance.init(accountKey, appId);
 ```
 
-On `AndroidManifest.xml` you should replace code with the following:
+````dart
+final z = Zendesk2.instance; // General Zendesk
 
-```xml
-        ...
+await z.initChatSDK(); // initialize the Chat SDK
+await z.initAnswerSDK(); // initialize the Answer SDK
 
-    <application
-        android:name=".App"
-
-        ...
-```
-
-On `/app/build.gradle` you should add the following
-
-````gradle
-  
-  ...
-
-  defaultConfig {
-      multiDexEnabled true
-  }
-
-  dependencies {
-      implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21"
-      implementation "com.android.support:multidex:2.0.1"
-  }
-
- ... "
- 
+final zChat = Zendesk2Chat.instance; // Zendesk Chat Providers
+final zAnswer = Zendesk2Answer.instance; // Zendesk Answer Providers
 ````
-# Chat SDK V2
+
+<details><summary>How to use - Chat SDK V2</summary>
 
 ```dart
 /// Zendesk Chat instance
-Zendesk2Chat z = Zendesk2Chat.instance;
-
-/// Initialize Zendesk SDK
-await z.init(accountKey, appId);
+Zendesk2Chat zChat = Zendesk2Chat.instance;
 
 /// Optional Visitor Info information
-await z.setVisitorInfo(
+await zChat.setVisitorInfo(
     name: name,
     email: email,
     phoneNumber: phoneNumber,
   );
 
 /// Very important, for custom UI, prepare Stream for ProviderModel
-await z.startChatProviders();
+await zChat.startChatProviders();
 
 /// Get the updated provider Model from the SDK
-_subscription = z.providersStream.listen((providerModel) {
+_subscription = zChat.providersStream.listen((providerModel) {
   /// this stream retrieve all Chat data and Logs from the SDK
   /// in ONE unique reliable object :)
   _providerModel = providerModel;
@@ -96,26 +59,28 @@ _subscription = z.providersStream.listen((providerModel) {
 /// It is also important to disconnect and reconnect 
 /// and when the app enters and exits background, 
 /// to do this you can simply calll
-await z.disconnect();
+await zChat.disconnect();
 /// or
-await z.connect(); 
+await zChat.connect(); 
 
 /// After you release resources
-await z.dispose();
+await zChat.dispose();
 ```
+</details>
 
-
-# Answer SDK
+<details><summary>How to use - Answer SDK</summary>
 
 ```dart
 
 ```
+</details>
+
 
 # Push Notifications
 
-   To configure chat notifications, you will need to do the following configuration per platform
+To configure chat notifications, you will need to do the following configuration per platform
 
-### iOS
+<details><summary> iOS </summary>
 
   Inside your `AppDelegate.swift` import the ChatSDK as 
   
@@ -135,13 +100,15 @@ await z.dispose();
         Chat.registerPushToken(deviceToken)
     }
   ```
-### Android
+</details>
+
+<details><summary> Android </summary>
 
 Using FCM messaging, get your FCM token and register it as follows:
 
 ``` dart
-Zendesk2Chat z = Zendesk2Chat.instance;
-await z.registerFCMToken(fcmToken);
+Zendesk2Chat zChat = Zendesk2Chat.instance;
+await zChat.registerFCMToken(fcmToken);
 ```
 (calling this function has no effect on iOS)
 
@@ -156,21 +123,4 @@ To display the notifications, you will need to register your own `FirebaseMessag
     </intent-filter>
 </service>
 ```
-
-
-<details>
-  <summary>STATUS</summary>
-    
-    * Chat SDK - OK
-    
-    * Support SDK - OK
-    
-    * Customization - OK
-    
-    * Answer SDK - OK
-
-    * Unified SDK - OK
-
-    * Talk SDK - PENDING DEVELOPMENT
-
 </details>
