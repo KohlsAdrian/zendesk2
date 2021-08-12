@@ -6,6 +6,8 @@
 
 * [BREAKING CHANGE]
 
+* Additional setup for Android API lower than 21 (Enable Multi DEX)
+
 * Optimised null-safety on ProviderModel object
 
 * Removed deprecated functions:

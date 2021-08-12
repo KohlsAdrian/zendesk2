@@ -1,41 +1,72 @@
 ![](zendesk2.jpg)
 
+```text
 An Android and iOS SDK port of Zendesk for Flutter
 
 Android min SDK 16 and iOS min OS Version 10.0
 
 Easy and fast to use
+````
 
+# Setup
 
-<details>
-  <summary>What you need</summary>
-  
-  * AccountKey (https://{yourcompanydomain}.zendesk.com/chat/agent#home > Profile Picture > Check Connection)
+* AccountKey (https://{yourcompanydomain}.zendesk.com/chat/agent#home > Profile Picture > Check Connection)
 
-  * AppId (https://{yourcompanydomain}.zendesk.com/agent/admin/mobile_sdk)
+* AppId (https://{yourcompanydomain}.zendesk.com/agent/admin/mobile_sdk)
  
-  * Update Cocoapods to latest version
+* Update Cocoapods to latest version
 
-</details>
+#
 
-<details>
-  <summary>STATUS</summary>
-    
-    * Chat SDK - OK
-    
-    * Support SDK - OK
-    
-    * Customization - OK
-    
-    * Answer SDK - OK
+# WARNING - MULTIDEX ENABLED - MANY SDKs IN THE PLUGIN
 
-    * Unified SDK - OK
+You should create a file `App.kt` for application module
+and set the following code
 
-    * Talk SDK - PENDING DEVELOPMENT
+```kotlin
+import io.flutter.app.FlutterApplication
+import android.content.Context
+import androidx.multidex.MultiDex
 
-</details>
+class App : FlutterApplication() {
 
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(base)
+        MultiDex.install(this)
+    }
 
+}
+```
+
+On `AndroidManifest.xml` you should replace code with the following:
+
+```xml
+        ...
+
+    <application
+        android:name=".App"
+
+        ...
+```
+
+On `/app/build.gradle` you should add the following
+
+````gradle
+  
+  ...
+
+  defaultConfig {
+      multiDexEnabled true
+  }
+
+  dependencies {
+      implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21"
+      implementation "com.android.support:multidex:2.0.1"
+  }
+
+ ... "
+ 
+````
 # Chat SDK V2
 
 ```dart
@@ -125,3 +156,21 @@ To display the notifications, you will need to register your own `FirebaseMessag
     </intent-filter>
 </service>
 ```
+
+
+<details>
+  <summary>STATUS</summary>
+    
+    * Chat SDK - OK
+    
+    * Support SDK - OK
+    
+    * Customization - OK
+    
+    * Answer SDK - OK
+
+    * Unified SDK - OK
+
+    * Talk SDK - PENDING DEVELOPMENT
+
+</details>
