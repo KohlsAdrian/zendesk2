@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zendesk2/chat2/model/provider_enums.dart';
 import 'package:zendesk2/chat2/model/provider_model.dart';
-import 'package:zendesk2/zendesk2.dart';
 
 class Zendesk2Chat {
   Zendesk2Chat._() {

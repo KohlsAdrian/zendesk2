@@ -65,7 +65,7 @@ class _ZendeskChat extends State<ZendeskChat> {
         ],
       ),
     );
-    if (isPhoto == null) return;
+    
     final compatibleExt = await _z.getAttachmentExtensions();
     final result = isPhoto
         ? await ImagePicker().getImage(source: ImageSource.camera)
