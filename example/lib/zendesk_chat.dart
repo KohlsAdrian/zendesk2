@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:zendesk2/chat2/model/provider_enums.dart';
-import 'package:zendesk2/chat2/model/provider_model.dart';
+import 'package:zendesk2/chat2/model/chat_provider_enums.dart';
+import 'package:zendesk2/chat2/model/chat_provider_model.dart';
 import 'package:zendesk2/zendesk2.dart';
 
 class ZendeskChat extends StatefulWidget {
@@ -16,7 +16,7 @@ class _ZendeskChat extends State<ZendeskChat> {
   final Zendesk2Chat _z = Zendesk2Chat.instance;
 
   final _tecM = TextEditingController();
-  ProviderModel? _providerModel;
+  ChatProviderModel? _providerModel;
 
   @override
   void dispose() {

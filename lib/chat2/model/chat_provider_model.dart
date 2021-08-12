@@ -1,6 +1,6 @@
-import 'package:zendesk2/chat2/model/provider_enums.dart';
+import 'package:zendesk2/chat2/model/chat_provider_enums.dart';
 
-class ProviderModel {
+class ChatProviderModel {
   final bool? isOnline;
   final bool? isChatting;
   final bool? hasAgents;
@@ -13,7 +13,7 @@ class ProviderModel {
   final String? rating;
   final String? comment;
 
-  ProviderModel(
+  ChatProviderModel(
     this.isOnline,
     this.isChatting,
     this.hasAgents,
@@ -27,7 +27,7 @@ class ProviderModel {
     this.comment,
   );
 
-  factory ProviderModel.fromJson(Map map) {
+  factory ChatProviderModel.fromJson(Map map) {
     bool? isOnline = map['isOnline'];
     bool? isChatting = map['isChatting'];
     bool? hasAgents = map['hasAgents'];
@@ -93,7 +93,7 @@ class ProviderModel {
         chatSessionStatus = CHAT_SESSION_STATUS.UNKNOWN;
     }
 
-    return ProviderModel(
+    return ChatProviderModel(
       isOnline,
       isChatting,
       hasAgents,

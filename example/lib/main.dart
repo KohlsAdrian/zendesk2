@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:zendesk2/chat2/model/provider_enums.dart';
 import 'package:zendesk2/zendesk2.dart';
 import 'package:zendesk2_example/zendesk_chat.dart';
 
@@ -51,19 +50,6 @@ class _Home extends State<Home> {
       email: email,
       phoneNumber: phoneNumber,
       tags: ['app', 'zendesk2_plugin'],
-    );
-
-    await zChat.customize(
-      departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      emailFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      nameFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      phoneFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      transcriptChatEnabled: true,
-      agentAvailability: false,
-      endChatEnabled: true,
-      offlineForms: true,
-      preChatForm: true,
-      transcript: true,
     );
 
     await Zendesk2Chat.instance.startChatProviders();

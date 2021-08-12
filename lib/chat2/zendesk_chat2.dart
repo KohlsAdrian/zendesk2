@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:zendesk2/chat2/model/provider_enums.dart';
-import 'package:zendesk2/chat2/model/provider_model.dart';
+import 'package:zendesk2/chat2/model/chat_provider_model.dart';
 import 'package:zendesk2/zendesk.dart';
 
 class Zendesk2Chat {
@@ -11,7 +10,7 @@ class Zendesk2Chat {
         if (_isLoggerEnabled)
           print('zendesk2 [sendChatProvidersResult]: ${call.arguments}');
         try {
-          final providerModel = ProviderModel.fromJson(call.arguments);
+          final providerModel = ChatProviderModel.fromJson(call.arguments);
           _providersStream?.sink.add(providerModel);
         } catch (e) {
           print(e);
@@ -27,14 +26,14 @@ class Zendesk2Chat {
   /// added ignore so the source won't have warnings
   /// but don't forget to close or .dispose() when needed!!!
   /// ignore: close_sinks
-  StreamController<ProviderModel>? _providersStream;
+  StreamController<ChatProviderModel>? _providersStream;
 
   bool _isLoggerEnabled = false;
 
   /// Listen to all parameters of the connected Live Chat
   ///
   /// Stream is updated at Duration provided on ```startChatProviders```
-  Stream<ProviderModel> get providersStream {
+  Stream<ChatProviderModel> get providersStream {
     _getChatProviders();
     return _providersStream!.stream.asBroadcastStream();
   }
@@ -66,75 +65,6 @@ class Zendesk2Chat {
     };
     try {
       final result = await _channel.invokeMethod('setVisitorInfo', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  /// Set Native Chat parameters
-  ///
-  /// ```agentAvailability``` BOT tells if agent in available or not
-  ///
-  /// ```transcript``` If enabled user with provided email will receive the chat addressed to email
-  ///
-  /// ```preChatForm``` BOT request information of empty field on ```setVisitorInfo```
-  ///
-  /// ```offlineForms``` BOT request information to cache and will send as soon the user has connected ethernet
-  ///
-  /// ```nameFieldStatus``` if the BOT should ask about the user ```name```
-  ///
-  /// ```emailFieldStatus``` if the BOT should ask about the user ```email```
-  ///
-  /// ```phoneFieldStatus``` if the BOT should ask about the user ```phone```
-  ///
-  /// ```departmentFieldStatus``` if the BOT should ask about the user ```department``` to talk about
-  ///
-  /// ```endChatEnabled``` option to user end the chat
-  ///
-  /// ```transcriptChatEnabled``` option to user request chat transcription
-  ///
-  Future<void> customize({
-    bool agentAvailability = false,
-    bool transcript = false,
-    bool preChatForm = false,
-    bool offlineForms = false,
-    PRE_CHAT_FIELD_STATUS nameFieldStatus = PRE_CHAT_FIELD_STATUS.HIDDEN,
-    PRE_CHAT_FIELD_STATUS emailFieldStatus = PRE_CHAT_FIELD_STATUS.HIDDEN,
-    PRE_CHAT_FIELD_STATUS phoneFieldStatus = PRE_CHAT_FIELD_STATUS.HIDDEN,
-    PRE_CHAT_FIELD_STATUS departmentFieldStatus = PRE_CHAT_FIELD_STATUS.HIDDEN,
-    bool endChatEnabled = false,
-    bool transcriptChatEnabled = false,
-  }) async {
-    final arguments = {
-      'agentAvailability': agentAvailability,
-      'transcript': transcriptChatEnabled,
-      'preChatForm': preChatForm,
-      'offlineForms': offlineForms,
-      'nameFieldStatus': nameFieldStatus
-          .toString()
-          .replaceAll('PRE_CHAT_FIELD_STATUS.', '')
-          .toUpperCase(),
-      'emailFieldStatus': emailFieldStatus
-          .toString()
-          .replaceAll('PRE_CHAT_FIELD_STATUS.', '')
-          .toUpperCase(),
-      'phoneFieldStatus': phoneFieldStatus
-          .toString()
-          .replaceAll('PRE_CHAT_FIELD_STATUS.', '')
-          .toUpperCase(),
-      'departmentFieldStatus': departmentFieldStatus
-          .toString()
-          .replaceAll('PRE_CHAT_FIELD_STATUS.', '')
-          .toUpperCase(),
-      'endChatEnabled': endChatEnabled,
-      'transcriptChatEnabled': transcriptChatEnabled,
-    };
-
-    try {
-      final result = await _channel.invokeMethod('customize', arguments);
       if (_isLoggerEnabled) {
         print('zendesk2: $result');
       }
@@ -187,7 +117,7 @@ class Zendesk2Chat {
         await _providersStream!.sink.close();
         await _providersStream!.close();
       }
-      _providersStream = StreamController<ProviderModel>();
+      _providersStream = StreamController<ChatProviderModel>();
       final result = await _channel.invokeMethod('startChatProviders');
 
       if (autoConnect) {
@@ -279,7 +209,7 @@ class Zendesk2Chat {
   Future<void> _getChatProviders() async {
     final value = await _channel.invokeMethod('getChatProviders');
     if (value != null) {
-      final providerModel = ProviderModel.fromJson(value);
+      final providerModel = ChatProviderModel.fromJson(value);
       _providersStream!.add(providerModel);
     }
   }

@@ -62,12 +62,3 @@ enum ATTACHMENT_ERROR {
   NONE,
   SIZE_LIMIT,
 }
-
-///
-/// The enum name says it all :)
-///
-enum PRE_CHAT_FIELD_STATUS {
-  OPTIONAL,
-  HIDDEN,
-  REQUIRED,
-}
