@@ -38,8 +38,6 @@ enum DELIVERY_STATUS {
 enum LOG_TYPE {
   ATTACHMENT_MESSAGE,
   CHAT_COMMENT,
-  CHAT_RATING,
-  CHAT_RATING_REQUEST,
   MEMBER_JOIN,
   MEMBER_LEAVE,
   MESSAGE,
@@ -55,15 +53,6 @@ enum CHAT_PARTICIPANT {
   SYSTEM,
   TRIGGER,
   VISITOR,
-}
-
-///
-/// The enum name says it all :)
-///
-enum RATING {
-  NONE,
-  GOOD,
-  BAD,
 }
 
 ///

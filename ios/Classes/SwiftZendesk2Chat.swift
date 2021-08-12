@@ -16,7 +16,6 @@ public class SwiftZendesk2Chat {
     private var channel: FlutterMethodChannel
 
     private var chatConfiguration: ChatConfiguration? = nil
-    private var navigationController: UINavigationController? = nil
     private var observeAccoutToken: ObservationToken? = nil
     private var observeChatSettingsToken: ObservationToken? = nil
     private var observeConnectionStatusToken: ObservationToken? = nil
@@ -31,20 +30,12 @@ public class SwiftZendesk2Chat {
     private var agents: Array<Agent> = Array<Agent>()
     private var logs: Array<ChatLog> = Array<ChatLog>()
     private var queuePosition: QueuePosition? = nil
-    private var rating: Rating? = nil
-    private var comment: String? = nil
     
     private var messageId: String? = nil
     private var messageIds: Array<String> = []
     
     init(channel: FlutterMethodChannel) {
         self.channel = channel
-        initNavigationController()
-    }
-    /// Assign navigationController for Zendesk Messaging
-    func initNavigationController(){
-        let rootViewController = UIApplication.shared.keyWindow?.rootViewController as? UINavigationController
-        self.navigationController = rootViewController
     }
     
     /// Initialize Zendesk SDK
@@ -52,12 +43,7 @@ public class SwiftZendesk2Chat {
         //let firebaseToken = call.argument("firebaseToken")
         let accountKey: String = (arguments?["accountKey"] ?? "") as! String
         let appId: String = (arguments?["appId"] ?? "") as! String
-        let rgb = arguments?["iosThemeColor"] as? NSNumber
         
-        if rgb != nil {
-            let color = UIColor.init(rgb: rgb!.int32Value)
-            CommonTheme.currentTheme.primaryColor = color
-        }
         chatConfiguration = ChatConfiguration()
         
         Chat.initialize(accountKey: accountKey, appId: appId)
@@ -65,7 +51,6 @@ public class SwiftZendesk2Chat {
         var result = Dictionary<String, Any>()
         result["zendesk_account_key"] = Chat.instance?.accountKey
         result["zendesk_app_id"] = Chat.instance?.appId
-        result["zendesk_current_theme"] = CommonTheme.currentTheme.primaryColor.rgb()
         return result
     }
     
@@ -117,72 +102,6 @@ public class SwiftZendesk2Chat {
         result["zendesk_visitor_department"] = Chat.instance?.configuration.department
         result["zendesk_visitor_tags"] = Chat.instance?.configuration.tags
         return result
-    }
-    
-    /// startChat v2 Zendesk API
-    func startChat(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
-        if chatConfiguration == nil {
-            NSLog("You must call init first")
-        }
-        let botLabel: String = (arguments?["botLabel"] ?? "") as! String
-        let toolbarTitle: String = (arguments?["toolbarTitle"] ?? "") as! String
-        let backButtonLabel: String = (arguments?["backButtonLabel"] ?? "Back") as! String
-        
-        let mChatConfiguration = self.chatConfiguration
-        mChatConfiguration?.isPreChatFormEnabled = true
-        
-        let themeColor = CommonTheme.currentTheme.primaryColor
-        let brightnessColor = uiColorByTheme(color: themeColor)
-        
-        if mChatConfiguration != nil {
-            
-            let messagingConfiguration = MessagingConfiguration()
-            messagingConfiguration.name = botLabel
-            
-            do {
-
-                 if self.navigationController == nil {
-                    initNavigationController()
-                }
-                let chatEngine = try ChatEngine.engine()
-                let messaging = Messaging.instance
-                
-                let backButton = UIBarButtonItem.init(title: backButtonLabel, style:.plain, target: self, action: #selector(dispose))
-                backButton.tintColor = brightnessColor
-                
-                // creates zendesk chat UI
-                let viewController = try messaging.buildUI(engines: [chatEngine], configs: [messagingConfiguration, mChatConfiguration!])
-                viewController.navigationItem.leftBarButtonItem = backButton //Close/back button
-                
-                let navigationBar = self.navigationController?.navigationBar
-                navigationBar?.barTintColor = themeColor // bar tint color
-                navigationBar?.backgroundColor = themeColor //Toolbar background color
-                navigationBar?.barTintColor = themeColor //Toolbar background color
-                navigationBar?.titleTextAttributes = [NSAttributedString.Key.foregroundColor:brightnessColor] // set title color
-                
-                let navigationItem = viewController.navigationItem
-                navigationItem.title = toolbarTitle
-                
-                self.navigationController?.isNavigationBarHidden = false
-                // present navigation controller
-                self.navigationController?.pushViewController(viewController, animated: true)
-                
-                
-                if !Logger.isEnabled {
-                    return nil
-                }
-                
-                var result = Dictionary<String, Any>()
-                result["zendesk_native_chat_bot_label"] = messagingConfiguration.name
-                result["zendesk_native_chat_toolbar_title"] = navigationItem.title
-                result["zendesk_native_chat_back_button_label"] = viewController.navigationItem.leftBarButtonItem?.title
-                return result
-            } catch {
-                print(error)
-            }
-        }
-        
-        return nil
     }
     
     /// startChat v2 Zendesk API Providers
@@ -347,8 +266,6 @@ public class SwiftZendesk2Chat {
             let agents = chatState.agents
             let logs = chatState.logs
             let queuePosition = chatState.queuePosition
-            let rating = chatState.rating
-            let comment = chatState.comment
             
             self.isChatting = isChatting
             self.chatId = chatId
@@ -356,8 +273,6 @@ public class SwiftZendesk2Chat {
             self.hasAgents = !agents.isEmpty
             self.logs = logs
             self.queuePosition = queuePosition
-            self.rating = rating
-            self.comment = comment
             
             switch chatSessionStatus {
             case .configuring: self.chatSessionStatus = "CONFIGURING"
@@ -596,10 +511,6 @@ public class SwiftZendesk2Chat {
                 logT["type"] = "ATTACHMENT_MESSAGE"
             case .chatComment:
                 logT["type"] = "CHAT_COMMENT"
-            case .chatRating:
-                logT["type"] = "CHAT_RATING"
-            case .chatRatingRequest:
-                logT["type"] = "CHAT_RATING_REQUEST"
             case .memberJoin:
                 logT["type"] = "MEMBER_JOIN"
             case .memberLeave:
@@ -608,6 +519,8 @@ public class SwiftZendesk2Chat {
                 logT["type"] = "MESSAGE"
             case .optionsMessage:
                 logT["type"] = "OPTIONS_MESSAGE"
+            case .chatRating:
+            case .chatRatingRequest:
             default:
                 logT["type"] = "UNKNOWN"
             }
@@ -718,57 +631,6 @@ public class SwiftZendesk2Chat {
         return dictionary
     }
     
-    func sendRatingComment(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
-        let comment: String = (arguments?["comment"] ?? "") as! String
-        Chat.chatProvider?.sendChatComment(comment, completion: { (result) in
-            switch result {
-            case .failure(let error):
-                print(error)
-            case .success(let success):
-                print(success)
-            }
-        })
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_rating_comment"] = comment
-        return result
-    }
-    
-    func sendRatingReview(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
-        let rate: String = (arguments?["rating"] ?? "") as! String
-        
-        var rating: Rating
-        switch rate {
-        case "GOOD":
-            rating = .good
-        case "BAD":
-            rating = .bad
-        default:
-            rating = .none
-        }
-        
-        Chat.chatProvider?.sendChatRating(rating, completion: { (result) in
-            switch result {
-            case .failure(let error):
-                print(error)
-            case .success(let success):
-                print(success)
-            }
-        })
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_rating_review"] = rate
-        return result
-    }
-    
     func endChat() -> Dictionary<String, Any>? {
         Chat.chatProvider?.endChat({ (result) in
             switch result {
@@ -797,53 +659,6 @@ public class SwiftZendesk2Chat {
         case "REQUIRED": return FormFieldStatus.required
         default:
             return FormFieldStatus.hidden
-        }
-    }
-    /// get Color Birghtness by Color Theme
-    func uiColorByTheme(color: UIColor) -> UIColor {
-        return color.isLight ? UIColor.black : UIColor.white
-    }
-    
-    /// convert color Int32 Hex to UIColor object
-    
-}
-
-/// Extension to check color brightness
-extension UIColor {
-    var isLight: Bool {
-        var white: CGFloat = 0
-        getWhite(&white, alpha: nil)
-        return white > 0.6
-    }
-    convenience init(rgb: Int32) {
-        let iBlue = (rgb >> 0) & 0xFF
-        let iGreen =  (rgb >> 8) & 0xFF
-        let iRed =  (rgb >> 16) & 0xFF
-        let iAlpha =  (rgb >> 24) & 0xFF
-        
-        let blue = CGFloat(iBlue) / 255
-        let green = CGFloat(iGreen) / 255
-        let red = CGFloat(iRed) / 255
-        let alpha = CGFloat(iAlpha) / 255
-        
-        self.init(red: red, green: green, blue: blue, alpha: alpha)
-    }
-    
-    func rgb() -> Int? {
-        var fRed : CGFloat = 0
-        var fGreen : CGFloat = 0
-        var fBlue : CGFloat = 0
-        var fAlpha: CGFloat = 0
-        if self.getRed(&fRed, green: &fGreen, blue: &fBlue, alpha: &fAlpha) {
-            let iRed = Int(fRed * 255.0)
-            let iGreen = Int(fGreen * 255.0)
-            let iBlue = Int(fBlue * 255.0)
-            let iAlpha = Int(fAlpha * 255.0)
-            
-            let rgb = (iAlpha << 24) + (iRed << 16) + (iGreen << 8) + (iBlue << 0)
-            return rgb
-        } else {
-            return nil
         }
     }
 }

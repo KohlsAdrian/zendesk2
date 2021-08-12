@@ -64,12 +64,6 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         case "endChat":
             mResult = zendesk2Chat?.endChat()
             break
-        case "sendRatingComment":
-            mResult = zendesk2Chat?.sendRatingComment(arguments)
-            break
-        case "sendRatingReview":
-            mResult = zendesk2Chat?.sendRatingReview(arguments)
-            break
         case "sendIsTyping":
             mResult = zendesk2Chat?.sendTyping(arguments)
         case "connect":

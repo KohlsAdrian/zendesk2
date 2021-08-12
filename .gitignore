@@ -5,10 +5,8 @@
 .pub/
 
 build/
-.idea/vcs.xml
-.gitignore
-.idea/workspace.xml
+.idea/
 pubspec.lock
 example/pubspec.lock
-pubspec.lock
 example/ios/Podfile.lock
+.gitignore

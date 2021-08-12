@@ -1,4 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:zendesk2/chat2/model/provider_enums.dart';
+import 'package:zendesk2/chat2/model/provider_model.dart';
 import 'package:zendesk2/zendesk2.dart';
 
 class Zendesk2Chat {
@@ -340,41 +345,6 @@ class Zendesk2Chat {
     };
     try {
       final result = await _channel.invokeMethod('sendFile', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  /// Providers only - send rate comment
-  ///
-  /// ```comment``` the rate comment that will represent on live chat
-  Future<void> sendRateComment(String comment) async {
-    Map arguments = {
-      'comment': comment,
-    };
-    try {
-      final result =
-          await _channel.invokeMethod('sendRatingComment', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  /// Providers only - send rate review
-  ///
-  /// ```rating``` the rating enum that will represent on live chat
-  Future<void> sendRateReview(RATING rating) async {
-    Map arguments = {
-      'rating': rating.toString().replaceAll('RATING.', ''),
-    };
-    try {
-      final result = await _channel.invokeMethod('sendRatingReview', arguments);
       if (_isLoggerEnabled) {
         print('zendesk2: $result');
       }

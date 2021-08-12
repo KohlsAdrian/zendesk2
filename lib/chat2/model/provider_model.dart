@@ -1,4 +1,4 @@
-import 'package:zendesk2/zendesk2.dart';
+import 'package:zendesk2/chat2/model/provider_enums.dart';
 
 class ProviderModel {
   final bool? isOnline;
@@ -165,11 +165,13 @@ class ChatLog {
             : mLastModifiedTimestamp);
 
     String? nick = map['nick'];
+
     ChatLogParticipant chatLogParticipant =
-        ChatLogParticipant.fromJson(map['participant'] ?? {});
+        ChatLogParticipant.fromJson(map['participant']);
     ChatLogDeliveryStatus chatLogDeliveryStatus =
-        ChatLogDeliveryStatus.fromJson(map['deliveryStatus'] ?? {});
-    ChatLogType chatLogType = ChatLogType.fromJson(map['type'] ?? {});
+        ChatLogDeliveryStatus.fromJson(map['deliveryStatus']);
+
+    ChatLogType chatLogType = ChatLogType.fromJson(map['type']);
     return ChatLog(
       createdByVisitor,
       createdTimestamp,
@@ -184,13 +186,13 @@ class ChatLog {
 }
 
 class ChatLogParticipant {
-  final CHAT_PARTICIPANT? chatParticipant;
+  final CHAT_PARTICIPANT chatParticipant;
 
   ChatLogParticipant(this.chatParticipant);
 
   factory ChatLogParticipant.fromJson(Map map) {
-    CHAT_PARTICIPANT? chatParticipant;
-    String? mChatParticipant = map['chatParticipant'];
+    CHAT_PARTICIPANT chatParticipant = CHAT_PARTICIPANT.SYSTEM;
+    String mChatParticipant = map['chatParticipant'];
 
     switch (mChatParticipant) {
       case 'AGENT':
@@ -212,16 +214,16 @@ class ChatLogParticipant {
 }
 
 class ChatLogDeliveryStatus {
-  final bool? isFailed;
-  final DELIVERY_STATUS? deliveryStatus;
+  final bool isFailed;
+  final DELIVERY_STATUS deliveryStatus;
 
   ChatLogDeliveryStatus(this.isFailed, this.deliveryStatus);
 
   factory ChatLogDeliveryStatus.fromJson(Map map) {
-    bool? isFailed = map['isFailed'];
+    bool isFailed = map['isFailed'] ?? false;
 
     String? mDeliveryStatus = map['status'];
-    DELIVERY_STATUS? deliveryStatus;
+    DELIVERY_STATUS deliveryStatus = DELIVERY_STATUS.UNKNOWN;
 
     switch (mDeliveryStatus) {
       case 'DELIVERED':
@@ -240,12 +242,11 @@ class ChatLogDeliveryStatus {
 }
 
 class ChatLogType {
-  final LOG_TYPE? logType;
-  final ChatMessage chatMessage;
-  final ChatOptionsMessage chatOptionsMessage;
-  final ChatAttachment chatAttachment;
-  final ChatComment chatComment;
-  final ChatRating chatRating;
+  final LOG_TYPE logType;
+  final ChatMessage? chatMessage;
+  final ChatOptionsMessage? chatOptionsMessage;
+  final ChatAttachment? chatAttachment;
+  final ChatComment? chatComment;
 
   ChatLogType(
     this.logType,
@@ -253,19 +254,12 @@ class ChatLogType {
     this.chatOptionsMessage,
     this.chatAttachment,
     this.chatComment,
-    this.chatRating,
   );
 
   factory ChatLogType.fromJson(Map map) {
-    String? mLogType = map['type'];
-    ChatMessage chatMessage = ChatMessage.fromJson(map['chatMessage'] ?? {});
-    ChatOptionsMessage chatOptionsMessage =
-        ChatOptionsMessage.fromJson(map['chatOptionsMessage'] ?? {});
-    ChatAttachment chatAttachment =
-        ChatAttachment.fromJson(map['chatAttachment'] ?? {});
-    ChatComment chatComment = ChatComment.fromJson(map['chatComment'] ?? {});
-    ChatRating chatRating = ChatRating.fromJson(map['chatRating'] ?? {});
-    LOG_TYPE? logType;
+    String mLogType = map['type'];
+
+    LOG_TYPE logType = LOG_TYPE.UNKNOWN;
 
     switch (mLogType) {
       case 'ATTACHMENT_MESSAGE':
@@ -273,12 +267,6 @@ class ChatLogType {
         break;
       case 'CHAT_COMMENT':
         logType = LOG_TYPE.CHAT_COMMENT;
-        break;
-      case 'CHAT_RATING':
-        logType = LOG_TYPE.CHAT_RATING;
-        break;
-      case 'CHAT_RATING_REQUEST':
-        logType = LOG_TYPE.CHAT_RATING_REQUEST;
         break;
       case 'MEMBER_JOIN':
         logType = LOG_TYPE.MEMBER_JOIN;
@@ -297,13 +285,36 @@ class ChatLogType {
         break;
     }
 
+    ChatOptionsMessage? chatOptionsMessage;
+    ChatMessage? chatMessage;
+    ChatAttachment? chatAttachment;
+    ChatComment? chatComment;
+
+    switch (logType) {
+      case LOG_TYPE.ATTACHMENT_MESSAGE:
+        chatAttachment = ChatAttachment.fromJson(map['chatAttachment']);
+        break;
+      case LOG_TYPE.CHAT_COMMENT:
+        chatComment = ChatComment.fromJson(map['chatComment']);
+        break;
+      case LOG_TYPE.MEMBER_JOIN:
+      case LOG_TYPE.MEMBER_LEAVE:
+      case LOG_TYPE.MESSAGE:
+        chatMessage = ChatMessage.fromJson(map['chatMessage']);
+        break;
+      case LOG_TYPE.OPTIONS_MESSAGE:
+        chatOptionsMessage =
+            ChatOptionsMessage.fromJson(map['chatOptionsMessage']);
+        break;
+      case LOG_TYPE.UNKNOWN:
+        break;
+    }
     return ChatLogType(
       logType,
       chatMessage,
       chatOptionsMessage,
       chatAttachment,
       chatComment,
-      chatRating,
     );
   }
 }
@@ -348,30 +359,6 @@ class ChatComment {
     String? comment = map['comment'];
     String? newComment = map['newComment'];
     return ChatComment(comment, newComment);
-  }
-}
-
-class ChatRating {
-  final RATING rating;
-
-  ChatRating(this.rating);
-
-  factory ChatRating.fromJson(Map map) {
-    String? mRating = map['rating'];
-
-    RATING rating;
-    switch (mRating) {
-      case 'GOOD':
-        rating = RATING.GOOD;
-        break;
-      case 'BAD':
-        rating = RATING.BAD;
-        break;
-      default:
-        rating = RATING.NONE;
-    }
-
-    return ChatRating(rating);
   }
 }
 

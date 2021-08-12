@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:zendesk2/chat2/model/provider_enums.dart';
 import 'package:zendesk2/zendesk2.dart';
 import 'package:zendesk2_example/zendesk_chat.dart';
 
@@ -40,7 +41,7 @@ class _Home extends State<Home> {
 
     await z.logger(true);
 
-    await z.init(accountKey, appId, iosThemeColor: Colors.yellow);
+    await z.init(accountKey, appId);
 
     await z.setVisitorInfo(
       name: name,
@@ -48,6 +49,7 @@ class _Home extends State<Home> {
       phoneNumber: phoneNumber,
       tags: ['app', 'zendesk2_plugin'],
     );
+    
     await z.customize(
       departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
       emailFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
@@ -61,18 +63,10 @@ class _Home extends State<Home> {
       transcript: true,
     );
 
-    if (isNativeChat) {
-      await z.startChat(
-        toolbarTitle: 'Talk to us',
-        backButtonLabel: 'Back',
-        botLabel: 'bip bop boting',
-      );
-    } else {
-      await Zendesk2Chat.instance.startChatProviders();
+    await Zendesk2Chat.instance.startChatProviders();
 
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
-    }
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
   }
 
   @override

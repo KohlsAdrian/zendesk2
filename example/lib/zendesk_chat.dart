@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zendesk2/chat2/model/provider_enums.dart';
 import 'package:zendesk2/chat2/model/provider_model.dart';
 import 'package:zendesk2/zendesk2.dart';
 
@@ -105,78 +106,6 @@ class _ZendeskChat extends State<ZendeskChat> {
               Navigator.of(context).pop(true);
             },
           ),
-          ListTile(
-            title: Row(
-              children: [
-                Icon(Icons.rate_review),
-                Text('Rate'),
-              ],
-            ),
-            onTap: () async {
-              final Map<RATING, bool> rate = {
-                RATING.GOOD: false,
-                RATING.BAD: false,
-                RATING.NONE: true,
-              };
-              Navigator.of(context).pop();
-              final tec = TextEditingController();
-              RATING rating = RATING.NONE;
-              final text = await showDialog(
-                context: context,
-                builder: (context) => StatefulBuilder(
-                  builder: (context, setState) => AlertDialog(
-                    title: Text('Rate and Comment'),
-                    content: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: RATING.values
-                                    .map((e) => TextButton(
-                                          onPressed: () => setState(() {
-                                            rate.keys.forEach((element) =>
-                                                rate[element] = element == e);
-                                            rating = e;
-                                          }),
-                                          child: Text(e
-                                              .toString()
-                                              .replaceAll('RATING.', '')),
-                                        ))
-                                    .toList()),
-                          ),
-                          TextField(
-                            controller: tec,
-                            decoration: InputDecoration(
-                                labelText: 'Comment (Optional)'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(null),
-                        child: Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(tec.text),
-                        child: Text('Rate'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-              if (text is String && text != null && text.isNotEmpty) {
-                _z.sendRateComment(text);
-              }
-              if (rating != null) {
-                _z.sendRateReview(rating);
-              }
-            },
-          ),
           SizedBox(height: 50),
         ],
       ),
@@ -258,9 +187,9 @@ class _ZendeskChat extends State<ZendeskChat> {
         itemCount: _providerModel!.logs.length,
         itemBuilder: (context, index) {
           ChatLog log = _providerModel!.logs[index];
-          ChatMessage chatMessage = log.chatLogType.chatMessage;
+          ChatMessage? chatMessage = log.chatLogType.chatMessage;
 
-          String message = chatMessage.message ?? '';
+          String message = chatMessage?.message ?? '';
 
           String name = log.displayName ?? '';
 
@@ -282,22 +211,12 @@ class _ZendeskChat extends State<ZendeskChat> {
               isAttachment = true;
               break;
             case LOG_TYPE.CHAT_COMMENT:
-              ChatComment chatComment = log.chatLogType.chatComment;
-              final comment = chatComment.comment ?? '';
-              final newComment = chatComment.newComment ?? '';
+              ChatComment? chatComment = log.chatLogType.chatComment;
+              final comment = chatComment?.comment ?? '';
+              final newComment = chatComment?.newComment ?? '';
               message = 'Rating comment: $comment\n'
                   'New comment: $newComment';
               isRatingComment = true;
-              break;
-            case LOG_TYPE.CHAT_RATING:
-              message = 'Rating review: ' +
-                  log.chatLogType.chatRating.rating
-                      .toString()
-                      .replaceAll('RATING.', '');
-              isRatingReview = true;
-              break;
-            case LOG_TYPE.CHAT_RATING_REQUEST:
-              message = 'Rating request';
               break;
             case LOG_TYPE.MEMBER_JOIN:
               message = '$name Joined!';
@@ -316,18 +235,15 @@ class _ZendeskChat extends State<ZendeskChat> {
             case LOG_TYPE.UNKNOWN:
               message = 'Unknown';
               break;
-            case null:
-              message = 'LogType=null';
-              break;
           }
 
           bool isVisitor = log.chatLogParticipant.chatParticipant ==
               CHAT_PARTICIPANT.VISITOR;
 
-          final imageUrl = log.chatLogType.chatAttachment.url;
+          final imageUrl = log.chatLogType.chatAttachment?.url;
 
           final mimeType = log
-              .chatLogType.chatAttachment.chatAttachmentAttachment.mimeType
+              .chatLogType.chatAttachment?.chatAttachmentAttachment.mimeType
               ?.toLowerCase();
           final isImage = mimeType == null
               ? false
@@ -376,7 +292,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                                       onTap: () => launch(log
                                               .chatLogType
                                               .chatAttachment
-                                              .chatAttachmentAttachment
+                                              ?.chatAttachmentAttachment
                                               .url ??
                                           ''),
                                       child: isImage
@@ -391,7 +307,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                                                 Text(log
                                                         .chatLogType
                                                         .chatAttachment
-                                                        .chatAttachmentAttachment
+                                                        ?.chatAttachmentAttachment
                                                         .name ??
                                                     '')
                                               ],

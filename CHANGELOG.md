@@ -1,3 +1,15 @@
+# 1.7.0+0
+
+* [BREAKING CHANGE]
+
+* Optimised null-safety on ProviderModel object
+
+* Removed deprecated functions:
+    
+    * Native Chat
+    
+    * Rating
+
 # 1.6.1+0
 
 * [Not-breaking][Android] fixed setVisitorInfo on MethodChannel where Name, Email and Phone were conflicting with duplicate setup usage.
@@ -10,17 +22,17 @@
 
 * Support for push notifications
 
-Pull request from https://github.com/diegogarciar
+* Pull request from https://github.com/diegogarciar
 
-Fix README.md
+* Fix README.md
 
-Fixed FirebaseService Example
+F* ixed FirebaseService Example
 
 ## 1.5.0
 
 * [Breaking change] replaced `Timer.periodic` by `invokeMethod`
 
-Optimisation made by https://github.com/kiplelive-zariman
+* Optimisation made by https://github.com/kiplelive-zariman
 
 ## 1.4.1
 
@@ -54,9 +66,9 @@ Optimisation made by https://github.com/kiplelive-zariman
 
 * Hotfix
 
- - mistype mimeType in ProviderModel
+* mistype mimeType in ProviderModel
 
- - You must call supported types after providers finished initializing
+* You must call supported types after providers finished initializing
 
 ## 1.1.0+1
 

@@ -41,8 +41,6 @@ class Zendesk2Plugin: ActivityAware, FlutterPlugin, MethodCallHandler {
               "sendFile" -> zendesk2Chat?.sendFile(call)
               "compatibleAttachmentsExtensions" -> result.success(zendesk2Chat?.getAttachmentsExtension())
               "endChat" -> zendesk2Chat?.endChat()
-              "sendRatingComment" -> zendesk2Chat?.sendRatingComment(call)
-              "sendRatingReview" -> zendesk2Chat?.sendRatingReview(call)
               "sendIsTyping" -> zendesk2Chat?.sendTyping(call)
               "registerToken"-> zendesk2Chat?.registerToken(call)
               "connect"-> zendesk2Chat?.connect()
