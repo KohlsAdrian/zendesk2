@@ -5,17 +5,13 @@
 //  Created by Adrian Kohls on 07/01/21.
 //
 
-import ChatSDK
-import MessagingSDK
 import ChatProvidersSDK
-import CommonUISDK
 import Flutter
 
 public class SwiftZendesk2Chat {
     
     private var channel: FlutterMethodChannel
 
-    private var chatConfiguration: ChatConfiguration? = nil
     private var observeAccoutToken: ObservationToken? = nil
     private var observeChatSettingsToken: ObservationToken? = nil
     private var observeConnectionStatusToken: ObservationToken? = nil
@@ -56,9 +52,6 @@ public class SwiftZendesk2Chat {
     
     /// setVisitorInfo Zendesk API
     func setVisitorInfo(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
-        if chatConfiguration == nil {
-            NSLog("You must call init first")
-        }
         
         let name: String = (arguments?["name"] ?? "") as! String
         let email: String = (arguments?["email"] ?? "") as! String
@@ -90,9 +83,6 @@ public class SwiftZendesk2Chat {
     
     /// startChat v2 Zendesk API Providers
     func startChatProviders() -> Dictionary<String, Any>? {
-        if chatConfiguration == nil {
-            NSLog("You must call init first")
-        }
         startProviders()
         
         if !Logger.isEnabled {
@@ -111,66 +101,6 @@ public class SwiftZendesk2Chat {
         Chat.connectionProvider?.disconnect()
     }
     
-    /// customize Zendesk API
-    func customize(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
-        if chatConfiguration == nil {
-            NSLog("You must call init first")
-        }
-        let agentAvailability: Bool = arguments?["agentAvailability"] as! Bool
-        let preChatForm: Bool = arguments?["preChatForm"] as! Bool
-        let offlineForms: Bool = arguments?["offlineForms"] as! Bool
-        let endChatEnabled: Bool = arguments?["endChatEnabled"] as! Bool
-        let transcriptChatEnabled: Bool = arguments?["transcriptChatEnabled"] as! Bool
-        
-        //let transcript = (arguments?["transcript"] ?? false) as! Bool
-        let nameFieldStatus: String = (arguments?["nameFieldStatus"] ?? false) as! String
-        let emailFieldStatus: String = (arguments?["emailFieldStatus"] ?? false) as! String
-        let phoneFieldStatus: String = (arguments?["phoneFieldStatus"] ?? "") as! String
-        let departmentFieldStatus: String = (arguments?["departmentFieldStatus"] ?? "") as! String
-        
-        let nameFieldEnum: FormFieldStatus = getPreChatEnumByString(preChatName: nameFieldStatus)
-        let emailFieldEnum: FormFieldStatus = getPreChatEnumByString(preChatName: emailFieldStatus)
-        let phoneFieldEnum: FormFieldStatus = getPreChatEnumByString(preChatName: phoneFieldStatus)
-        let departmentFieldEnum: FormFieldStatus = getPreChatEnumByString(preChatName: departmentFieldStatus)
-        
-        var menuActions = Array<ChatMenuAction>()
-        
-        if endChatEnabled {
-            menuActions.append(ChatMenuAction.endChat)
-        }
-        if transcriptChatEnabled {
-            menuActions.append(ChatMenuAction.emailTranscript)
-        }
-        
-        let chatConfiguration = ChatConfiguration()
-        let formConfiguration = ChatFormConfiguration.init(name: nameFieldEnum, email: emailFieldEnum, phoneNumber: phoneFieldEnum, department: departmentFieldEnum)
-        
-        chatConfiguration.isAgentAvailabilityEnabled = agentAvailability
-        chatConfiguration.isPreChatFormEnabled = preChatForm
-        chatConfiguration.isOfflineFormEnabled = offlineForms
-        chatConfiguration.isChatTranscriptPromptEnabled = transcriptChatEnabled
-        chatConfiguration.chatMenuActions = menuActions
-        chatConfiguration.preChatFormConfiguration = formConfiguration
-        
-        self.chatConfiguration = chatConfiguration
-        
-        if !Logger.isEnabled {
-            return nil
-        }
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_chat_configuration_agent_availability"] = chatConfiguration.isAgentAvailabilityEnabled
-        result["zendesk_chat_configuration_pre_chat_form"] = chatConfiguration.isPreChatFormEnabled
-        result["zendesk_chat_configuration_offline_forms"] = chatConfiguration.isOfflineFormEnabled
-        result["zendesk_chat_configuration_end_chat_enabled"] = menuActions.contains(.endChat)
-        result["zendesk_chat_configuration_transcript_chat_enabled"] = menuActions.contains(.emailTranscript)
-        result["zendesk_chat_configuration_name_enum"] = chatConfiguration.preChatFormConfiguration.name.description
-        result["zendesk_chat_configuration_email_enum"] = chatConfiguration.preChatFormConfiguration.email.description
-        result["zendesk_chat_configuration_phone_enum"] = chatConfiguration.preChatFormConfiguration.phoneNumber.description
-        result["zendesk_chat_configuration_department_enum"] = chatConfiguration.preChatFormConfiguration.department.description
-        return result
-    }
-    
     /// Closes Zendesk Chat
     @objc func dispose() -> Dictionary<String, Any>? {
         
@@ -182,8 +112,6 @@ public class SwiftZendesk2Chat {
         })
         
         var result: Dictionary<String, Any>? = endChat()
-        
-        self.chatConfiguration = nil
         
         releaseProviders()
         
@@ -589,16 +517,5 @@ public class SwiftZendesk2Chat {
         var result = Dictionary<String, Any>()
         result["zendesk_end_chat"] = "ENDING"
         return result
-    }
-    
-    /// get ENUM chat options by Flutter String Zendesk API
-    func getPreChatEnumByString(preChatName: String?) -> FormFieldStatus{
-        switch preChatName {
-        case "OPTIONAL": return FormFieldStatus.optional
-        case "HIDDEN": return FormFieldStatus.hidden
-        case "REQUIRED": return FormFieldStatus.required
-        default:
-            return FormFieldStatus.hidden
-        }
     }
 }

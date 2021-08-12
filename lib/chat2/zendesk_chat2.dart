@@ -1,12 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:zendesk2/chat2/model/provider_enums.dart';
 import 'package:zendesk2/chat2/model/provider_model.dart';
+import 'package:zendesk2/zendesk.dart';
 
 class Zendesk2Chat {
-  static const _channel = const MethodChannel('zendesk2Chat');
-
   Zendesk2Chat._() {
     _channel.setMethodCallHandler((call) async {
       if (call.method == "sendChatProvidersResult") {
@@ -21,7 +19,10 @@ class Zendesk2Chat {
       }
     });
   }
+
   static final Zendesk2Chat instance = Zendesk2Chat._();
+
+  static final _channel = Zendesk.instance.channel;
 
   /// added ignore so the source won't have warnings
   /// but don't forget to close or .dispose() when needed!!!

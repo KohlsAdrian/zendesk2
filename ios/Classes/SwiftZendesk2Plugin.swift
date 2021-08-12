@@ -1,49 +1,58 @@
 import Flutter
 import UIKit
 import ChatProvidersSDK
-import ZendeskCoreSDK
-import SupportProvidersSDK
-import AnswerBotProvidersSDK
 
 public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
-    private var navigationController: UINavigationController? = nil
     private var zendesk2Chat: SwiftZendesk2Chat? = nil
+    private var zendesk2Answer: SwiftZendesk2Answer? = nil
+    
     private var channel: FlutterMethodChannel
+    
+    private var accountKey: String? = nil
+    private var appId: String? = nil
     
     public static func register(with registrar: FlutterPluginRegistrar) -> Void {
         let channel = FlutterMethodChannel(name: "zendesk2", binaryMessenger: registrar.messenger())
+    
         let instance = SwiftZendesk2Plugin(channel: channel)
-
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
     }
-
+        
      init(channel: FlutterMethodChannel) {
         self.channel = channel
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
+        
         if zendesk2Chat == nil {
             zendesk2Chat = SwiftZendesk2Chat(channel: channel)
         }
+        if zendesk2Answer == nil {
+            zendesk2Answer = SwiftZendesk2Answer(channel: channel)
+        }
         
+        let method = call.method
         let arguments = call.arguments as? Dictionary<String, Any>
         var mResult: Any? = nil
-        switch(call.method){
+        
+        
+        switch(method){
         case "init":
-            let accountKey: String = (arguments?["accountKey"] ?? "") as! String
-            let appId: String = (arguments?["appId"] ?? "") as! String
-            
-            chatConfiguration = ChatConfiguration()
-            
-            Chat.initialize(accountKey: accountKey, appId: appId)
-            
-            var result = Dictionary<String, Any>()
-            result["zendesk_account_key"] = Chat.instance?.accountKey
-            result["zendesk_app_id"] = Chat.instance?.appId
-            mResult = result
+            self.accountKey = (arguments?["accountKey"] ?? "") as? String
+            self.appId = (arguments?["appId"] ?? "") as? String
             break
+        case "init_chat":
+            if self.accountKey != nil && self.appId != nil {
+                Chat.initialize(accountKey: self.accountKey!, appId: self.appId!)
+            }
+            break;
+        case "init_answer":
+            if self.accountKey != nil && self.appId != nil {
+                
+            }
+            break;
         // chat sdk method channels
         case "logger":
             mResult = zendesk2Chat?.logger(arguments)
@@ -56,9 +65,6 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             break
         case "dispose":
             mResult = zendesk2Chat?.dispose()
-            break
-        case "customize":
-            mResult = zendesk2Chat?.customize(arguments)
             break
         case "getChatProviders":
             mResult = zendesk2Chat?.getChatProviders()

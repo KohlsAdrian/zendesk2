@@ -4,7 +4,7 @@ class Zendesk {
   Zendesk._();
   static Zendesk instance = Zendesk._();
 
-  static const _channel = const MethodChannel('zendesk2');
+  final MethodChannel channel = const MethodChannel('zendesk2');
 
   /// Initialize the Zendesk SDK
   ///
@@ -24,7 +24,7 @@ class Zendesk {
       'appId': appId,
     };
     try {
-      await _channel.invokeMethod('init', arguments);
+      await channel.invokeMethod('init', arguments);
     } catch (e) {
       print(e);
     }
@@ -32,7 +32,7 @@ class Zendesk {
 
   Future<void> initChatSDK() async {
     try {
-      await _channel.invokeMethod('init_chat');
+      await channel.invokeMethod('init_chat');
     } catch (e) {
       print(e);
     }
@@ -40,7 +40,7 @@ class Zendesk {
 
   Future<void> initAnswerSDK() async {
     try {
-      await _channel.invokeMethod('init_answer');
+      await channel.invokeMethod('init_answer');
     } catch (e) {
       print(e);
     }

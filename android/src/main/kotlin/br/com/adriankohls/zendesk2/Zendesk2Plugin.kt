@@ -12,33 +12,48 @@ import io.flutter.plugin.common.MethodChannel.Result
 import zendesk.chat.*
 
 class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
-    /// The MethodChannel that will the communication between Flutter and native Android
-    ///
-    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-    /// when the Flutter Engine is detached from the Activity
+
     private lateinit var channel: MethodChannel
     private var zendesk2Chat: Zendesk2Chat? = null
+    private var zendesk2Answer: Zendesk2Answer? = null
     private var activity: Activity? = null
+
+    private var accountKey: String? = null
+    private var appId: String? = null
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         if (zendesk2Chat == null) {
-            zendesk2Chat = Zendesk2Chat(activity, channel)
+            zendesk2Chat = Zendesk2Chat(channel)
+        }
+        if (zendesk2Answer == null) {
+            zendesk2Answer = Zendesk2Answer(channel)
         }
 
         val data: Any? =
                 when (call.method) {
                     "init" -> {
-                        val accountKey = call.argument<String>("accountKey")!!
-                        val appId = call.argument<String>("appId")!!
+                        accountKey = call.argument<String>("accountKey")!!
+                        appId = call.argument<String>("appId")!!
+                    }
+                    "init_chat" -> {
+                        if (accountKey != null && appId != null) {
+                            Chat.INSTANCE.init(activity!!, accountKey!!, appId!!)
+                        } else {
 
-                        Chat.INSTANCE.init(activity!!, accountKey, appId)
+                        }
+                    }
+                    "init_answer" -> {
+                        if (accountKey != null && appId != null) {
+
+                        } else {
+
+                        }
                     }
                     // chat sdk method channels
                     "logger" -> zendesk2Chat?.logger(call)
                     "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
                     "startChatProviders" -> zendesk2Chat?.startChatProviders()
                     "dispose" -> zendesk2Chat?.dispose()
-                    //"customize" -> zendesk2Chat?.customize(call)
                     "getChatProviders" -> zendesk2Chat?.getChatProviders()!!
                     "sendMessage" -> zendesk2Chat?.sendMessage(call)
                     "sendFile" -> zendesk2Chat?.sendFile(call)

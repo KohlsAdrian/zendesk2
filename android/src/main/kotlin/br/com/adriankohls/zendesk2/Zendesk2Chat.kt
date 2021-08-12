@@ -1,6 +1,5 @@
 package br.com.adriankohls.zendesk2
 
-import android.app.Activity
 import com.zendesk.logger.Logger
 import com.zendesk.service.ErrorResponse
 import com.zendesk.service.ZendeskCallback
@@ -10,9 +9,8 @@ import zendesk.chat.*
 import java.io.File
 
 
-class Zendesk2Chat(private val activity: Activity?, private val channel: MethodChannel) {
+class Zendesk2Chat(private val channel: MethodChannel) {
 
-    //private var chatConfiguration: ChatConfiguration? = null
     private var isOnline: Boolean = false
     private var isChatting: Boolean = false
     private var hasAgents: Boolean = false
@@ -29,62 +27,6 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
     private var settingsProviderObservationToken: ObservationScope? = null
     private var connectionProviderObservationToken: ObservationScope? = null
 
-    /*
-        fun customize(call: MethodCall): Map<String, Any>? {
-            val agentAvailability = call.argument<Boolean>("agentAvailability") ?: false
-            val transcript = call.argument<Boolean>("transcript") ?: false
-            val preChatForm = call.argument<Boolean>("preChatForm") ?: false
-            val offlineForms = call.argument<Boolean>("offlineForms") ?: false
-            val nameFieldStatus = call.argument<String>("nameFieldStatus")
-            val emailFieldStatus = call.argument<String>("emailFieldStatus")
-            val phoneFieldStatus = call.argument<String>("phoneFieldStatus")
-            val departmentFieldStatus = call.argument<String>("departmentFieldStatus")
-            val endChatEnabled = call.argument<Boolean>("endChatEnabled") ?: true
-            val transcriptChatEnabled = call.argument<Boolean>("transcriptChatEnabled") ?: true
-
-            val nameFieldEnum = getPreChatEnumByString(nameFieldStatus)
-            val emailFieldEnum = getPreChatEnumByString(emailFieldStatus)
-            val phoneFieldEnum = getPreChatEnumByString(phoneFieldStatus)
-            val departmentFieldEnum = getPreChatEnumByString(departmentFieldStatus)
-
-            val chatConfigurationBuilder = ChatConfiguration.builder()
-
-            chatConfigurationBuilder.withAgentAvailabilityEnabled(agentAvailability)
-            chatConfigurationBuilder.withTranscriptEnabled(transcript)
-            chatConfigurationBuilder.withPreChatFormEnabled(preChatForm)
-            chatConfigurationBuilder.withOfflineFormEnabled(offlineForms)
-            chatConfigurationBuilder.withNameFieldStatus(nameFieldEnum)
-            chatConfigurationBuilder.withEmailFieldStatus(emailFieldEnum)
-            chatConfigurationBuilder.withPhoneFieldStatus(phoneFieldEnum)
-            chatConfigurationBuilder.withDepartmentFieldStatus(departmentFieldEnum)
-
-            if (!endChatEnabled && !transcriptChatEnabled)
-                chatConfigurationBuilder.withChatMenuActions()
-            else if (!transcriptChatEnabled)
-                chatConfigurationBuilder.withChatMenuActions(ChatMenuAction.END_CHAT)
-            else if (!endChatEnabled)
-                chatConfigurationBuilder.withChatMenuActions(ChatMenuAction.CHAT_TRANSCRIPT)
-
-            chatConfiguration = chatConfigurationBuilder.build()
-
-            if (!Logger.isLoggable()) {
-                return null
-            }
-
-            return mapOf<String, Any>(
-                    "zendesk_agent_availability" to agentAvailability
-            )
-        }
-
-        private fun getPreChatEnumByString(preChatName: String?): PreChatFormFieldStatus =
-                when (preChatName) {
-                    "OPTIONAL" -> PreChatFormFieldStatus.OPTIONAL
-                    "HIDDEN" -> PreChatFormFieldStatus.HIDDEN
-                    "REQUIRED" -> PreChatFormFieldStatus.REQUIRED
-                    else -> PreChatFormFieldStatus.HIDDEN
-                }
-    */
-
     fun logger(call: MethodCall) {
         var enabled = call.argument<Boolean>("enabled")
         enabled = enabled ?: false
@@ -93,7 +35,6 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
 
     fun dispose() {
         clearTokens()
-        //chatConfiguration = null
         Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
     }
 
@@ -121,11 +62,6 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
     }
 
     fun startChatProviders() {
-        /*
-        if (chatConfiguration == null) {
-            throw Exception("You must call '.customize' and add more information")
-        }
-         */
         startProviders()
     }
     fun connect(){
@@ -158,7 +94,6 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
             this.chatSessionStatus = it.chatSessionStatus.name.split('.').last()
 
             sendChatProvidersResult()
-
         }
     }
 
