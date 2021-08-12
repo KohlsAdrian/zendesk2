@@ -24,7 +24,9 @@ class Zendesk2Chat {
 
   static const _channel = const MethodChannel('zendesk2');
 
-  // ignore: close_sinks
+  /// added ignore so the source won't have warnings
+  /// but don't forget to close or .dispose() when needed!!!
+  /// ignore: close_sinks
   StreamController<ProviderModel>? _providersStream;
 
   bool _isLoggerEnabled = false;
@@ -42,8 +44,6 @@ class Zendesk2Chat {
   /// ```accountKey``` the zendesk created account key, unique by organization
   ///
   /// ```appId``` the app ID created on Zendesk Panel
-  ///
-  /// ```iosThemeColor``` the Theme color for Native Chat on iOS (AppBar and chat bubbles)
   Future<void> init(
     String accountKey,
     String appId, {
@@ -202,48 +202,23 @@ class Zendesk2Chat {
     }
   }
 
-  /// Start Native Chat with own bot behaviours
-  ///
-  /// ```toolbarTitle``` set toolbar title
-  ///
-  /// ```botLabel``` text to represent the BOT name
-  ///
-  /// ```backButtonLabel``` button text to represent iOS back button
-  @Deprecated('Prefer to use the startChatProviders() method')
-  Future<void> startChat({
-    String toolbarTitle = 'Zendesk NativeChat',
-    String botLabel = 'Z',
-    String backButtonLabel = 'Back',
-  }) async {
-    Map arguments = {
-      'toolbarTitle': toolbarTitle,
-      'botLabel': botLabel,
-      'backButtonLabel': backButtonLabel,
-    };
-    try {
-      final result = await _channel.invokeMethod('startChat', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
   /// Start chat providers for custom UI handling
   ///
   /// ```periodicRetrieve``` periodic time to update the ```providersStream```
-  /// ```connect``` Determines if you also want to connect the chat socket
+  /// ```autoConnect``` Determines if you also want to connect to the chat socket
   /// The user will not receive push notifications while connected
-  Future<void> startChatProviders({bool connect = true}) async {
+  Future<void> startChatProviders({bool autoConnect = true}) async {
     try {
       if (_providersStream != null) {
         await _providersStream!.sink.close();
         await _providersStream!.close();
       }
       _providersStream = StreamController<ProviderModel>();
-      final result = await _channel
-          .invokeMethod('startChatProviders', {'connect': connect});
+      final result = await _channel.invokeMethod('startChatProviders');
+
+      if (autoConnect) {
+        await connect();
+      }
 
       if (_isLoggerEnabled) {
         print('zendesk2: $result');

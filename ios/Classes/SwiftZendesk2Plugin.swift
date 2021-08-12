@@ -41,7 +41,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             mResult = zendesk2Chat?.startChat(arguments)
             break
         case "startChatProviders":
-            mResult = zendesk2Chat?.startChatProviders(arguments)
+            mResult = zendesk2Chat?.startChatProviders()
             break
         case "dispose":
             mResult = zendesk2Chat?.dispose()

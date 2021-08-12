@@ -141,15 +141,11 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
         providers?.setDepartment(departmentName ?: "", null)
     }
 
-    fun startChatProviders(call: MethodCall) {
+    fun startChatProviders() {
         if (chatConfiguration == null) {
             throw Exception("You must call '.customize' and add more information")
         }
         startProviders()
-
-        if (call.argument<Boolean>("connect") != false) {
-            Chat.INSTANCE.providers()?.connectionProvider()?.connect()
-        }
     }
     fun connect(){
         Chat.INSTANCE.providers()?.connectionProvider()?.connect()

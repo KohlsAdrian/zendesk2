@@ -105,15 +105,11 @@ public class SwiftZendesk2Chat {
     }
     
     /// startChat v2 Zendesk API Providers
-    func startChatProviders(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
+    func startChatProviders() -> Dictionary<String, Any>? {
         if chatConfiguration == nil {
             NSLog("You must call init first")
         }
         startProviders()
-        
-        if arguments?["connect"] as? Bool != false{
-            Chat.connectionProvider?.connect()
-        }
         
         if !Logger.isEnabled {
             return nil

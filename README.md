@@ -6,61 +6,37 @@ Android min SDK 16 and iOS min OS Version 10.0
 
 Easy and fast to use
 
-# <del>Setup for Native Chat</del> 
-(Native chat is obsolete and is discouraged to be used)
 
 <details>
-  <summary><del>Android Min SDK - 16</del></summary>
-
-
-  android/app/src/main/res/values/styles.xml
+  <summary>What you need</summary>
   
-  Add the following style
+  * AccountKey (https://{yourcompanydomain}.zendesk.com/chat/agent#home > Profile Picture > Check Connection)
 
-        <style name="ZendeskTheme" parent="ZendeskSdkTheme.Light">    
-          <item name="colorPrimary">#FF5148</item>
-          <item name="colorPrimaryDark">#FF5148</item>
-          <item name="colorAccent">#FF5148</item>
-        </style>
-
-
-  android/app/src/main/AndroidManifest.xml
-
-  Inside <application> tag, insert the following Activity
-
-
-        <activity android:name="zendesk.messaging.MessagingActivity"
-            android:theme="@style/ZendeskTheme" />
+  * AppId (https://{yourcompanydomain}.zendesk.com/agent/admin/mobile_sdk)
+ 
+  * Update Cocoapods to latest version
 
 </details>
 
 <details>
-  <summary><del>iOS Min OS Version - 10.0</del></summary>
-  
-  In AppDelegate.swift should look like this
-  
-    override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-      GeneratedPluginRegistrant.register(with: self)
+  <summary>STATUS</summary>
     
-      //Snippet to make rootView as navigatable
-      let flutterViewController = window?.rootViewController as! FlutterViewController
-      let navigationController = UINavigationController.init(rootViewController: flutterViewController)
-      navigationController.isNavigationBarHidden = true
-      window.rootViewController = navigationController
-      window.makeKeyAndVisible()
+    * Chat SDK - OK
+    
+    * Support SDK - OK
+    
+    * Customization - OK
+    
+    * Answer SDK - OK
 
-      return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    }
-  
-  You can have pre loaded localization with "Localizable.string"
-  
-  See [example/ios/Runnner/Localizable.string](https://github.com/KohlsAdrian/zendesk2/blob/main/example/ios/Runner)
-  
-  See: https://developer.zendesk.com/embeddables/docs/ios_support_sdk/localize_text
-  
+    * Unified SDK - OK
+
+    * Talk SDK - PENDING DEVELOPMENT
+
 </details>
 
-# Custom UI (Providers)
+
+# Chat SDK V2
 
 ```dart
 /// Zendesk Chat instance
@@ -79,32 +55,51 @@ await z.setVisitorInfo(
 /// Very important, for custom UI, prepare Stream for ProviderModel
 await z.startChatProviders();
 
-/// Get the updated provider Model from SDK
-z.providersStream.listen((providerModel) {
-  /// this stream retrieve all Chat data and Logs from SDK
+/// Get the updated provider Model from the SDK
+_subscription = z.providersStream.listen((providerModel) {
+  /// this stream retrieve all Chat data and Logs from the SDK
+  /// in ONE unique reliable object :)
   _providerModel = providerModel;
 });
 
-/// It is also important to disconnect and reconnect and when the app enters  and exits background, to do this you can simply calll
-z.disconnect() 
-z.connect()  
+/// It is also important to disconnect and reconnect 
+/// and when the app enters and exits background, 
+/// to do this you can simply calll
+await z.disconnect();
+/// or
+await z.connect(); 
+
+/// After you release resources
+await z.dispose();
 ```
 
 
+# Answer SDK
+
+```dart
+
+```
 
 # Push Notifications
 
    To configure chat notifications, you will need to do the following configuration per platform
 
-## iOS
+### iOS
 
-  Inside your AppDelegate.swift import the ChatSdk
-  `import ChatProvidersSDK`
+  Inside your `AppDelegate.swift` import the ChatSDK as 
+  
+  ```swift
+  import ChatProvidersSDK
+  ```
 
   Add the following method
   ``` swift
-    override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        //Messaging.messaging().apnsToken = deviceToken  /// You might already have this if you are using firebase messaging
+    override func application(
+      _ application: UIApplication, 
+      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        // You might already have this if you are using firebase messaging
+        // Messaging.messaging().apnsToken = deviceToken  
         
         Chat.registerPushToken(deviceToken)
     }
@@ -130,30 +125,3 @@ To display the notifications, you will need to register your own `FirebaseMessag
     </intent-filter>
 </service>
 ```
-
-
-# What you need
-
- * AccountKey
-
- * AppId
- 
- * Update Cocoapods to latest version
-
-# STATUS
-
-  Chat SDK
-
-    Live Chat, Customization and Providers for custom UI
-  
-    Live Chat - OK
-    Support SDK - OK
-    Customization - OK
-    
-# Far development
-
-  Unified SDK
-
-  Answer BOT SDK
-  
-  Talk SDK
