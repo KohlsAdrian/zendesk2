@@ -6,6 +6,7 @@
 # https://cocoapods.org/pods/ZendeskChatProvidersSDK
 # https://cocoapods.org/pods/ZendeskAnswerBotSDK
 # https://cocoapods.org/pods/ZendeskSupportSDK
+# https://cocoapods.org/pods/ZendeskSDKMessaging
 Pod::Spec.new do |s|
   s.name             = 'zendesk2'
   s.version          = '0.0.1'
@@ -24,6 +25,7 @@ A new flutter plugin project.
   s.dependency 'ZendeskChatProvidersSDK', '~>2.11.1'
   s.dependency 'ZendeskAnswerBotSDK', '~> 2.1.3'
   s.dependency 'ZendeskSupportSDK', '~> 5.3'
+  s.dependency 'ZendeskSDKMessaging', '~> 1.0.2'
   s.platform = :ios, '10.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
   s.swift_version = '5.0'
