@@ -1,6 +1,9 @@
 import Flutter
 import UIKit
 import ChatProvidersSDK
+import ZendeskCoreSDK
+import SupportProvidersSDK
+import AnswerBotProvidersSDK
 
 public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
@@ -29,8 +32,19 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         var mResult: Any? = nil
         switch(call.method){
         case "init":
-            mResult = zendesk2Chat?.zendeskInit(arguments)
+            let accountKey: String = (arguments?["accountKey"] ?? "") as! String
+            let appId: String = (arguments?["appId"] ?? "") as! String
+            
+            chatConfiguration = ChatConfiguration()
+            
+            Chat.initialize(accountKey: accountKey, appId: appId)
+            
+            var result = Dictionary<String, Any>()
+            result["zendesk_account_key"] = Chat.instance?.accountKey
+            result["zendesk_app_id"] = Chat.instance?.appId
+            mResult = result
             break
+        // chat sdk method channels
         case "logger":
             mResult = zendesk2Chat?.logger(arguments)
             break
@@ -67,6 +81,10 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             mResult = zendesk2Chat?.connect()
         case "disconnect":
             mResult = zendesk2Chat?.disconnect()
+        // answer sdk method channels
+        
+        
+        
         default:
             break
         }

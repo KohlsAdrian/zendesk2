@@ -38,22 +38,6 @@ public class SwiftZendesk2Chat {
         self.channel = channel
     }
     
-    /// Initialize Zendesk SDK
-    func zendeskInit(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
-        //let firebaseToken = call.argument("firebaseToken")
-        let accountKey: String = (arguments?["accountKey"] ?? "") as! String
-        let appId: String = (arguments?["appId"] ?? "") as! String
-        
-        chatConfiguration = ChatConfiguration()
-        
-        Chat.initialize(accountKey: accountKey, appId: appId)
-        
-        var result = Dictionary<String, Any>()
-        result["zendesk_account_key"] = Chat.instance?.accountKey
-        result["zendesk_app_id"] = Chat.instance?.appId
-        return result
-    }
-    
     /// Logging  Zendesk API
     func logger(_ arguments: Dictionary<String, Any>?) -> Dictionary<String, Any>? {
         let enabled: Bool = (arguments?["enabled"] ?? false) as! Bool
@@ -430,7 +414,7 @@ public class SwiftZendesk2Chat {
         dictionary["hasAgents"] = self.hasAgents
         dictionary["isFileSendingEnabled"] = self.isFileSendingEnabled
         dictionary["connectionStatus"] = self.connectionStatus
-        dictionary["chatSessionStatus"] = self.chatSessionStatus        
+        dictionary["chatSessionStatus"] = self.chatSessionStatus
         
         let queuePosition = self.queuePosition?.queue
         dictionary["queuePosition"] = queuePosition

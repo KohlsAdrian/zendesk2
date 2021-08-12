@@ -13,69 +13,78 @@ import io.flutter.plugin.common.MethodChannel.Result
 import zendesk.chat.*
 import zendesk.messaging.MessagingActivity
 
-class Zendesk2Plugin: ActivityAware, FlutterPlugin, MethodCallHandler {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
-  private lateinit var channel : MethodChannel
-  private var zendesk2Chat: Zendesk2Chat? = null
-  private var activity: Activity? = null
+class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
+    /// The MethodChannel that will the communication between Flutter and native Android
+    ///
+    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+    /// when the Flutter Engine is detached from the Activity
+    private lateinit var channel: MethodChannel
+    private var zendesk2Chat: Zendesk2Chat? = null
+    private var activity: Activity? = null
 
-  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-    if(zendesk2Chat == null){
-      zendesk2Chat = Zendesk2Chat(activity, channel)
+    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        if (zendesk2Chat == null) {
+            zendesk2Chat = Zendesk2Chat(activity, channel)
+        }
+
+        val data: Any? =
+                when (call.method) {
+                    "init" -> {
+                        val accountKey = call.argument<String>("accountKey")!!
+                        val appId = call.argument<String>("appId")!!
+
+                        Chat.INSTANCE.init(activity!!, accountKey, appId)
+                    }
+                    // chat sdk method channels
+                    "logger" -> zendesk2Chat?.logger(call)
+                    "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
+                    "startChat" -> zendesk2Chat?.startChat(call)
+                    "startChatProviders" -> zendesk2Chat?.startChatProviders()
+                    "dispose" -> zendesk2Chat?.dispose()
+                    "customize" -> zendesk2Chat?.customize(call)
+                    "getChatProviders" -> zendesk2Chat?.getChatProviders()!!
+                    "sendMessage" -> zendesk2Chat?.sendMessage(call)
+                    "sendFile" -> zendesk2Chat?.sendFile(call)
+                    "compatibleAttachmentsExtensions" -> result.success(zendesk2Chat?.getAttachmentsExtension())
+                    "endChat" -> zendesk2Chat?.endChat()
+                    "sendIsTyping" -> zendesk2Chat?.sendTyping(call)
+                    "registerToken" -> zendesk2Chat?.registerToken(call)
+                    "connect" -> zendesk2Chat?.connect()
+                    "disconnect" -> zendesk2Chat?.disconnect()
+                    // answer sdk method channels
+
+
+                    else -> print("method not implemented")
+                }
+        if (data is Map<*, *> || data is Array<*>)
+            result.success(data)
+        else
+            result.success(this.hashCode())
     }
 
-    val data: Any? =
-            when (call.method) {
-              "init" -> zendesk2Chat?.init(call)
-              "logger" -> zendesk2Chat?.logger(call)
-              "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
-              "startChat" -> zendesk2Chat?.startChat(call)
-              "startChatProviders" -> zendesk2Chat?.startChatProviders()
-              "dispose" -> zendesk2Chat?.dispose()
-              "customize" -> zendesk2Chat?.customize(call)
-              "getChatProviders" -> zendesk2Chat?.getChatProviders()!!
-              "sendMessage" -> zendesk2Chat?.sendMessage(call)
-              "sendFile" -> zendesk2Chat?.sendFile(call)
-              "compatibleAttachmentsExtensions" -> result.success(zendesk2Chat?.getAttachmentsExtension())
-              "endChat" -> zendesk2Chat?.endChat()
-              "sendIsTyping" -> zendesk2Chat?.sendTyping(call)
-              "registerToken"-> zendesk2Chat?.registerToken(call)
-              "connect"-> zendesk2Chat?.connect()
-              "disconnect"-> zendesk2Chat?.disconnect()
-              else -> print("method not implemented")
-            }
-    if(data is Map<*, *> || data is Array<*>)
-        result.success(data)
-    else
-        result.success(this.hashCode())
-  }
+    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "zendesk2")
+        channel.setMethodCallHandler(this)
+    }
 
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "zendesk2")
-    channel.setMethodCallHandler(this)
-  }
+    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+    }
 
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-    channel.setMethodCallHandler(null)
-  }
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
 
-  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    activity = binding.activity
-  }
+    override fun onDetachedFromActivityForConfigChanges() {
+        activity = null
+    }
 
-  override fun onDetachedFromActivityForConfigChanges() {
-    activity = null
-  }
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
 
-  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    activity = binding.activity
-  }
-
-  override fun onDetachedFromActivity() {
-    activity = null
-  }
+    override fun onDetachedFromActivity() {
+        activity = null
+    }
 
 }
