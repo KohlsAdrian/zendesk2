@@ -201,10 +201,6 @@ public class SwiftZendesk2Chat {
         
         self.chatConfiguration = nil
         
-        self.navigationController?.isNavigationBarHidden = true
-        self.navigationController?.popViewController(animated: true)
-        self.navigationController = nil
-        
         releaseProviders()
         
         if !Logger.isEnabled {
@@ -436,12 +432,6 @@ public class SwiftZendesk2Chat {
         dictionary["connectionStatus"] = self.connectionStatus
         dictionary["chatSessionStatus"] = self.chatSessionStatus        
         
-        switch self.rating {
-        case .bad: dictionary["rating"] = "BAD"
-        case .good: dictionary["rating"] = "GOOD"
-        default: dictionary["rating"] = "NONE"
-        }
-        
         let queuePosition = self.queuePosition?.queue
         dictionary["queuePosition"] = queuePosition
         
@@ -515,8 +505,6 @@ public class SwiftZendesk2Chat {
                 logT["type"] = "MESSAGE"
             case .optionsMessage:
                 logT["type"] = "OPTIONS_MESSAGE"
-            case .chatRating:
-            case .chatRatingRequest:
             default:
                 logT["type"] = "UNKNOWN"
             }
@@ -573,34 +561,6 @@ public class SwiftZendesk2Chat {
                 logChatAttachmentMessage["chatAttachmentAttachment"] = logChatAttachmentAttachmentMessage
                 logT["chatAttachment"] = logChatAttachmentMessage
                 
-            } else if log is ChatRating {
-                let chatRating = log as! ChatRating
-                
-                var logChatRating = [String: Any]()
-                
-                let rating = chatRating.rating
-                switch rating {
-                case .good:
-                    logChatRating["rating"] = "GOOD"
-                case .bad:
-                    logChatRating["rating"] = "BAD"
-                default:
-                    logChatRating["rating"] = "NONE"
-                }
-                
-                logT["chatRating"] = logChatRating
-            } else if log is ChatComment {
-                let chatComment = log as! ChatComment
-                
-                var logChatComment = [String: Any]()
-                
-                let comment = chatComment.comment
-                let newComment = chatComment.newComment
-                
-                logChatComment["comment"] = comment
-                logChatComment["newComment"] = newComment
-                
-                logT["chatComment"] = logChatComment
             } else if log is ChatOptionsMessage {
                 let chatOptionsMessage = log as! ChatOptionsMessage
                 

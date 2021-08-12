@@ -15,10 +15,4 @@
     <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">@android:color/white</item>
     </style>
-    
-    <style name="ZendeskTheme" parent="ZendeskSdkTheme.Light">    
-        <item name="colorPrimary">#FF5148</item>
-        <item name="colorPrimaryDark">#FF5148</item>
-        <item name="colorAccent">#FF5148</item>
-    </style>
 </resources>
