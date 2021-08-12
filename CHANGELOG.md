@@ -1,5 +1,9 @@
 # 1.7.0+0
 
+* Features
+
+* Answer SDK
+
 * [BREAKING CHANGE]
 
 * Optimised null-safety on ProviderModel object
