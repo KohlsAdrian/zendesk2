@@ -1,9 +1,6 @@
 import Flutter
 import UIKit
 import ChatProvidersSDK
-import AnswerBotProvidersSDK
-import ZendeskCoreSDK
-import SupportProvidersSDK
 
 public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
@@ -31,35 +28,10 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         let zendesk2Answer = SwiftZendesk2Answer(channel: channel)
         
         switch(method){
-        case "init":
-            let accountKey = (arguments?["accountKey"] ?? "") as? String
-            let appId = (arguments?["appId"] ?? "") as? String
-            let clientId = (arguments?["clientId"] ?? "") as? String
-            let zendeskUrl = (arguments?["zendeskUrl"] ?? "") as? String
-            
-            let standard = UserDefaults.standard
-            
-            standard.setValue(accountKey, forKey: "accountKey")
-            standard.setValue(appId, forKey: "appId")
-            
-            if clientId != nil && zendeskUrl != nil {
-                Zendesk.initialize(appId: appId!, clientId: accountKey!, zendeskUrl: zendeskUrl!)
-                Support.initialize(withZendesk: Zendesk.instance!)
-                AnswerBot.initialize(withZendesk: Zendesk.instance, support: Support.instance!)
-            }
-            break
-        case "init_chat":
-            let standard = UserDefaults.standard
-            
-            let accountKey = standard.string(forKey: "accountKey")
-            let appId = standard.string(forKey: "appId")
-        
-            Chat.initialize(accountKey: accountKey!, appId: appId!)
-            break;
         // chat sdk method channels
-        case "logger":
-            zendesk2Chat.logger(arguments)
-            break
+        case "init_chat":
+            zendesk2Chat.initialize(arguments)
+            break;
         case "setVisitorInfo":
             zendesk2Chat.setVisitorInfo(arguments)
             break
@@ -69,17 +41,23 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         case "chat_dispose":
             zendesk2Chat.dispose()
             break
-        case "getChatProviders":
-            mResult = zendesk2Chat.getChatProviders()
+        case "sendChatProvidersResult":
+            mResult = zendesk2Chat.sendChatProviderResult(arguments)
+            break
+        case "sendChatConnectionStatusResult":
+            mResult = zendesk2Chat.sendChatConnectionStatusResult(arguments)
+            break
+        case "sendChatSettingsResult":
+            mResult = zendesk2Chat.sendChatSettingsResult(arguments)
+            break
+        case "sendChatIsOnlineResult":
+            mResult = zendesk2Chat.sendChatIsOnlineResult(arguments)
             break
         case "sendMessage":
             zendesk2Chat.sendMessage(arguments)
             break
         case "sendFile":
             zendesk2Chat.sendFile(arguments)
-            break
-        case "compatibleAttachmentsExtensions":
-            mResult = zendesk2Chat.getAttachmentsExtension()
             break
         case "endChat":
             zendesk2Chat.endChat()
@@ -97,6 +75,9 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             zendesk2Chat.dispose()
             break
         // answer sdk method channels
+        case "init_answer":
+            zendesk2Answer.initialize(arguments)
+            break
         case "query":
             zendesk2Answer.deflectionQuery(arguments)
             break

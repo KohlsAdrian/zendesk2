@@ -1,6 +1,8 @@
 package br.com.adriankohls.zendesk2
 
 import android.app.Activity
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -14,57 +16,52 @@ import zendesk.chat.*
 class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
 
     private lateinit var channel: MethodChannel
-    private var zendesk2Chat: Zendesk2Chat? = null
-    private var zendesk2Answer: Zendesk2Answer? = null
     private var activity: Activity? = null
 
-    private var accountKey: String? = null
-    private var appId: String? = null
-
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        val zendesk2Chat = Zendesk2Chat(channel)
+
+
         var mResult: Any? = null
         when (call.method) {
             "init" -> {
-                accountKey = call.argument<String>("accountKey")!!
-                appId = call.argument<String>("appId")!!
-            }
-            "init_chat" -> {
-                if (accountKey != null && appId != null) {
-                    if (zendesk2Chat == null) {
-                        zendesk2Chat = Zendesk2Chat(channel)
-                        Chat.INSTANCE.init(activity!!, accountKey!!, appId!!)
-                    } else {
-                        print("Chat Already Initialized")
-                    }
-                } else {
-                    print("You should call Zendesk.instance.init first!")
+                val accountKey = call.argument<String>("accountKey")!!
+                val appId = call.argument<String>("appId")!!
+
+                val sp = activity?.getPreferences(Context.MODE_PRIVATE)
+                val edit = sp?.edit()
+
+                edit?.putString("accountKey", accountKey)
+                edit?.putString("appId", appId)
+
+                edit?.apply()
+
+                if(accountKey != null && appId != null) {
+
                 }
             }
-            "init_answer" -> {
-                if (accountKey != null && appId != null) {
-                    if (zendesk2Answer == null) {
-                        zendesk2Answer = Zendesk2Answer(channel)
-                    } else {
-                        print("Answer Already Initialized")
-                    }
-                } else {
-                    print("You should call Zendesk.instance.init first!")
+            "init_chat" -> {
+                val sp = activity?.getPreferences(Context.MODE_PRIVATE)
+                val accountKey = sp?.getString("accountKey", null)
+                val appId = sp?.getString("appId", null)
+                if(accountKey != null && appId != null) {
+                    Chat.INSTANCE.init(activity!!, accountKey, appId)
                 }
             }
             // chat sdk method channels
-            "logger" -> zendesk2Chat?.logger(call)
-            "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
-            "startChatProviders" -> zendesk2Chat?.startChatProviders()
-            "chat_dispose" -> zendesk2Chat?.dispose()
-            "getChatProviders" -> mResult = zendesk2Chat?.getChatProviders()
-            "sendMessage" -> zendesk2Chat?.sendMessage(call)
-            "sendFile" -> zendesk2Chat?.sendFile(call)
-            "compatibleAttachmentsExtensions" -> mResult = zendesk2Chat?.getAttachmentsExtension()
-            "endChat" -> zendesk2Chat?.endChat()
-            "sendIsTyping" -> zendesk2Chat?.sendTyping(call)
-            "registerToken" -> zendesk2Chat?.registerToken(call)
-            "connect" -> zendesk2Chat?.connect()
-            "disconnect" -> zendesk2Chat?.disconnect()
+            "logger" -> zendesk2Chat.logger(call)
+            "setVisitorInfo" -> zendesk2Chat.setVisitorInfo(call)
+            "startChatProviders" -> zendesk2Chat.startChatProviders()
+            "chat_dispose" -> zendesk2Chat.dispose()
+            "getChatProviders" -> mResult = zendesk2Chat.getChatProviders()
+            "sendMessage" -> zendesk2Chat.sendMessage(call)
+            "sendFile" -> zendesk2Chat.sendFile(call)
+            "compatibleAttachmentsExtensions" -> mResult = zendesk2Chat.getAttachmentsExtension()
+            "endChat" -> zendesk2Chat.endChat()
+            "sendIsTyping" -> zendesk2Chat.sendTyping(call)
+            "registerToken" -> zendesk2Chat.registerToken(call)
+            "connect" -> zendesk2Chat.connect()
+            "disconnect" -> zendesk2Chat.disconnect()
             // answer sdk method channels
             else -> print("method not implemented")
         }

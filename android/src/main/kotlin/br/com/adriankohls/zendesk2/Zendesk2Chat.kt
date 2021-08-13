@@ -1,5 +1,7 @@
 package br.com.adriankohls.zendesk2
 
+import android.app.Activity
+import android.content.Context
 import com.zendesk.logger.Logger
 import com.zendesk.service.ErrorResponse
 import com.zendesk.service.ZendeskCallback
@@ -9,23 +11,7 @@ import zendesk.chat.*
 import java.io.File
 
 
-class Zendesk2Chat(private val channel: MethodChannel) {
-
-    private var isOnline: Boolean = false
-    private var isChatting: Boolean = false
-    private var hasAgents: Boolean = false
-    private var isFileSendingEnabled: Boolean = false
-    private var connectionStatus: String = "UNKNOWN"
-    private var chatSessionStatus: String = "UNKNOWN"
-    private var chatId: String? = null
-    private var agents: List<Agent> = listOf()
-    private var logs: List<ChatLog> = listOf()
-    private var queuePosition: Int = 0
-
-    private var chatProviderObservationToken: ObservationScope? = null
-    private var accountProviderObservationToken: ObservationScope? = null
-    private var settingsProviderObservationToken: ObservationScope? = null
-    private var connectionProviderObservationToken: ObservationScope? = null
+class Zendesk2Chat(private val activity: Activity?, private val channel: MethodChannel) {
 
     fun logger(call: MethodCall) {
         var enabled = call.argument<Boolean>("enabled")
@@ -34,7 +20,7 @@ class Zendesk2Chat(private val channel: MethodChannel) {
     }
 
     fun dispose() {
-        clearTokens()
+        Chat.INSTANCE.providers()?.chatProvider()?.endChat(null)
         Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
     }
 
@@ -64,27 +50,24 @@ class Zendesk2Chat(private val channel: MethodChannel) {
     fun startChatProviders() {
         startProviders()
     }
-    fun connect(){
+
+    fun connect() {
         Chat.INSTANCE.providers()?.connectionProvider()?.connect()
     }
-    fun disconnect(){
+
+    fun disconnect() {
         Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
     }
 
     private fun startProviders() {
-        if (chatProviderObservationToken == null)
-            chatProviderStart()
-        if (accountProviderObservationToken == null)
-            accountProviderStart()
-        if (settingsProviderObservationToken == null)
-            settingsProviderStart()
-        if (connectionProviderObservationToken == null)
-            connectionProviderStart()
+        chatProviderStart()
+        accountProviderStart()
+        settingsProviderStart()
+        connectionProviderStart()
     }
 
     private fun chatProviderStart() {
-        chatProviderObservationToken = ObservationScope()
-        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(chatProviderObservationToken!!) {
+        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(ObservationScope()) {
             this.agents = it.agents
             this.hasAgents = it.agents.isNotEmpty()
             this.logs = it.chatLogs
@@ -93,13 +76,19 @@ class Zendesk2Chat(private val channel: MethodChannel) {
             this.isChatting = it.isChatting
             this.chatSessionStatus = it.chatSessionStatus.name.split('.').last()
 
+            val sp = activity?.getPreferences(Context.MODE_PRIVATE)
+            val edit = sp?.edit()
+
+
+
+            edit?.apply()
+
             sendChatProvidersResult()
         }
     }
 
     private fun accountProviderStart() {
-        accountProviderObservationToken = ObservationScope()
-        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(accountProviderObservationToken!!) {
+        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(ObservationScope()) {
             this.isOnline = it.status == AccountStatus.ONLINE
             this.hasAgents = this.isOnline
             sendChatProvidersResult()
@@ -121,8 +110,7 @@ class Zendesk2Chat(private val channel: MethodChannel) {
     }
 
     private fun settingsProviderStart() {
-        settingsProviderObservationToken = ObservationScope()
-        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(settingsProviderObservationToken!!) {
+        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(ObservationScope()) {
             this.isFileSendingEnabled = it.isFileSendingEnabled
             sendChatProvidersResult()
 
@@ -130,15 +118,16 @@ class Zendesk2Chat(private val channel: MethodChannel) {
     }
 
     private fun connectionProviderStart() {
-        connectionProviderObservationToken = ObservationScope()
-        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(connectionProviderObservationToken!!) {
+        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(ObservationScope()){
             this.connectionStatus = it.name.split('.').last()
             sendChatProvidersResult()
         }
     }
+
     private fun sendChatProvidersResult() {
         channel.invokeMethod("sendChatProvidersResult", getChatProviders())
     }
+
     fun sendMessage(call: MethodCall) {
         val message = call.argument<String>("message")
 
@@ -183,7 +172,7 @@ class Zendesk2Chat(private val channel: MethodChannel) {
         dictionary["queuePosition"] = this.queuePosition
 
         val agentsList = mutableListOf<MutableMap<String, Any?>>()
-        for (agent in this.agents) {
+        for (agent in agents) {
             val agentDict = mutableMapOf<String, Any?>()
 
             val avatar = agent.avatarPath
@@ -200,7 +189,7 @@ class Zendesk2Chat(private val channel: MethodChannel) {
         }
 
         val logsList = mutableListOf<MutableMap<String, Any?>>()
-        for (log in this.logs) {
+        for (log in logs) {
             val logDict = mutableMapOf<String, Any?>()
             logDict["id"] = log.id
             logDict["createdTimestamp"] = log.createdTimestamp
@@ -291,43 +280,20 @@ class Zendesk2Chat(private val channel: MethodChannel) {
 
         return dictionary
     }
-    
-    fun registerToken(call: MethodCall){
+
+    fun registerToken(call: MethodCall) {
         val token = call.argument<String>("token")
         val pushProvider = Chat.INSTANCE.providers()?.pushNotificationsProvider()
-        if(pushProvider != null && token != null){
+        if (pushProvider != null && token != null) {
             pushProvider.registerPushToken(token)
         }
-    }
-
-    private fun releaseTokens() {
-        val pushProvider = Chat.INSTANCE.providers()?.pushNotificationsProvider()
-        pushProvider?.unregisterPushToken()
-        Chat.INSTANCE.resetIdentity {
-            Chat.INSTANCE.clearCache()
-            clearTokens()
-        }
-    }
-
-    private fun clearTokens() {
-        chatProviderObservationToken?.cancel()
-        accountProviderObservationToken?.cancel()
-        settingsProviderObservationToken?.cancel()
-        connectionProviderObservationToken?.cancel()
-
-        chatProviderObservationToken = null
-        accountProviderObservationToken = null
-        settingsProviderObservationToken = null
-        connectionProviderObservationToken = null
     }
 
     fun endChat() {
         Chat.INSTANCE.providers()?.chatProvider()?.endChat(object : ZendeskCallback<Void>() {
             override fun onSuccess(v: Void?) {
                 print("success")
-                releaseTokens()
             }
-
             override fun onError(e: ErrorResponse?) {
                 print(e)
             }

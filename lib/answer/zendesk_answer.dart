@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:zendesk2/answer/model/answer_provider_model.dart';
-import 'package:zendesk2/zendesk.dart';
+import 'package:zendesk2/zendesk2.dart';
 
 class ZendeskAnswer {
   ZendeskAnswer._() {

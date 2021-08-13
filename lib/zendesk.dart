@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:zendesk2/chat2/zendesk_chat2.dart';
 
 class Zendesk {
   Zendesk._();
@@ -7,31 +6,54 @@ class Zendesk {
 
   final MethodChannel channel = const MethodChannel('zendesk2');
 
-  /// Initialize the Zendesk SDK
+  bool _answerInitialised = false;
+  bool _chatInitialised = false;
+
+  /// Initialize the Zendesk Answer SDK
   ///
   /// ```accountKey``` the zendesk created account key, unique by organization
   ///
-  /// ```appId``` the app ID created on Zendesk Panel
+  /// ```clientId``` your company Zendesk client ID
   ///
-  /// ```answerBot``` and ```zendeskUrl``` are necessary for AnswerSDK
-  Future<void> init(
+  /// ```zendeskUrl``` your company Zendesk domain URL
+  Future<void> initAnswerSDK(
     String accountKey,
-    String appId, {
-    String? clientId,
-    String? zendeskUrl,
-  }) async {
+    String clientId,
+    String zendeskUrl,
+  ) async {
+    if (_answerInitialised) return;
     Map arguments = {
       'accountKey': accountKey,
-      'appId': appId,
       'clientId': clientId,
       'zendeskUrl': zendeskUrl,
     };
     try {
-      await channel.invokeMethod('init', arguments);
+      await channel.invokeMethod('init_answer', arguments);
+      _answerInitialised = true;
     } catch (e) {
       print(e);
     }
   }
 
-  Future<void> initChatSDK() async => await Zendesk2Chat.instance.init();
+  /// Initialize the Zendesk Chat SDK
+  ///
+  /// ```accountKey``` the zendesk created account key, unique by organization
+  ///
+  /// ```appId``` the app ID created on Zendesk Panel
+  Future<void> initChatSDK(
+    String accountKey,
+    String appId,
+  ) async {
+    if (_chatInitialised) return;
+    Map arguments = {
+      'accountKey': accountKey,
+      'appId': appId,
+    };
+    try {
+      await channel.invokeMethod('init_chat', arguments);
+      _chatInitialised = true;
+    } catch (e) {
+      print(e);
+    }
+  }
 }

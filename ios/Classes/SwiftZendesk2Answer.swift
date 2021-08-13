@@ -7,12 +7,14 @@
 import AnswerBotProvidersSDK
 import Flutter
 import Foundation
+import ZendeskCoreSDK
+import SupportProvidersSDK
 
 public class SwiftZendesk2Answer {
     
     private var channel: FlutterMethodChannel
     
-    private var answerBotProvider: AnswerBotProvider? = nil
+    private let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
     
     private var dictionaryAnswerProviderModel: Dictionary<String, Any>? = nil
     private var resolveArticleDeflection: Bool? = nil
@@ -20,14 +22,24 @@ public class SwiftZendesk2Answer {
     
     init(channel: FlutterMethodChannel) {
         self.channel = channel
-        answerBotProvider = AnswerBot.instance?.provider
+    }
+    
+    func initialize(_ arguments: Dictionary<String, Any>?) -> Void {
+        let appId = (arguments?["appId"] ?? "") as? String
+        let clientId = (arguments?["clientId"] ?? "") as? String
+        let zendeskUrl = (arguments?["zendeskUrl"] ?? "") as? String
+        
+        if clientId != nil && zendeskUrl != nil {
+            Zendesk.initialize(appId: appId!, clientId: clientId!, zendeskUrl: zendeskUrl!)
+            Support.initialize(withZendesk: Zendesk.instance!)
+            AnswerBot.initialize(withZendesk: Zendesk.instance, support: Support.instance!)
+        }
     }
     
     func dispose() -> Void {
         self.dictionaryAnswerProviderModel = nil
         self.resolveArticleDeflection = nil
         self.rejectArticleDeflection = nil
-        answerBotProvider = nil
     }
     
     func getAnswerProviders() -> Dictionary<String, Any>? {

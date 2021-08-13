@@ -15,6 +15,9 @@ class _ZendeskChat extends State<ZendeskChat> {
 
   final _tecM = TextEditingController();
   ChatProviderModel? _providerModel;
+  ChatSettingsModel? _chatSettingsModel;
+  CONNECTION_STATUS? _connectionStatus;
+  bool? _isOnline;
 
   @override
   void dispose() {
@@ -27,8 +30,20 @@ class _ZendeskChat extends State<ZendeskChat> {
     super.initState();
 
     Future.delayed(Duration(), () async {
-      _z.providersStream.listen((providerModel) {
+      _z.providersStream?.listen((providerModel) {
         _providerModel = providerModel;
+        setState(() {});
+      });
+      _z.chatSettingsStream?.listen((settingsModel) {
+        _chatSettingsModel = settingsModel;
+        setState(() {});
+      });
+      _z.connectionStatusStream?.listen((connectionStatus) {
+        _connectionStatus = connectionStatus;
+        setState(() {});
+      });
+      _z.chatIsOnlineStream?.listen((isOnline) {
+        _isOnline = isOnline;
         setState(() {});
       });
     });
@@ -64,13 +79,14 @@ class _ZendeskChat extends State<ZendeskChat> {
       ),
     );
 
-    final compatibleExt = await _z.getAttachmentExtensions();
+    final compatibleExt = _chatSettingsModel?.supportedFileTypes;
+
     final result = isPhoto
         ? await ImagePicker().pickImage(source: ImageSource.camera)
         : await FilePicker.platform.pickFiles(
             allowMultiple: false,
             type: FileType.custom,
-            allowedExtensions: compatibleExt,
+            allowedExtensions: compatibleExt?.toList() ?? [],
           );
     if (result != null) {
       final file = result is FilePickerResult
@@ -322,18 +338,19 @@ class _ZendeskChat extends State<ZendeskChat> {
 
   @override
   Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final size = mq.size;
+    final isOnline = ((_isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
     return Scaffold(
       appBar: AppBar(
-        title: Text('Custom Chat UI'),
+        title: Text('Custom Chat UI: $isOnline'),
         actions: [
           if (_providerModel != null)
             Icon(
               Icons.circle,
-              color: _providerModel!.connectionStatus ==
-                      CONNECTION_STATUS.CONNECTED
+              color: _connectionStatus == CONNECTION_STATUS.CONNECTED
                   ? Colors.green
-                  : _providerModel!.connectionStatus ==
-                          CONNECTION_STATUS.CONNECTING
+                  : _connectionStatus == CONNECTION_STATUS.CONNECTING
                       ? Colors.yellow
                       : Colors.red,
             )
@@ -355,7 +372,10 @@ class _ZendeskChat extends State<ZendeskChat> {
                           'Agent is typing...',
                           textAlign: TextAlign.start,
                         ),
-                    _userWidget(),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: mq.viewPadding.bottom),
+                      child: _userWidget(),
+                    ),
                   ],
                 ),
               ],

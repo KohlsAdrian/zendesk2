@@ -1,37 +1,26 @@
-import 'package:zendesk2/chat2/model/chat_provider_enums.dart';
+import 'package:zendesk2/zendesk2.dart';
 
 class ChatProviderModel {
-  final bool? isOnline;
   final bool? isChatting;
-  final bool? hasAgents;
-  final bool? isFileSendingEnabled;
-  final CONNECTION_STATUS connectionStatus;
   final CHAT_SESSION_STATUS chatSessionStatus;
   final Iterable<Agent> agents;
   final Iterable<ChatLog> logs;
   final int? queuePosition;
-  final String? rating;
-  final String? comment;
+  final String? queueId;
 
   ChatProviderModel(
-    this.isOnline,
     this.isChatting,
-    this.hasAgents,
-    this.isFileSendingEnabled,
-    this.connectionStatus,
     this.chatSessionStatus,
     this.agents,
     this.logs,
     this.queuePosition,
-    this.rating,
-    this.comment,
+    this.queueId,
   );
 
+  bool get hasAgents => this.agents.isNotEmpty;
+
   factory ChatProviderModel.fromJson(Map map) {
-    bool? isOnline = map['isOnline'];
     bool? isChatting = map['isChatting'];
-    bool? hasAgents = map['hasAgents'];
-    bool? isFileSendingEnabled = map['isFileSendingEnabled'];
     Iterable<Agent> agents =
         ((map['agents'] ?? []) as Iterable).map((e) => Agent.fromJson(e));
 
@@ -39,37 +28,11 @@ class ChatProviderModel {
         ((map['logs'] ?? []) as Iterable).map((e) => ChatLog.fromJson(e));
 
     int? queuePosition = map['queuePosition'];
-    String? rating = map['rating'];
-    String? comment = map['comment'];
+    String? queueId = map['queueId'];
 
-    CONNECTION_STATUS connectionStatus;
     CHAT_SESSION_STATUS chatSessionStatus;
 
-    final mConnectionStatus = map['connectionStatus'];
     final mChatSessionStatus = map['chatSessionStatus'];
-
-    switch (mConnectionStatus) {
-      case 'CONNECTED':
-        connectionStatus = CONNECTION_STATUS.CONNECTED;
-        break;
-      case 'CONNECTING':
-        connectionStatus = CONNECTION_STATUS.CONNECTING;
-        break;
-      case 'DISCONNECTED':
-        connectionStatus = CONNECTION_STATUS.DISCONNECTED;
-        break;
-      case 'FAILED':
-        connectionStatus = CONNECTION_STATUS.FAILED;
-        break;
-      case 'RECONNECTING':
-        connectionStatus = CONNECTION_STATUS.RECONNECTING;
-        break;
-      case 'UNREACHABLE':
-        connectionStatus = CONNECTION_STATUS.UNREACHABLE;
-        break;
-      default:
-        connectionStatus = CONNECTION_STATUS.UNKNOWN;
-    }
 
     switch (mChatSessionStatus) {
       case 'CONFIGURING':
@@ -92,17 +55,12 @@ class ChatProviderModel {
     }
 
     return ChatProviderModel(
-      isOnline,
       isChatting,
-      hasAgents,
-      isFileSendingEnabled,
-      connectionStatus,
       chatSessionStatus,
       agents,
       logs,
       queuePosition,
-      rating,
-      comment,
+      queueId,
     );
   }
 }

@@ -30,16 +30,11 @@ await Zendesk2.instance.init(accountKey, appId);
 ````dart
 final z = Zendesk2.instance; // general Zendesk
 
-// initialize the Zendesk SDK
-await z.init(accountKey, appId); 
+// initialize the Chat SDK
+await z.initChatSDK(accountKey, appId); 
 
-// initialize the Zendesk SDK with Answer SDK
-await z.init(
-    accountKey, 
-    appId, 
-    clientId: clientId, 
-    zendeskUrl: zendeskUrl,
-); 
+// initialize the Answer SDK
+await z.initAnswerSDK(accountKey, clientId, zendeskUrl); 
 
 // initialize the Chat SDK
 await z.initChatSDK(); 
@@ -64,11 +59,24 @@ await zChat.setVisitorInfo(
 /// Very important, for custom UI, prepare Stream for ProviderModel
 await zChat.startChatProviders();
 
-/// Get the updated provider Model from the SDK
-_subscription = zChat.providersStream.listen((providerModel) {
-  /// this stream retrieve all Chat data and Logs from the SDK
-  /// in ONE unique reliable object :)
+/// Get the updated provider Model (LOGS, AGENTS, etc)
+_subscriptionProviderModel = zChat.providersStream.listen((providerModel) {
   _providerModel = providerModel;
+});
+
+/// Get the updated connection status
+_subscriptionConnectionStatus = zChat.connectionStatusStream.listen((connectionStatus) {
+  _connectionStatus = connectionsStatus;
+});
+
+/// Get the updated current chat settings (sendingle enabled, file limite, compatible formats)
+_subscriptionChatSettingsStream = zChat.chatSettingsStream.listen((chatSettingsModel) {
+  _chatSettingsModel = chatSettingsModel;
+});
+
+/// Get the current account status (online or offline)
+_subscriptionIsOnlineStream = zChat.chatIsOnlineStream.listen((isOnline) {
+  _isOnline = isOnline;
 });
 
 /// It is also important to disconnect and reconnect 

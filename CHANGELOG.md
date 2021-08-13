@@ -1,4 +1,4 @@
-# 1.7.0+0
+# 2.0.0+0
 
 * [Features]
 
@@ -7,6 +7,8 @@
 * Plugin wrapped features: Zendesk, ZendeskChat and ZendeskAnswer (see README.md)
 
 * [BREAKING CHANGES]
+
+* Wrapped 3 new streams: Connection Status, Chat Settings and isOnline status (Provider Model optimisation)
 
 * Optimised null-safety on ProviderModel object
 

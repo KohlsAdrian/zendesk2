@@ -1,17 +1,54 @@
 import 'dart:async';
 
-import 'package:zendesk2/chat2/model/chat_provider_model.dart';
-import 'package:zendesk2/zendesk.dart';
+import 'package:zendesk2/zendesk2.dart';
 
 class Zendesk2Chat {
   Zendesk2Chat._() {
     _channel.setMethodCallHandler(
       (call) async {
         try {
+          final arguments = call.arguments;
           switch (call.method) {
             case 'sendChatProvidersResult':
-              final providerModel = ChatProviderModel.fromJson(call.arguments);
+              final providerModel = ChatProviderModel.fromJson(arguments);
               _providersStream?.sink.add(providerModel);
+              break;
+            case 'sendChatConnectionStatusResult':
+              CONNECTION_STATUS? connectionStatus;
+
+              final mConnectionStatus = arguments['connectionStatus'];
+              switch (mConnectionStatus) {
+                case 'CONNECTED':
+                  connectionStatus = CONNECTION_STATUS.CONNECTED;
+                  break;
+                case 'CONNECTING':
+                  connectionStatus = CONNECTION_STATUS.CONNECTING;
+                  break;
+                case 'DISCONNECTED':
+                  connectionStatus = CONNECTION_STATUS.DISCONNECTED;
+                  break;
+                case 'FAILED':
+                  connectionStatus = CONNECTION_STATUS.FAILED;
+                  break;
+                case 'RECONNECTING':
+                  connectionStatus = CONNECTION_STATUS.RECONNECTING;
+                  break;
+                case 'UNREACHABLE':
+                  connectionStatus = CONNECTION_STATUS.UNREACHABLE;
+                  break;
+                default:
+                  connectionStatus = CONNECTION_STATUS.UNKNOWN;
+              }
+              _connectionStatusStream?.sink.add(connectionStatus);
+              break;
+            case 'sendChatSettingsResult':
+              ChatSettingsModel? chatSettingsModel =
+                  ChatSettingsModel.fromJson(arguments);
+              _chatSettingsStream?.sink.add(chatSettingsModel);
+              break;
+            case 'sendChatIsOnlineResult':
+              final isOnline = arguments['isOnline'];
+              _chatIsOnlineStream?.sink.add(isOnline);
               break;
           }
         } catch (e) {
@@ -29,25 +66,38 @@ class Zendesk2Chat {
   /// but don't forget to close or .dispose() when needed!!!
   /// ignore: close_sinks
   StreamController<ChatProviderModel>? _providersStream;
+  StreamController<CONNECTION_STATUS>? _connectionStatusStream;
+  StreamController<ChatSettingsModel>? _chatSettingsStream;
+  StreamController<bool>? _chatIsOnlineStream;
 
   bool _isLoggerEnabled = false;
+  bool _isStarted = false;
 
-  /// Initialize Chat Providers
-  Future<void> init() async {
-    try {
-      await _channel.invokeMethod('init_chat');
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  /// Listen to all parameters of the connected Live Chat
+  /// Stream is triggered when socket receive new values
   ///
-  /// Stream is updated at Duration provided on ```startChatProviders```
-  Stream<ChatProviderModel> get providersStream {
-    _getChatProviders();
-    return _providersStream!.stream.asBroadcastStream();
-  }
+  /// Please see ```ChatProviderModel```
+  Stream<ChatProviderModel>? get providersStream =>
+      _providersStream?.stream.asBroadcastStream();
+
+  /// Stream is triggered when socket receive new values
+  ///
+  /// ```CONNECTION_STATUS```:
+  /// CONNECTED | CONNECTING | DISCONNECTED |
+  /// FAILED | RECONNECTING | UNREACHABLE | UNKNOWN
+  Stream<CONNECTION_STATUS>? get connectionStatusStream =>
+      _connectionStatusStream?.stream.asBroadcastStream();
+
+  /// Stream is triggered when socket receive new values
+  ///
+  /// Please see ```ChatSettingsModel```
+  Stream<ChatSettingsModel>? get chatSettingsStream =>
+      _chatSettingsStream?.stream.asBroadcastStream();
+
+  /// Stream is triggered when socket receive new values
+  ///
+  /// Please see ```ChatAccountModel ```
+  Stream<bool>? get chatIsOnlineStream =>
+      _chatIsOnlineStream?.stream.asBroadcastStream();
 
   /// Set on Native/Custom chat user information
   ///
@@ -84,34 +134,29 @@ class Zendesk2Chat {
     }
   }
 
-  /// LOG events of the SDK
-  ///
-  /// ```enabled``` if enabled, shows detailed information about the SDK actions
-  Future<void> logger(bool enabled) async {
-    _isLoggerEnabled = enabled;
-    final arguments = {
-      'enabled': enabled,
-    };
-    try {
-      final result = await _channel.invokeMethod('logger', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  /// Close connection and release resources
+  /// Closes connection and release resources
   Future<void> dispose() async {
     try {
-      await _providersStream!.sink.close();
-      await _providersStream!.close();
-      _providersStream = null;
-      final result = await _channel.invokeMethod('dispose_chat');
+      final result = await _channel.invokeMethod('chat_dispose');
       if (_isLoggerEnabled) {
         print('zendesk2: $result');
       }
+      await _providersStream?.sink.close();
+      await _connectionStatusStream?.sink.close();
+      await _chatSettingsStream?.sink.close();
+      await _chatIsOnlineStream?.sink.close();
+
+      await _connectionStatusStream?.close();
+      await _chatSettingsStream?.close();
+      await _chatIsOnlineStream?.close();
+      await _providersStream?.close();
+
+      _providersStream = null;
+      _chatSettingsStream = null;
+      _chatIsOnlineStream = null;
+      _providersStream = null;
+
+      _isStarted = false;
     } catch (e) {
       print(e);
     }
@@ -124,11 +169,15 @@ class Zendesk2Chat {
   /// The user will not receive push notifications while connected
   Future<void> startChatProviders({bool autoConnect = true}) async {
     try {
-      if (_providersStream != null) {
-        await _providersStream!.sink.close();
-        await _providersStream!.close();
+      if (_isStarted) {
+        await dispose();
       }
+
       _providersStream = StreamController<ChatProviderModel>();
+      _connectionStatusStream = StreamController<CONNECTION_STATUS>();
+      _chatSettingsStream = StreamController<ChatSettingsModel>();
+      _chatIsOnlineStream = StreamController<bool>();
+
       final result = await _channel.invokeMethod('startChatProviders');
 
       if (autoConnect) {
@@ -138,6 +187,8 @@ class Zendesk2Chat {
       if (_isLoggerEnabled) {
         print('zendesk2: $result');
       }
+
+      _isStarted = true;
     } catch (e) {
       print(e);
     }
@@ -216,15 +267,6 @@ class Zendesk2Chat {
     }
   }
 
-  /// Providers only - private function to update ```providersStream```
-  Future<void> _getChatProviders() async {
-    final value = await _channel.invokeMethod('getChatProviders');
-    if (value != null) {
-      final providerModel = ChatProviderModel.fromJson(value);
-      _providersStream!.add(providerModel);
-    }
-  }
-
   /// Providers only - send file
   ///
   /// ```path``` the file path, that will represent the file attachment on live chat
@@ -240,20 +282,6 @@ class Zendesk2Chat {
     } catch (e) {
       print(e);
     }
-  }
-
-  /// Providers only - retrieve all compatible file extensions for Zendesk live chat
-  Future<List<String>?> getAttachmentExtensions() async {
-    try {
-      final value =
-          await _channel.invokeMethod('compatibleAttachmentsExtensions');
-      if (value != null && value is Iterable) {
-        return value.map((e) => e.toString()).toList();
-      }
-    } catch (e) {
-      print(e);
-    }
-    return null;
   }
 
   /// Register FCM Token for android push notifications
