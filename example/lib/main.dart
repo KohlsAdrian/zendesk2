@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zendesk2/zendesk2.dart';
+import 'package:zendesk2_example/zendesk_answer.dart';
 import 'package:zendesk2_example/zendesk_chat.dart';
 
 void main() {
@@ -28,18 +29,33 @@ class Home extends StatefulWidget {
 }
 
 class _Home extends State<Home> {
-  void zendesk(bool isNativeChat, BuildContext context) async {
+  final z = Zendesk.instance;
+  @override
+  void initState() {
     String accountKey = '';
     String appId = '';
+    String clientId = '';
+    String zendeskUrl = '';
+    z.init(
+      accountKey,
+      appId,
+      clientId: clientId,
+      zendeskUrl: zendeskUrl,
+    );
+    super.initState();
+  }
 
+  void answer() async {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => ZendeskAnswerUI()));
+  }
+
+  void chat() async {
     String name = '';
     String email = '';
     String phoneNumber = '';
 
-    final z = Zendesk.instance;
-    await z.init(accountKey, appId);
     await z.initChatSDK();
-    await z.initAnswerSDK();
 
     Zendesk2Chat zChat = Zendesk2Chat.instance;
 
@@ -67,11 +83,22 @@ class _Home extends State<Home> {
       body: Center(
         child: Text('Press on FAB to start chat'),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'customChat',
-        icon: Icon(FontAwesomeIcons.comments),
-        label: Text('Custom Chat'),
-        onPressed: () => zendesk(false, context),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'answer',
+            icon: Icon(FontAwesomeIcons.comments),
+            label: Text('Answer BOT'),
+            onPressed: answer,
+          ),
+          FloatingActionButton.extended(
+            heroTag: 'chat',
+            icon: Icon(FontAwesomeIcons.comments),
+            label: Text('Chat SDK V2'),
+            onPressed: chat,
+          ),
+        ],
       ),
     );
   }

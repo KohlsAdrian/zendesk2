@@ -55,7 +55,7 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
             "logger" -> zendesk2Chat?.logger(call)
             "setVisitorInfo" -> zendesk2Chat?.setVisitorInfo(call)
             "startChatProviders" -> zendesk2Chat?.startChatProviders()
-            "dispose" -> zendesk2Chat?.dispose()
+            "chat_dispose" -> zendesk2Chat?.dispose()
             "getChatProviders" -> mResult = zendesk2Chat?.getChatProviders()
             "sendMessage" -> zendesk2Chat?.sendMessage(call)
             "sendFile" -> zendesk2Chat?.sendFile(call)

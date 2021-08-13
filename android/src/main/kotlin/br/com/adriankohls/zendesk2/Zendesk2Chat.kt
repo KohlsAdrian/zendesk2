@@ -267,17 +267,6 @@ class Zendesk2Chat(private val channel: MethodChannel) {
 
                     logT["chatRating"] = logChatRating
                 }
-                is ChatLog.Comment -> {
-                    val logChatComment = mutableMapOf<String, Any?>()
-
-                    val comment = log.chatComment
-                    val newComment = log.newChatComment
-
-                    logChatComment["comment"] = comment
-                    logChatComment["newComment"] = newComment
-
-                    logT["chatComment"] = logChatComment
-                }
                 is ChatLog.OptionsMessage -> {
                     val logChatOptionsMessage = mutableMapOf<String, Any?>()
 

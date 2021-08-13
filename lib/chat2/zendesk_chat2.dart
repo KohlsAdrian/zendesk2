@@ -5,18 +5,20 @@ import 'package:zendesk2/zendesk.dart';
 
 class Zendesk2Chat {
   Zendesk2Chat._() {
-    _channel.setMethodCallHandler((call) async {
-      if (call.method == "sendChatProvidersResult") {
-        if (_isLoggerEnabled)
-          print('zendesk2 [sendChatProvidersResult]: ${call.arguments}');
+    _channel.setMethodCallHandler(
+      (call) async {
         try {
-          final providerModel = ChatProviderModel.fromJson(call.arguments);
-          _providersStream?.sink.add(providerModel);
+          switch (call.method) {
+            case 'sendChatProvidersResult':
+              final providerModel = ChatProviderModel.fromJson(call.arguments);
+              _providersStream?.sink.add(providerModel);
+              break;
+          }
         } catch (e) {
           print(e);
         }
-      }
-    });
+      },
+    );
   }
 
   static final Zendesk2Chat instance = Zendesk2Chat._();
@@ -29,6 +31,15 @@ class Zendesk2Chat {
   StreamController<ChatProviderModel>? _providersStream;
 
   bool _isLoggerEnabled = false;
+
+  /// Initialize Chat Providers
+  Future<void> init() async {
+    try {
+      await _channel.invokeMethod('init_chat');
+    } catch (e) {
+      print(e);
+    }
+  }
 
   /// Listen to all parameters of the connected Live Chat
   ///
@@ -97,7 +108,7 @@ class Zendesk2Chat {
       await _providersStream!.sink.close();
       await _providersStream!.close();
       _providersStream = null;
-      final result = await _channel.invokeMethod('dispose');
+      final result = await _channel.invokeMethod('dispose_chat');
       if (_isLoggerEnabled) {
         print('zendesk2: $result');
       }

@@ -7,8 +7,8 @@ class ChatProviderModel {
   final bool? isFileSendingEnabled;
   final CONNECTION_STATUS connectionStatus;
   final CHAT_SESSION_STATUS chatSessionStatus;
-  final List<Agent> agents;
-  final List<ChatLog> logs;
+  final Iterable<Agent> agents;
+  final Iterable<ChatLog> logs;
   final int? queuePosition;
   final String? rating;
   final String? comment;
@@ -32,13 +32,11 @@ class ChatProviderModel {
     bool? isChatting = map['isChatting'];
     bool? hasAgents = map['hasAgents'];
     bool? isFileSendingEnabled = map['isFileSendingEnabled'];
-    List<Agent> agents = ((map['agents'] ?? []) as Iterable)
-        .map((e) => Agent.fromJson(e))
-        .toList();
+    Iterable<Agent> agents =
+        ((map['agents'] ?? []) as Iterable).map((e) => Agent.fromJson(e));
 
-    List<ChatLog> logs = ((map['logs'] ?? []) as Iterable)
-        .map((e) => ChatLog.fromJson(e))
-        .toList();
+    Iterable<ChatLog> logs =
+        ((map['logs'] ?? []) as Iterable).map((e) => ChatLog.fromJson(e));
 
     int? queuePosition = map['queuePosition'];
     String? rating = map['rating'];
@@ -246,14 +244,12 @@ class ChatLogType {
   final ChatMessage? chatMessage;
   final ChatOptionsMessage? chatOptionsMessage;
   final ChatAttachment? chatAttachment;
-  final ChatComment? chatComment;
 
   ChatLogType(
     this.logType,
     this.chatMessage,
     this.chatOptionsMessage,
     this.chatAttachment,
-    this.chatComment,
   );
 
   factory ChatLogType.fromJson(Map map) {
@@ -264,9 +260,6 @@ class ChatLogType {
     switch (mLogType) {
       case 'ATTACHMENT_MESSAGE':
         logType = LOG_TYPE.ATTACHMENT_MESSAGE;
-        break;
-      case 'CHAT_COMMENT':
-        logType = LOG_TYPE.CHAT_COMMENT;
         break;
       case 'MEMBER_JOIN':
         logType = LOG_TYPE.MEMBER_JOIN;
@@ -288,14 +281,10 @@ class ChatLogType {
     ChatOptionsMessage? chatOptionsMessage;
     ChatMessage? chatMessage;
     ChatAttachment? chatAttachment;
-    ChatComment? chatComment;
 
     switch (logType) {
       case LOG_TYPE.ATTACHMENT_MESSAGE:
         chatAttachment = ChatAttachment.fromJson(map['chatAttachment']);
-        break;
-      case LOG_TYPE.CHAT_COMMENT:
-        chatComment = ChatComment.fromJson(map['chatComment']);
         break;
       case LOG_TYPE.MEMBER_JOIN:
       case LOG_TYPE.MEMBER_LEAVE:
@@ -314,7 +303,6 @@ class ChatLogType {
       chatMessage,
       chatOptionsMessage,
       chatAttachment,
-      chatComment,
     );
   }
 }
@@ -337,28 +325,15 @@ class ChatMessage {
 
 class ChatOptionsMessage {
   final String? message;
-  final List<String> options;
+  final Iterable<String> options;
 
   ChatOptionsMessage(this.message, this.options);
 
   factory ChatOptionsMessage.fromJson(Map map) {
     final String? message = map['message'];
-    final List<String> options =
-        ((map['options'] ?? []) as Iterable).map((e) => e.toString()).toList();
+    final Iterable<String> options =
+        ((map['options'] ?? []) as Iterable).map((o) => o.toString());
     return ChatOptionsMessage(message, options);
-  }
-}
-
-class ChatComment {
-  final String? comment;
-  final String? newComment;
-
-  ChatComment(this.comment, this.newComment);
-
-  factory ChatComment.fromJson(Map map) {
-    String? comment = map['comment'];
-    String? newComment = map['newComment'];
-    return ChatComment(comment, newComment);
   }
 }
 

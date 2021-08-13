@@ -79,7 +79,7 @@ public class SwiftZendesk2Chat {
         
         chat?.clearCache()
         chat?.resetIdentity({
-            print("Identity reseted")
+            NSLog("Identity reseted")
         })
         
         endChat()
@@ -99,16 +99,16 @@ public class SwiftZendesk2Chat {
     
     private func startProviders() -> Void {
         /// Chat providers
-        print("zendesk_chatProviderStart")
+        NSLog("zendesk_chatProviderStart")
         chatProviderStart()
         /// Account providers
-        print("zendesk_accountProviderStart")
+        NSLog("zendesk_accountProviderStart")
         accountProviderStart()
         /// Settings providers
-        print("zendesk_settingsProviderStart")
+        NSLog("zendesk_settingsProviderStart")
         settingsProviderStart()
         /// Connection providers
-        print("zendesk_connectionProviderStart")
+        NSLog("zendesk_connectionProviderStart")
         connectionProviderStart()
     }
     
@@ -121,7 +121,7 @@ public class SwiftZendesk2Chat {
                     self.isChatting = false
                 }
             case .failure(let error):
-                print(error)
+                NSLog(error.localizedDescription)
             }
 
             self.sendChatProvidersResult()
@@ -129,30 +129,29 @@ public class SwiftZendesk2Chat {
         }
         
         observeChatStateToken = Chat.chatProvider?.observeChatState { (chatState) in
-            let isChatting = chatState.isChatting
-            let chatSessionStatus = chatState.chatSessionStatus
-            let chatId = chatState.chatId
-            let agents = chatState.agents
-            let logs = chatState.logs
-            let queuePosition = chatState.queuePosition
+            self.isChatting = chatState.isChatting
+            self.chatId = chatState.chatId
+            self.agents = chatState.agents
+            self.hasAgents = !chatState.agents.isEmpty
+            self.logs = chatState.logs
+            self.queuePosition = chatState.queuePosition
             
-            self.isChatting = isChatting
-            self.chatId = chatId
-            self.agents = agents
-            self.hasAgents = !agents.isEmpty
-            self.logs = logs
-            self.queuePosition = queuePosition
-            
-            switch chatSessionStatus {
-            case .configuring: self.chatSessionStatus = "CONFIGURING"
-            case .ended: self.chatSessionStatus = "ENDED"
-            case .ending: self.chatSessionStatus = "ENDING"
-            case .initializing: self.chatSessionStatus = "INITIALIZING"
-            case .started: self.chatSessionStatus = "STARTED"
-            default: self.chatSessionStatus = "UNKNOWN"
+            switch chatState.chatSessionStatus {
+            case .configuring:
+                self.chatSessionStatus = "CONFIGURING"
+            case .ended:
+                self.chatSessionStatus = "ENDED"
+            case .ending:
+                self.chatSessionStatus = "ENDING"
+            case .initializing:
+                self.chatSessionStatus = "INITIALIZING"
+            case .started:
+                self.chatSessionStatus = "STARTED"
+            default:
+                self.chatSessionStatus = "UNKNOWN"
             }
-            self.sendChatProvidersResult()
             
+            self.sendChatProvidersResult()
         }
     }
     
@@ -170,7 +169,7 @@ public class SwiftZendesk2Chat {
                 self.hasAgents = true
                 self.isOnline = account.accountStatus == .online
             case .failure(let error):
-                print(error)
+                NSLog(error.localizedDescription)
             }
             self.sendChatProvidersResult()
 
@@ -246,15 +245,15 @@ public class SwiftZendesk2Chat {
         }, completion: { result in
             switch result {
             case .success:
-                print("success")
+                NSLog("success")
             case .failure(let error):
                 NSLog("Send attachment failed, resending...")
                 let messageId = error.messageId
                 if(messageId != nil && !(messageId?.isEmpty ?? false)){
                     Chat.chatProvider?.resendFailedFile(withId: messageId!, onProgress: { (progress) in
-                        print(progress)
+                        NSLog(progress.description)
                     }, completion: { (result) in
-                        print(result)
+                        //
                     })
                 }
             }
@@ -338,7 +337,7 @@ public class SwiftZendesk2Chat {
             case .pending:
                 logDS["status"] = "PENDING"
             case .failed(reason: let reason):
-                print(reason)
+                NSLog(reason.localizedDescription)
             default:
                 logDS["status"] = "UNKNOWN"
             }
@@ -348,8 +347,6 @@ public class SwiftZendesk2Chat {
             switch chatLogType {
             case .attachmentMessage:
                 logT["type"] = "ATTACHMENT_MESSAGE"
-            case .chatComment:
-                logT["type"] = "CHAT_COMMENT"
             case .memberJoin:
                 logT["type"] = "MEMBER_JOIN"
             case .memberLeave:
@@ -373,7 +370,6 @@ public class SwiftZendesk2Chat {
                 logChatMessage["id"] = id
                 logChatMessage["message"] = message
                 
-                
                 logT["chatMessage"] = logChatMessage
             } else if log is ChatAttachmentMessage {
                 let chatMessageAttachment = log as! ChatAttachmentMessage
@@ -389,14 +385,7 @@ public class SwiftZendesk2Chat {
                 let attachment = chatMessageAttachment.attachment
                 var logChatAttachmentAttachmentMessage = [String: Any]()
                 
-                let attachmentName = attachment.name
-                let attachmentError = attachment.attachmentError
-                let attachmentLocalUrl = attachment.localURL
-                let attachmentMimeType = attachment.mimeType
-                let attachmentSize = attachment.size
-                let attachmentUrl = attachment.url
-                
-                switch attachmentError {
+                switch attachment.attachmentError {
                 case .none:
                     logChatAttachmentAttachmentMessage["error"] = "NONE"
                 case .sizeLimit:
@@ -405,11 +394,11 @@ public class SwiftZendesk2Chat {
                     logChatAttachmentAttachmentMessage["error"] = "NONE"
                 }
                 
-                logChatAttachmentAttachmentMessage["name"] = attachmentName
-                logChatAttachmentAttachmentMessage["localUrl"] = attachmentLocalUrl?.absoluteString
-                logChatAttachmentAttachmentMessage["mimeType"] = attachmentMimeType
-                logChatAttachmentAttachmentMessage["size"] = attachmentSize
-                logChatAttachmentAttachmentMessage["url"] = attachmentUrl
+                logChatAttachmentAttachmentMessage["name"] = attachment.name
+                logChatAttachmentAttachmentMessage["localUrl"] = attachment.localURL?.absoluteString
+                logChatAttachmentAttachmentMessage["mimeType"] = attachment.mimeType
+                logChatAttachmentAttachmentMessage["size"] = attachment.size
+                logChatAttachmentAttachmentMessage["url"] = attachment.url
                 
                 logChatAttachmentMessage["chatAttachmentAttachment"] = logChatAttachmentAttachmentMessage
                 logT["chatAttachment"] = logChatAttachmentMessage
@@ -443,11 +432,11 @@ public class SwiftZendesk2Chat {
     func endChat() -> Void {
         Chat.chatProvider?.endChat({ (result) in
             switch result {
-            case .failure(let error):
-                print(error)
             case .success(let success):
                 self.chatSessionStatus =  "ENDED"
-                print(success)
+                NSLog(success.description)
+            case .failure(let error):
+                NSLog(error.localizedDescription)
             }
         })
     }

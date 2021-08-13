@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:zendesk2/chat2/zendesk_chat2.dart';
 
 class Zendesk {
   Zendesk._();
@@ -12,16 +13,18 @@ class Zendesk {
   ///
   /// ```appId``` the app ID created on Zendesk Panel
   ///
-  /// ```answerBot``` initialize the Answer BOT (default is false)
-  ///
+  /// ```answerBot``` and ```zendeskUrl``` are necessary for AnswerSDK
   Future<void> init(
     String accountKey,
     String appId, {
-    bool answerBot = false,
+    String? clientId,
+    String? zendeskUrl,
   }) async {
     Map arguments = {
       'accountKey': accountKey,
       'appId': appId,
+      'clientId': clientId,
+      'zendeskUrl': zendeskUrl,
     };
     try {
       await channel.invokeMethod('init', arguments);
@@ -30,19 +33,5 @@ class Zendesk {
     }
   }
 
-  Future<void> initChatSDK() async {
-    try {
-      await channel.invokeMethod('init_chat');
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<void> initAnswerSDK() async {
-    try {
-      await channel.invokeMethod('init_answer');
-    } catch (e) {
-      print(e);
-    }
-  }
+  Future<void> initChatSDK() async => await Zendesk2Chat.instance.init();
 }

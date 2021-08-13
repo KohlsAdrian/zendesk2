@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:zendesk2/chat2/model/chat_provider_enums.dart';
-import 'package:zendesk2/chat2/model/chat_provider_model.dart';
 import 'package:zendesk2/zendesk2.dart';
 
 class ZendeskChat extends StatefulWidget {
@@ -182,149 +180,144 @@ class _ZendeskChat extends State<ZendeskChat> {
         ),
       );
 
-  Widget _chat() => ListView.builder(
+  Widget _chat() => Padding(
         padding: EdgeInsets.only(bottom: 200),
-        itemCount: _providerModel!.logs.length,
-        itemBuilder: (context, index) {
-          ChatLog log = _providerModel!.logs[index];
-          ChatMessage? chatMessage = log.chatLogType.chatMessage;
+        child: Column(
+          children: (_providerModel?.logs ?? []).map(
+            (log) {
+              ChatMessage? chatMessage = log.chatLogType.chatMessage;
 
-          String message = chatMessage?.message ?? '';
+              String message = chatMessage?.message ?? '';
 
-          String name = log.displayName ?? '';
+              String name = log.displayName ?? '';
 
-          bool isAttachment = false;
-          bool isJoinOrLeave = false;
-          bool isRatingReview = false;
-          bool isRatingComment = false;
-          bool isAgent =
-              log.chatLogParticipant.chatParticipant == CHAT_PARTICIPANT.AGENT;
+              bool isAttachment = false;
+              bool isJoinOrLeave = false;
+              bool isRatingReview = false;
+              bool isRatingComment = false;
+              bool isAgent = log.chatLogParticipant.chatParticipant ==
+                  CHAT_PARTICIPANT.AGENT;
 
-          Agent? agent;
-          if (isAgent)
-            agent = _providerModel!.agents
-                .firstWhere((element) => element.displayName == name);
+              Agent? agent;
+              if (isAgent)
+                agent = _providerModel!.agents
+                    .firstWhere((element) => element.displayName == name);
 
-          switch (log.chatLogType.logType) {
-            case LOG_TYPE.ATTACHMENT_MESSAGE:
-              message = 'Attachment';
-              isAttachment = true;
-              break;
-            case LOG_TYPE.CHAT_COMMENT:
-              ChatComment? chatComment = log.chatLogType.chatComment;
-              final comment = chatComment?.comment ?? '';
-              final newComment = chatComment?.newComment ?? '';
-              message = 'Rating comment: $comment\n'
-                  'New comment: $newComment';
-              isRatingComment = true;
-              break;
-            case LOG_TYPE.MEMBER_JOIN:
-              message = '$name Joined!';
-              isJoinOrLeave = true;
-              break;
-            case LOG_TYPE.MEMBER_LEAVE:
-              message = '$name Left!';
-              isJoinOrLeave = true;
-              break;
-            case LOG_TYPE.MESSAGE:
-              message = message;
-              break;
-            case LOG_TYPE.OPTIONS_MESSAGE:
-              message = 'Options message';
-              break;
-            case LOG_TYPE.UNKNOWN:
-              message = 'Unknown';
-              break;
-          }
+              switch (log.chatLogType.logType) {
+                case LOG_TYPE.ATTACHMENT_MESSAGE:
+                  message = 'Attachment';
+                  isAttachment = true;
+                  break;
+                case LOG_TYPE.MEMBER_JOIN:
+                  message = '$name Joined!';
+                  isJoinOrLeave = true;
+                  break;
+                case LOG_TYPE.MEMBER_LEAVE:
+                  message = '$name Left!';
+                  isJoinOrLeave = true;
+                  break;
+                case LOG_TYPE.MESSAGE:
+                  message = message;
+                  break;
+                case LOG_TYPE.OPTIONS_MESSAGE:
+                  message = 'Options message';
+                  break;
+                case LOG_TYPE.UNKNOWN:
+                  message = 'Unknown';
+                  break;
+              }
 
-          bool isVisitor = log.chatLogParticipant.chatParticipant ==
-              CHAT_PARTICIPANT.VISITOR;
+              bool isVisitor = log.chatLogParticipant.chatParticipant ==
+                  CHAT_PARTICIPANT.VISITOR;
 
-          final imageUrl = log.chatLogType.chatAttachment?.url;
+              final imageUrl = log.chatLogType.chatAttachment?.url;
 
-          final mimeType = log
-              .chatLogType.chatAttachment?.chatAttachmentAttachment.mimeType
-              ?.toLowerCase();
-          final isImage = mimeType == null
-              ? false
-              : (mimeType.contains('jpg') ||
-                  mimeType.contains('png') ||
-                  mimeType.contains('jpeg') ||
-                  mimeType.contains('gif'));
+              final mimeType = log
+                  .chatLogType.chatAttachment?.chatAttachmentAttachment.mimeType
+                  ?.toLowerCase();
+              final isImage = mimeType == null
+                  ? false
+                  : (mimeType.contains('jpg') ||
+                      mimeType.contains('png') ||
+                      mimeType.contains('jpeg') ||
+                      mimeType.contains('gif'));
 
-          return isJoinOrLeave || isRatingReview || isRatingComment
-              ? Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Text(
-                    message,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: isVisitor
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.start,
-                  children: [
-                    Container(
+              return isJoinOrLeave || isRatingReview || isRatingComment
+                  ? Padding(
                       padding: EdgeInsets.all(5),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          if (isAgent)
-                            agent?.avatar != null
-                                ? CachedNetworkImage(
-                                    imageUrl: agent!.avatar ?? '')
-                                : Icon(Icons.person),
-                          Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0)),
-                            child: Container(
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              padding: EdgeInsets.all(10),
-                              child: Column(
-                                children: [
-                                  if (isAttachment)
-                                    GestureDetector(
-                                      onTap: () => launch(log
-                                              .chatLogType
-                                              .chatAttachment
-                                              ?.chatAttachmentAttachment
-                                              .url ??
-                                          ''),
-                                      child: isImage
-                                          ? CachedNetworkImage(
-                                              imageUrl: imageUrl ?? '',
-                                              placeholder: (context, url) =>
-                                                  CircularProgressIndicator(),
-                                            )
-                                          : Column(
-                                              children: [
-                                                Icon(FontAwesomeIcons.file),
-                                                Text(log
-                                                        .chatLogType
-                                                        .chatAttachment
-                                                        ?.chatAttachmentAttachment
-                                                        .name ??
-                                                    '')
-                                              ],
-                                            ),
-                                    ),
-                                  Text(message),
-                                ],
-                              ),
-                            ),
-                          ),
-                          if (isVisitor) Icon(Icons.person),
-                        ],
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                     )
-                  ],
-                );
-        },
+                  : Row(
+                      mainAxisAlignment: isVisitor
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(5),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              if (isAgent)
+                                agent?.avatar != null
+                                    ? CachedNetworkImage(
+                                        imageUrl: agent!.avatar ?? '')
+                                    : Icon(Icons.person),
+                              Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0)),
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5,
+                                  padding: EdgeInsets.all(10),
+                                  child: Column(
+                                    children: [
+                                      if (isAttachment)
+                                        GestureDetector(
+                                          onTap: () => launch(log
+                                                  .chatLogType
+                                                  .chatAttachment
+                                                  ?.chatAttachmentAttachment
+                                                  .url ??
+                                              ''),
+                                          child: isImage
+                                              ? CachedNetworkImage(
+                                                  imageUrl: imageUrl ?? '',
+                                                  placeholder: (context, url) =>
+                                                      CircularProgressIndicator(),
+                                                )
+                                              : Column(
+                                                  children: [
+                                                    Icon(FontAwesomeIcons.file),
+                                                    Text(log
+                                                            .chatLogType
+                                                            .chatAttachment
+                                                            ?.chatAttachmentAttachment
+                                                            .name ??
+                                                        '')
+                                                  ],
+                                                ),
+                                        ),
+                                      Text(message),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (isVisitor) Icon(Icons.person),
+                            ],
+                          ),
+                        )
+                      ],
+                    );
+            },
+          ).toList(),
+        ),
       );
 
   @override
