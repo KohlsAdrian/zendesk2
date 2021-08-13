@@ -13,7 +13,11 @@ Easy and fast to use
 * AccountKey - https://yourdomain.zendesk.com/chat/agent#home > Profile Picture > Check Connection
 
 * AppId - https://yourdomain.zendesk.com/agent/admin/mobile_sdk
- 
+
+* ClientId - https://yourdomain.zendesk.com/agent/admin/mobile_sdk (for Answer SDK)
+
+* zendeskUrl - https://yourdomain.zendesk.com/agent/admin/mobile_sdk (for Answer SDK)
+
 * Update Cocoapods to latest version
 
 
@@ -25,9 +29,20 @@ await Zendesk2.instance.init(accountKey, appId);
 
 ````dart
 final z = Zendesk2.instance; // general Zendesk
-await z.init(accountKey, appId); // initialize the Zendesk SDK
-await z.initChatSDK(); // initialize the Chat SDK
-await z.initAnswerSDK(); // initialize the Answer SDK
+
+// initialize the Zendesk SDK
+await z.init(accountKey, appId); 
+
+// initialize the Zendesk SDK with Answer SDK
+await z.init(
+    accountKey, 
+    appId, 
+    clientId: clientId, 
+    zendeskUrl: zendeskUrl,
+); 
+
+// initialize the Chat SDK
+await z.initChatSDK(); 
 
 final zChat = Zendesk2Chat.instance; // Zendesk Chat Providers
 final zAnswer = Zendesk2Answer.instance; // Zendesk Answer Providers
@@ -71,7 +86,16 @@ await zChat.dispose();
 <details><summary>How to use - Answer SDK</summary>
 
 ```dart
+/// String query
+await zAnswer.query(query);
 
+// Stream subscrition resulting on query success
+_subscription = zAnswer.providersDeflection.listen((answerProviderModel) {
+      /// this stream retrieve all Answer data from the SDK
+      /// in ONE unique reliable object :)
+      _answerProviderModel = answerProviderModel;
+      }
+    );
 ```
 </details>
 
