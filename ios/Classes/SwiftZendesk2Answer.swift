@@ -12,16 +12,14 @@ import SupportProvidersSDK
 
 public class SwiftZendesk2Answer {
     
-    private var channel: FlutterMethodChannel
+    private var channel: FlutterMethodChannel? = nil
+    private var zendeskPlugin: SwiftZendesk2Plugin? = nil
     
     private let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
     
-    private var dictionaryAnswerProviderModel: Dictionary<String, Any>? = nil
-    private var resolveArticleDeflection: Bool? = nil
-    private var rejectArticleDeflection: Bool? = nil
-    
-    init(channel: FlutterMethodChannel) {
+    init(channel: FlutterMethodChannel, flutterPlugin: SwiftZendesk2Plugin) {
         self.channel = channel
+        self.zendeskPlugin = flutterPlugin
     }
     
     func initialize(_ arguments: Dictionary<String, Any>?) -> Void {
@@ -36,42 +34,14 @@ public class SwiftZendesk2Answer {
         }
     }
     
-    func dispose() -> Void {
-        self.dictionaryAnswerProviderModel = nil
-        self.resolveArticleDeflection = nil
-        self.rejectArticleDeflection = nil
+    private func sendAnswerProviderModel(_ arguments: Dictionary<String, Any>?) -> Void {
+        self.channel?.invokeMethod("sendAnswerProviderModel", arguments: arguments)
     }
-    
-    func getAnswerProviders() -> Dictionary<String, Any>? {
-        let mDictionary = self.dictionaryAnswerProviderModel
-        self.dictionaryAnswerProviderModel = nil
-        return mDictionary
+    private func sendResolveArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
+        self.channel?.invokeMethod("sendResolveArticleDeflection", arguments: arguments)
     }
-    
-    func getResolveArticleDeflection() -> Dictionary<String, Any>? {
-        var dictionary = [String: Any]()
-        let success = Bool(self.resolveArticleDeflection ?? false)
-        self.resolveArticleDeflection = nil
-        dictionary["success"] = success
-        return dictionary
-    }
-    
-    func getRejectArticleDeflection() -> Dictionary<String, Any>? {
-        var dictionary = [String: Any]()
-        let success = Bool(self.rejectArticleDeflection ?? false)
-        self.rejectArticleDeflection = nil
-        dictionary["success"] = success
-        return dictionary
-    }
-    
-    private func sendAnswerProviderModel() -> Void {
-        channel.invokeMethod("sendAnswerProviderModel", arguments: nil)
-    }
-    private func sendResolveArticleDeflection() -> Void {
-        channel.invokeMethod("sendResolveArticleDeflection", arguments: nil)
-    }
-    private func sendRejectArticleDeflection() -> Void {
-        channel.invokeMethod("sendRejectArticleDeflection", arguments: nil)
+    private func sendRejectArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
+        self.channel?.invokeMethod("sendRejectArticleDeflection", arguments: arguments)
     }
     
     func deflectionQuery(_ arguments: Dictionary<String, Any>?) -> Void {
@@ -112,12 +82,10 @@ public class SwiftZendesk2Answer {
                 
                 dictionary["articles"] = mArticles
                 
-                self.dictionaryAnswerProviderModel = dictionary
+                self.sendAnswerProviderModel(dictionary)
             case .failure(let error):
                 NSLog(error.localizedDescription)
-                self.dictionaryAnswerProviderModel = nil
             }
-            self.sendAnswerProviderModel()
         })
     }
     
@@ -129,15 +97,16 @@ public class SwiftZendesk2Answer {
         if deflectionId != nil && articleId != nil && interactionAccessToken != nil {
             if(deflectionId is Int64 && articleId is Int64 && interactionAccessToken is String){
                 answerBotProvider?.resolveWithArticle(deflectionId: deflectionId as! Int64, articleId: articleId as! Int64, interactionAccessToken: interactionAccessToken as! String, callback: { result in
+                    var dictionary = [String: Any]()
                     switch result {
                     case .success(let response):
-                        self.resolveArticleDeflection = true
+                        dictionary["success"] = true
                         NSLog("Success resolved article deflection: %@", response)
                     case .failure(let error):
-                        self.resolveArticleDeflection = false
+                        dictionary["success"] = false
                         NSLog("Error resolving article deflection: %@", error.localizedDescription)
                     }
-                    self.sendResolveArticleDeflection()
+                    self.sendResolveArticleDeflection(dictionary)
                 })}
         }
     }
@@ -159,15 +128,16 @@ public class SwiftZendesk2Answer {
         if deflectionId != nil && articleId != nil && interactionAccessToken != nil {
             if(deflectionId is Int64 && articleId is Int64 && interactionAccessToken is String){
                 answerBotProvider?.rejectWithArticle(deflectionId: deflectionId as! Int64, articleId: articleId as! Int64, interactionAccessToken: interactionAccessToken as! String, reason: mReason, callback: { result in
+                    var dictionary = [String: Any]()
                     switch result {
                     case .success(let response):
-                        self.rejectArticleDeflection = true
+                        dictionary["success"] = true
                         NSLog("Success rejecting article deflection: %@", response)
                     case .failure(let error):
-                        self.rejectArticleDeflection = false
+                        dictionary["success"] = false
                         NSLog("Error rejecting article deflection: %@", error.localizedDescription)
                     }
-                    self.sendRejectArticleDeflection()
+                    self.sendRejectArticleDeflection(arguments)
                 })
             }
         }

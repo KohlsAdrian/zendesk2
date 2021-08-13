@@ -1,28 +1,30 @@
 # 2.0.0+0
 
+* Huge update 🎉
+
 * [Features]
 
-* Answer SDK providers
-
-* Plugin wrapped features: Zendesk, ZendeskChat and ZendeskAnswer (see README.md)
+    * Answer SDK providers
 
 * [BREAKING CHANGES]
 
-* Wrapped 3 new streams: Connection Status, Chat Settings and isOnline status (Provider Model optimisation)
+    * Plugin wrapped features: `Zendesk`, `ZendeskChat` and `ZendeskAnswer` (see README.md)
 
-* Optimised null-safety on ProviderModel object
+    * Wrapped 3 new streams: `Connection Status`, `Chat Settings` and `isOnline` status (`ProviderModel` optimisation)
 
-* Moved SDK initialization to general Zendesk class (Flutter and Native side)
+    * Optimised `null-safety` on `ProviderModel` object
+
+    * Moved SDK initialization to general Zendesk class (see README.md)
 
 * [OPTIMISATION]
 
-* Removed unused SDKs and unused code
+    * Removed unused SDKs and unused code
 
-* Removed deprecated functions:
-    
-    * Native Chat
-    
-    * Rating
+    * Removed deprecated functions:
+        
+        * Native Chat
+        
+        * Rating
 
 # 1.6.1+0
 

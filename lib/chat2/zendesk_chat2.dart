@@ -70,8 +70,7 @@ class Zendesk2Chat {
   StreamController<ChatSettingsModel>? _chatSettingsStream;
   StreamController<bool>? _chatIsOnlineStream;
 
-  bool _isLoggerEnabled = false;
-  bool _isStarted = false;
+  bool _isStreaming = false;
 
   /// Stream is triggered when socket receive new values
   ///
@@ -125,38 +124,7 @@ class Zendesk2Chat {
       'tags': tags,
     };
     try {
-      final result = await _channel.invokeMethod('setVisitorInfo', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  /// Closes connection and release resources
-  Future<void> dispose() async {
-    try {
-      final result = await _channel.invokeMethod('chat_dispose');
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-      await _providersStream?.sink.close();
-      await _connectionStatusStream?.sink.close();
-      await _chatSettingsStream?.sink.close();
-      await _chatIsOnlineStream?.sink.close();
-
-      await _connectionStatusStream?.close();
-      await _chatSettingsStream?.close();
-      await _chatIsOnlineStream?.close();
-      await _providersStream?.close();
-
-      _providersStream = null;
-      _chatSettingsStream = null;
-      _chatIsOnlineStream = null;
-      _providersStream = null;
-
-      _isStarted = false;
+      await _channel.invokeMethod('setVisitorInfo', arguments);
     } catch (e) {
       print(e);
     }
@@ -169,26 +137,19 @@ class Zendesk2Chat {
   /// The user will not receive push notifications while connected
   Future<void> startChatProviders({bool autoConnect = true}) async {
     try {
-      if (_isStarted) {
-        await dispose();
+      if (!_isStreaming) {
+        _providersStream = StreamController<ChatProviderModel>();
+        _connectionStatusStream = StreamController<CONNECTION_STATUS>();
+        _chatSettingsStream = StreamController<ChatSettingsModel>();
+        _chatIsOnlineStream = StreamController<bool>();
+        _isStreaming = true;
       }
 
-      _providersStream = StreamController<ChatProviderModel>();
-      _connectionStatusStream = StreamController<CONNECTION_STATUS>();
-      _chatSettingsStream = StreamController<ChatSettingsModel>();
-      _chatIsOnlineStream = StreamController<bool>();
-
-      final result = await _channel.invokeMethod('startChatProviders');
+      await _channel.invokeMethod('startChatProviders');
 
       if (autoConnect) {
         await connect();
       }
-
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
-
-      _isStarted = true;
     } catch (e) {
       print(e);
     }
@@ -198,10 +159,7 @@ class Zendesk2Chat {
   /// The user will also stop receiving push notifications for new messages.
   Future<void> connect() async {
     try {
-      final result = await _channel.invokeMethod('connect');
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
+      await _channel.invokeMethod('chat_connect');
     } catch (e) {
       print(e);
     }
@@ -211,10 +169,7 @@ class Zendesk2Chat {
   ///  Usefull when going to background inside the chat screeen. The user will start receiving push notifications for new messages.
   Future<void> disconnect() async {
     try {
-      final result = await _channel.invokeMethod('disconnect');
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
+      await _channel.invokeMethod('disconnect');
     } catch (e) {
       print(e);
     }
@@ -228,10 +183,7 @@ class Zendesk2Chat {
       'message': message,
     };
     try {
-      final result = await _channel.invokeMethod('sendMessage', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
+      await _channel.invokeMethod('sendMessage', arguments);
     } catch (e) {
       print(e);
     }
@@ -246,10 +198,7 @@ class Zendesk2Chat {
       'isTyping': isTyping,
     };
     try {
-      final result = await _channel.invokeMethod('sendIsTyping', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
+      await _channel.invokeMethod('sendIsTyping', arguments);
     } catch (e) {
       print(e);
     }
@@ -258,10 +207,7 @@ class Zendesk2Chat {
   /// Providers only - end the live chat
   Future<void> endChat() async {
     try {
-      final result = await _channel.invokeMethod('endChat');
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
+      await _channel.invokeMethod('endChat');
     } catch (e) {
       print(e);
     }
@@ -275,10 +221,7 @@ class Zendesk2Chat {
       'file': path,
     };
     try {
-      final result = await _channel.invokeMethod('sendFile', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
+      await _channel.invokeMethod('sendFile', arguments);
     } catch (e) {
       print(e);
     }
@@ -290,10 +233,35 @@ class Zendesk2Chat {
       final arguments = {
         'token': token,
       };
-      final result = await _channel.invokeMethod('registerToken', arguments);
-      if (_isLoggerEnabled) {
-        print('zendesk2: $result');
-      }
+      await _channel.invokeMethod('registerToken', arguments);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// Release and close streams
+  Future<void> dispose() async {
+    try {
+      _providersStream?.sink.close();
+      _providersStream?.close();
+
+      _connectionStatusStream?.sink.close();
+      _connectionStatusStream?.close();
+
+      _chatSettingsStream?.sink.close();
+      _chatSettingsStream?.close();
+
+      _chatIsOnlineStream?.sink.close();
+      _chatIsOnlineStream?.close();
+
+      _providersStream = null;
+      _connectionStatusStream = null;
+      _chatSettingsStream = null;
+      _chatIsOnlineStream = null;
+
+      _isStreaming = false;
+
+      await _channel.invokeMethod('chat_dispose');
     } catch (e) {
       print(e);
     }

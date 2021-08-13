@@ -22,23 +22,24 @@ class _ZendeskAnswerUI extends State<ZendeskAnswerUI> {
 
   @override
   void initState() {
-    _subscritionProvidersDeflection = _zAnswer.providersDeflection.listen(
-        (answerProviderModel) =>
-            setState(() => _answerProviderModel = answerProviderModel));
-    _subscritionProvidersResolveArticleDeflection = _zAnswer
-        .providersResolveArticleDeflection
-        .listen((resolved) => setState(() => _resolved = resolved));
-    _zAnswer.providersRejectArticleDeflection
-        .listen((rejected) => setState(() => _rejected = rejected));
     super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _subscritionProvidersDeflection = _zAnswer.providersDeflection.listen(
+          (answerProviderModel) =>
+              setState(() => _answerProviderModel = answerProviderModel));
+      _subscritionProvidersResolveArticleDeflection = _zAnswer
+          .providersResolveArticleDeflection
+          .listen((resolved) => setState(() => _resolved = resolved));
+      _zAnswer.providersRejectArticleDeflection
+          .listen((rejected) => setState(() => _rejected = rejected));
+    });
   }
 
   Future<bool> _onWillPop() async {
     _subscritionProvidersDeflection?.cancel();
     _subscritionProvidersResolveArticleDeflection?.cancel();
     _subscritionProvidersRejectArticleDeflection?.cancel();
-    await _zAnswer.dispose();
-    return false;
+    return true;
   }
 
   void _query() => _zAnswer.query(_tecQuery.text);

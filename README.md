@@ -43,7 +43,7 @@ final zChat = Zendesk2Chat.instance; // Zendesk Chat Providers
 final zAnswer = Zendesk2Answer.instance; // Zendesk Answer Providers
 ````
 
-<details><summary>How to use - Chat SDK V2</summary>
+# How to use - Chat SDK V2
 
 ```dart
 /// Zendesk Chat instance
@@ -89,9 +89,8 @@ await zChat.connect();
 /// After you release resources
 await zChat.dispose();
 ```
-</details>
 
-<details><summary>How to use - Answer SDK</summary>
+# How to use - Answer SDK
 
 ```dart
 /// String query
@@ -132,7 +131,6 @@ To configure chat notifications, you will need to do the following configuration
         Chat.registerPushToken(deviceToken)
     }
   ```
-</details>
 
 <details><summary> Android </summary>
 

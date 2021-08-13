@@ -10,10 +10,12 @@ import Flutter
 
 public class SwiftZendesk2Chat {
     
-    private var channel: FlutterMethodChannel
+    private var channel: FlutterMethodChannel? = nil
+    private var zendeskPlugin: SwiftZendesk2Plugin? = nil
     
-    init(channel: FlutterMethodChannel) {
+    init(channel: FlutterMethodChannel, flutterPlugin: SwiftZendesk2Plugin) {
         self.channel = channel
+        self.zendeskPlugin = flutterPlugin
     }
     
     func initialize(_ arguments: Dictionary<String, Any>?) -> Void {
@@ -21,6 +23,14 @@ public class SwiftZendesk2Chat {
         let appId = (arguments?["appId"] ?? "") as? String
         
         Chat.initialize(accountKey: accountKey!, appId: appId!)
+    }
+    
+    func dispose() -> Void {
+        endChat()
+        Chat.instance?.resetIdentity({
+            NSLog("Identity reseted")
+        })
+        Chat.instance?.clearCache()
     }
     
     /// setVisitorInfo Zendesk API
@@ -54,58 +64,29 @@ public class SwiftZendesk2Chat {
         Chat.connectionProvider?.disconnect()
     }
     
-    /// Closes Zendesk Chat
-    @objc func dispose() -> Void {
-        
-        let chat = Chat.instance
-        
-        chat?.clearCache()
-        chat?.resetIdentity({
-            NSLog("Identity reseted")
-        })
-        
-        endChat()
-        
-        releaseProviders()
-    }
-    
-    /// PROVIDERS FOR CUSTOM UI
-    
-    private func releaseProviders() -> Void {
-        Chat.instance?.chatProvider.endChat()
-        Chat.connectionProvider?.disconnect()
-    }
-    
     private func startProviders() -> Void {
-        /// Chat providers
-        NSLog("zendesk_chatProviderStart")
+        NSLog("zendesk_chat_start_providers")
         chatProviderStart()
-        /// Account providers
-        NSLog("zendesk_accountProviderStart")
         accountProviderStart()
-        /// Settings providers
-        NSLog("zendesk_settingsProviderStart")
         settingsProviderStart()
-        /// Connection providers
-        NSLog("zendesk_connectionProviderStart")
         connectionProviderStart()
     }
     
-    func sendChatProviderResult(_ arguments: Dictionary<String, Any>?) -> Void {
-        channel.invokeMethod("sendChatProvidersResult", arguments: arguments)
+    private func sendChatProvidersResult(_ arguments: Dictionary<String, Any>?) -> Void {
+        self.channel?.invokeMethod("sendChatProvidersResult", arguments: arguments)
     }
-    func sendChatConnectionStatusResult(_ arguments: Dictionary<String, Any>?) -> Void {
-        channel.invokeMethod("sendChatConnectionStatusResult", arguments: arguments)
+    private func sendChatConnectionStatusResult(_ arguments: Dictionary<String, Any>?) -> Void {
+        self.channel?.invokeMethod("sendChatConnectionStatusResult", arguments: arguments)
     }
-    func sendChatSettingsResult(_ arguments: Dictionary<String, Any>?) -> Void {
-        channel.invokeMethod("sendChatSettingsResult", arguments: arguments)
+    private func sendChatSettingsResult(_ arguments: Dictionary<String, Any>?) -> Void {
+        self.channel?.invokeMethod("sendChatSettingsResult", arguments: arguments)
     }
-    func sendChatIsOnlineResult(_ arguments: Dictionary<String, Any>?) -> Void {
-        channel.invokeMethod("sendChatIsOnlineResult", arguments: arguments)
+    private func sendChatIsOnlineResult(_ arguments: Dictionary<String, Any>?) -> Void {
+        self.channel?.invokeMethod("sendChatIsOnlineResult", arguments: arguments)
     }
     
     private func chatProviderStart() -> Void {
-        let _ = Chat.chatProvider?.observeChatState { (chatState) in
+        zendeskPlugin?.chatStateObservationToken = Chat.chatProvider?.observeChatState { (chatState) in
             
             let isChatting = chatState.isChatting
             let chatId = chatState.chatId
@@ -191,7 +172,7 @@ public class SwiftZendesk2Chat {
                 case .pending:
                     logDS["status"] = "PENDING"
                 case .failed(reason: let reason):
-                    NSLog(reason.localizedDescription)
+                    NSLog("MessageLog delivery error: ",reason.localizedDescription)
                 default:
                     logDS["status"] = "UNKNOWN"
                 }
@@ -280,23 +261,24 @@ public class SwiftZendesk2Chat {
             dictionary["agents"] = agentsList
             dictionary["logs"] = logsList
             
-            self.sendChatProviderResult(dictionary)
+            self.sendChatProvidersResult(dictionary)
         }
     }
     
     private func accountProviderStart() -> Void {
-        let _ = Chat.accountProvider?.observeAccount { (account) in
+        zendeskPlugin?.accountObservationToken = Chat.accountProvider?.observeAccount { (account) in
             let accountStatus = account.accountStatus
             let isOnline = accountStatus == .online
             
             var dictionary = [String: Any]()
             dictionary["isOnline"] = isOnline
+            
             self.sendChatIsOnlineResult(dictionary)
         }
     }
     
     private func settingsProviderStart() -> Void {
-        let _ = Chat.settingsProvider?.observeChatSettings { (settings) in
+        zendeskPlugin?.settingsObservationToken = Chat.settingsProvider?.observeChatSettings { (settings) in
             let isFileSendingEnabled = settings.isFileSendingEnabled
             let supportedFileTypes = settings.supportedFileTypes
             let fileSizeLimit = settings.fileSizeLimit
@@ -311,7 +293,7 @@ public class SwiftZendesk2Chat {
     }
     
     private func connectionProviderStart() -> Void {
-        let _ = Chat.connectionProvider?.observeConnectionStatus { (status) in
+        zendeskPlugin?.statusObservationToken = Chat.connectionProvider?.observeConnectionStatus { (status) in
             var connectionStatus: String? = nil
             switch status {
             case .connected:

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -19,34 +21,96 @@ class _ZendeskChat extends State<ZendeskChat> {
   CONNECTION_STATUS? _connectionStatus;
   bool? _isOnline;
 
-  @override
-  void dispose() {
-    _z.dispose();
-    super.dispose();
+  StreamSubscription<ChatProviderModel>? _subscriptionProvidersStream;
+  StreamSubscription<CONNECTION_STATUS>? _subscriptionConnetionStatusStream;
+  StreamSubscription<ChatSettingsModel>? _subscriptionChatSettingsStream;
+  StreamSubscription<bool>? _subscriptionChatIsOnlineStream;
+
+  Future<bool> _onWillPopScope() async {
+    await _subscriptionProvidersStream?.cancel();
+    await _subscriptionConnetionStatusStream?.cancel();
+    await _subscriptionChatSettingsStream?.cancel();
+    await _subscriptionChatIsOnlineStream?.cancel();
+    await _z.dispose();
+    await _z.disconnect();
+    return true;
   }
 
   @override
   void initState() {
     super.initState();
 
-    Future.delayed(Duration(), () async {
-      _z.providersStream?.listen((providerModel) {
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      await _z.connect();
+      _subscriptionProvidersStream =
+          _z.providersStream?.listen((providerModel) {
         _providerModel = providerModel;
+        print('ProviderModel: $_providerModel');
         setState(() {});
       });
-      _z.chatSettingsStream?.listen((settingsModel) {
+      _subscriptionChatSettingsStream =
+          _z.chatSettingsStream?.listen((settingsModel) {
         _chatSettingsModel = settingsModel;
+        print('Chat Settings: $_chatSettingsModel');
         setState(() {});
       });
-      _z.connectionStatusStream?.listen((connectionStatus) {
+      _subscriptionConnetionStatusStream =
+          _z.connectionStatusStream?.listen((connectionStatus) {
         _connectionStatus = connectionStatus;
+        print('Connection Status: $_connectionStatus');
         setState(() {});
       });
-      _z.chatIsOnlineStream?.listen((isOnline) {
+      _subscriptionChatIsOnlineStream =
+          _z.chatIsOnlineStream?.listen((isOnline) {
         _isOnline = isOnline;
+        print('isOnline: $_isOnline');
         setState(() {});
       });
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final size = mq.size;
+    final isOnline = ((_isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
+    return WillPopScope(
+      onWillPop: _onWillPopScope,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Custom Chat UI: $isOnline'),
+        ),
+        body: _providerModel == null
+            ? Center(child: CircularProgressIndicator())
+            : Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  if (_providerModel != null) _chat(),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_providerModel != null &&
+                          _providerModel!.agents.isNotEmpty)
+                        if (_providerModel!.agents.first.isTyping ?? false)
+                          Text(
+                            'Agent is typing...',
+                            textAlign: TextAlign.start,
+                          ),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: mq.viewPadding.bottom),
+                        child: Column(
+                          children: [
+                            Text('$_connectionStatus'),
+                            _userWidget(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+      ),
+    );
   }
 
   void _attach() async {
@@ -209,8 +273,6 @@ class _ZendeskChat extends State<ZendeskChat> {
 
               bool isAttachment = false;
               bool isJoinOrLeave = false;
-              bool isRatingReview = false;
-              bool isRatingComment = false;
               bool isAgent = log.chatLogParticipant.chatParticipant ==
                   CHAT_PARTICIPANT.AGENT;
 
@@ -258,7 +320,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                       mimeType.contains('jpeg') ||
                       mimeType.contains('gif'));
 
-              return isJoinOrLeave || isRatingReview || isRatingComment
+              return isJoinOrLeave
                   ? Padding(
                       padding: EdgeInsets.all(5),
                       child: Text(
@@ -335,51 +397,4 @@ class _ZendeskChat extends State<ZendeskChat> {
           ).toList(),
         ),
       );
-
-  @override
-  Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
-    final size = mq.size;
-    final isOnline = ((_isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Custom Chat UI: $isOnline'),
-        actions: [
-          if (_providerModel != null)
-            Icon(
-              Icons.circle,
-              color: _connectionStatus == CONNECTION_STATUS.CONNECTED
-                  ? Colors.green
-                  : _connectionStatus == CONNECTION_STATUS.CONNECTING
-                      ? Colors.yellow
-                      : Colors.red,
-            )
-        ],
-      ),
-      body: _providerModel == null
-          ? Center(child: CircularProgressIndicator())
-          : Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                if (_providerModel != null) _chat(),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_providerModel != null &&
-                        _providerModel!.agents.isNotEmpty)
-                      if (_providerModel!.agents.first.isTyping ?? false)
-                        Text(
-                          'Agent is typing...',
-                          textAlign: TextAlign.start,
-                        ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: mq.viewPadding.bottom),
-                      child: _userWidget(),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-    );
-  }
 }

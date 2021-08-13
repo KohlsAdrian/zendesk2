@@ -4,6 +4,15 @@ import ChatProvidersSDK
 
 public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
+    
+    var chatStateObservationToken: ObservationToken? = nil
+    var accountObservationToken: ObservationToken? = nil
+    var settingsObservationToken: ObservationToken? = nil
+    var statusObservationToken: ObservationToken? = nil
+    
+    private var streamingChatSDK: Bool = false
+    private var streamingAnswerSDK: Bool = false
+    
     private var channel: FlutterMethodChannel
     
     public static func register(with registrar: FlutterPluginRegistrar) -> Void {
@@ -24,8 +33,8 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         
         var mResult: Any? = nil
         
-        let zendesk2Chat = SwiftZendesk2Chat(channel: channel)
-        let zendesk2Answer = SwiftZendesk2Answer(channel: channel)
+        let zendesk2Chat = SwiftZendesk2Chat(channel: channel, flutterPlugin: self)
+        let zendesk2Answer = SwiftZendesk2Answer(channel: channel, flutterPlugin: self)
         
         switch(method){
         // chat sdk method channels
@@ -36,22 +45,24 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             zendesk2Chat.setVisitorInfo(arguments)
             break
         case "startChatProviders":
-            zendesk2Chat.startChatProviders()
-            break
-        case "chat_dispose":
-            zendesk2Chat.dispose()
+            if streamingChatSDK {
+                NSLog("Chat Providers already started!")
+            } else {
+                zendesk2Chat.startChatProviders()
+                streamingChatSDK = true
+            }
             break
         case "sendChatProvidersResult":
-            mResult = zendesk2Chat.sendChatProviderResult(arguments)
+            mResult = arguments
             break
         case "sendChatConnectionStatusResult":
-            mResult = zendesk2Chat.sendChatConnectionStatusResult(arguments)
+            mResult = arguments
             break
         case "sendChatSettingsResult":
-            mResult = zendesk2Chat.sendChatSettingsResult(arguments)
+            mResult = arguments
             break
         case "sendChatIsOnlineResult":
-            mResult = zendesk2Chat.sendChatIsOnlineResult(arguments)
+            mResult = arguments
             break
         case "sendMessage":
             zendesk2Chat.sendMessage(arguments)
@@ -65,33 +76,39 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         case "sendIsTyping":
             zendesk2Chat.sendTyping(arguments)
             break
-        case "connect":
+        case "chat_connect":
             zendesk2Chat.connect()
             break
         case "disconnect":
             zendesk2Chat.disconnect()
             break
-        case "dispose_chat":
+        case "chat_dispose":
+            self.chatStateObservationToken?.cancel()
+            self.accountObservationToken?.cancel()
+            self.settingsObservationToken?.cancel()
+            self.statusObservationToken?.cancel()
             zendesk2Chat.dispose()
+            streamingChatSDK = false
             break
         // answer sdk method channels
         case "init_answer":
-            zendesk2Answer.initialize(arguments)
+            if streamingAnswerSDK {
+                NSLog("Answer Providers already started!")
+            } else {
+                zendesk2Answer.initialize(arguments)
+            }
             break
         case "query":
             zendesk2Answer.deflectionQuery(arguments)
             break
-        case "dispose_answer":
-            zendesk2Answer.dispose()
-            break
         case "sendAnswerProviderModel":
-            mResult = zendesk2Answer.getAnswerProviders()
+            mResult = arguments
             break
         case "sendResolveArticleDeflection":
-            mResult = zendesk2Answer.getResolveArticleDeflection()
+            mResult = arguments
             break
         case "sendRejectArticleDeflection":
-            mResult = zendesk2Answer.getResolveArticleDeflection()
+            mResult = arguments
             break
         default:
             break
@@ -99,7 +116,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         if mResult != nil {
             result(mResult)
         }
-        result(0)
+        result(nil)
     }
     
     

@@ -58,7 +58,7 @@ class _Home extends State<Home> {
       tags: ['app', 'zendesk2_plugin'],
     );
 
-    await Zendesk2Chat.instance.startChatProviders();
+    await Zendesk2Chat.instance.startChatProviders(autoConnect: false);
 
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => ZendeskChat()));

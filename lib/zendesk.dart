@@ -6,8 +6,8 @@ class Zendesk {
 
   final MethodChannel channel = const MethodChannel('zendesk2');
 
-  bool _answerInitialised = false;
-  bool _chatInitialised = false;
+  bool _answerInitialized = false;
+  bool _chatInitialized = false;
 
   /// Initialize the Zendesk Answer SDK
   ///
@@ -21,7 +21,7 @@ class Zendesk {
     String clientId,
     String zendeskUrl,
   ) async {
-    if (_answerInitialised) return;
+    if (_answerInitialized) return;
     Map arguments = {
       'accountKey': accountKey,
       'clientId': clientId,
@@ -29,7 +29,7 @@ class Zendesk {
     };
     try {
       await channel.invokeMethod('init_answer', arguments);
-      _answerInitialised = true;
+      _answerInitialized = true;
     } catch (e) {
       print(e);
     }
@@ -44,14 +44,14 @@ class Zendesk {
     String accountKey,
     String appId,
   ) async {
-    if (_chatInitialised) return;
+    if (_chatInitialized) return;
     Map arguments = {
       'accountKey': accountKey,
       'appId': appId,
     };
     try {
       await channel.invokeMethod('init_chat', arguments);
-      _chatInitialised = true;
+      _chatInitialized = true;
     } catch (e) {
       print(e);
     }

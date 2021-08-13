@@ -4,9 +4,6 @@ import 'package:zendesk2/zendesk2.dart';
 
 class ZendeskAnswer {
   ZendeskAnswer._() {
-    _providersDeflection = StreamController<AnswerProviderModel>();
-    _providersResolveArticleDeflection = StreamController<bool>();
-    _providersRejectArticleDeflection = StreamController<bool>();
     _channel.setMethodCallHandler(
       (call) async {
         try {
@@ -46,8 +43,10 @@ class ZendeskAnswer {
 
   Stream<AnswerProviderModel> get providersDeflection =>
       _providersDeflection.stream.asBroadcastStream();
+
   Stream<bool> get providersResolveArticleDeflection =>
       _providersResolveArticleDeflection.stream.asBroadcastStream();
+
   Stream<bool> get providersRejectArticleDeflection =>
       _providersRejectArticleDeflection.stream.asBroadcastStream();
 
@@ -63,19 +62,13 @@ class ZendeskAnswer {
   }
 
   Future<void> dispose() async {
-    try {
-      await _channel.invokeMethod('dispose_answer');
+    _providersDeflection.sink.close();
+    _providersDeflection.close();
+    
+    _providersResolveArticleDeflection.sink.close();
+    _providersResolveArticleDeflection.close();
 
-      await _providersDeflection.sink.close();
-      await _providersDeflection.close();
-
-      await _providersResolveArticleDeflection.sink.close();
-      await _providersResolveArticleDeflection.close();
-
-      await _providersRejectArticleDeflection.sink.close();
-      await _providersRejectArticleDeflection.close();
-    } catch (e) {
-      print(e);
-    }
+    _providersRejectArticleDeflection.sink.close();
+    _providersRejectArticleDeflection.close();
   }
 }
