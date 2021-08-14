@@ -8,7 +8,6 @@ enum CONNECTION_STATUS {
   FAILED,
   RECONNECTING,
   UNREACHABLE,
-  UNKNOWN,
 }
 
 ///
@@ -20,7 +19,6 @@ enum CHAT_SESSION_STATUS {
   ENDING,
   INITIALIZING,
   STARTED,
-  UNKNOWN,
 }
 
 ///
@@ -29,7 +27,6 @@ enum CHAT_SESSION_STATUS {
 enum DELIVERY_STATUS {
   DELIVERED,
   PENDING,
-  UNKNOWN,
 }
 
 ///
@@ -41,7 +38,6 @@ enum LOG_TYPE {
   MEMBER_LEAVE,
   MESSAGE,
   OPTIONS_MESSAGE,
-  UNKNOWN,
 }
 
 ///
@@ -52,14 +48,6 @@ enum CHAT_PARTICIPANT {
   SYSTEM,
   TRIGGER,
   VISITOR,
-}
-
-///
-/// The enum name says it all :)
-///
-enum ATTACHMENT_ERROR {
-  NONE,
-  SIZE_LIMIT,
 }
 
 ///

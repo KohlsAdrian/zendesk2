@@ -68,41 +68,30 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
 
     private fun chatProviderStart() {
         Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(plugin.chatStateObservationScope) {
-            this.agents = it.agents
-            this.hasAgents = it.agents.isNotEmpty()
-            this.logs = it.chatLogs
-            this.chatId = it.chatId
-            this.queuePosition = it.queuePosition
-            this.isChatting = it.isChatting
-            this.chatSessionStatus = it.chatSessionStatus.name.split('.').last()
-
-            val sp = activity?.getPreferences(Context.MODE_PRIVATE)
-            val edit = sp?.edit()
+            val agents = it.agents
+            val logs = it.chatLogs
+            val chatId = it.chatId
+            val queuePosition = it.queuePosition
+            val isChatting = it.isChatting
+            val chatSessionStatus = it.chatSessionStatus.name.split('.').last()
 
 
-
-            edit?.apply()
-
-            sendChatProvidersResult()
         }
     }
 
     private fun accountProviderStart() {
         Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(plugin.accountObservationScope) {
             val isOnline = it.status == AccountStatus.ONLINE
-            val deparments = it.departments
-            for (deparment  in deparments){
-                
+            val deparments = it.departments ?: listOf<Department>()
+            for (deparment in deparments) {
+
             }
-            sendChatProvidersResult()
         }
 
         Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
             override fun onSuccess(a: Account?) {
                 hasAgents = agents.isNotEmpty()
                 isOnline = a?.status == AccountStatus.ONLINE
-
-                sendChatProvidersResult()
 
             }
 
@@ -115,20 +104,14 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
     private fun settingsProviderStart() {
         Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(plugin.settingsObservationScope) {
             this.isFileSendingEnabled = it.isFileSendingEnabled
-            sendChatProvidersResult()
 
         }
     }
 
     private fun connectionProviderStart() {
-        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(plugin.connectionStatusObservationScope){
+        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(plugin.connectionStatusObservationScope) {
             this.connectionStatus = it.name.split('.').last()
-            sendChatProvidersResult()
         }
-    }
-
-    private fun sendChatProvidersResult() {
-        channel.invokeMethod("sendChatProvidersResult", getChatProviders())
     }
 
     fun sendMessage(call: MethodCall) {
@@ -297,6 +280,7 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
             override fun onSuccess(v: Void?) {
                 print("success")
             }
+
             override fun onError(e: ErrorResponse?) {
                 print(e)
             }

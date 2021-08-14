@@ -97,22 +97,7 @@ public class SwiftZendesk2Chat {
             let queuePosition = mQueuePosition.queue
             let queueId = mQueuePosition.id
             
-            var chatSessionStatus: String? = nil
-            
-            switch chatState.chatSessionStatus {
-            case .configuring:
-                chatSessionStatus = "CONFIGURING"
-            case .ended:
-                chatSessionStatus = "ENDED"
-            case .ending:
-                chatSessionStatus = "ENDING"
-            case .initializing:
-                chatSessionStatus = "INITIALIZING"
-            case .started:
-                chatSessionStatus = "STARTED"
-            default:
-                chatSessionStatus = "UNKNOWN"
-            }
+            let chatSessionStatus = chatState.chatSessionStatus.description
             
             var dictionary = [String:Any]()
             dictionary["isChatting"] = isChatting
@@ -147,20 +132,7 @@ public class SwiftZendesk2Chat {
                 logDict["displayName"] = log.displayName
                 logDict["lastModifiedTimestamp"] = log.lastModifiedTimestamp
                 logDict["nick"] = log.nick
-                
-                var logCP = [String: Any]()
-                let chatParticipant = log.participant
-                switch chatParticipant {
-                case .agent:
-                    logCP["chatParticipant"] = "AGENT"
-                case .system:
-                    logCP["chatParticipant"] = "SYSTEM"
-                case .trigger:
-                    logCP["chatParticipant"] = "TRIGGER"
-                case .visitor:
-                    logCP["chatParticipant"] = "VISITOR"
-                }
-                
+                logDict["chatParticipant"] = log.participant.description
                 
                 var logDS = [String: Any]()
                 let deliveryStatus = log.status
@@ -191,7 +163,7 @@ public class SwiftZendesk2Chat {
                 case .optionsMessage:
                     logT["type"] = "OPTIONS_MESSAGE"
                 default:
-                    logT["type"] = "UNKNOWN"
+                    logT["type"] = "OPTIONS_MESSAGE"
                 }
                 
                 if log is ChatMessage {
@@ -218,17 +190,28 @@ public class SwiftZendesk2Chat {
                     logChatAttachmentMessage["url"] = url
                     
                     let attachment = chatMessageAttachment.attachment
+                    let attachmentError = attachment.attachmentError
                     var logChatAttachmentAttachmentMessage = [String: Any]()
                     
-                    switch attachment.attachmentError {
-                    case .none:
-                        logChatAttachmentAttachmentMessage["error"] = "NONE"
-                    case .sizeLimit:
-                        logChatAttachmentAttachmentMessage["error"] = "SIZE_LIMIT"
-                    default:
-                        logChatAttachmentAttachmentMessage["error"] = "NONE"
+                    var mError: String? = nil
+                    if attachmentError != nil {
+                        switch attachmentError {
+                        case .none:
+                            mError = "none"
+                        case .unsupportedType:
+                            mError = attachmentError!.localizedDescription
+                        case .sizeLimit:
+                            mError = attachmentError!.localizedDescription
+                        case .some(let error):
+                            let code = error.errorCode
+                            let userInfo = error.errorUserInfo.description
+                            let description = error.errorDescription ?? ""
+                            let reason = error.failureReason ?? ""
+                            mError = "code: \(code)\nuserInfo: \(userInfo)\ndescription: \(description)\nreason: \(reason)"
+                        }
                     }
                     
+                    logChatAttachmentAttachmentMessage["error"] = mError
                     logChatAttachmentAttachmentMessage["name"] = attachment.name
                     logChatAttachmentAttachmentMessage["localUrl"] = attachment.localURL?.absoluteString
                     logChatAttachmentAttachmentMessage["mimeType"] = attachment.mimeType
@@ -252,7 +235,6 @@ public class SwiftZendesk2Chat {
                     logT["chatOptionsMessage"] = logChatOptionsMessage
                 }
                 
-                logDict["participant"] = logCP
                 logDict["deliveryStatus"] = logDS
                 logDict["type"] = logT
                 logsList.append(logDict)
@@ -279,21 +261,8 @@ public class SwiftZendesk2Chat {
                 
                 let id = department.id
                 let name = department.name
-                var status: String
+                let status = department.status.description
                 
-                switch department.status {
-                case .away:
-                    status = "AWAY"
-                    break
-                case .offline:
-                    status = "OFFLINE"
-                    break
-                case .online:
-                    status = "ONLINE"
-                    break
-                default:
-                    status = "OFFLINE"
-                }
                 departmentDictionary["id"] = id
                 departmentDictionary["name"] = name
                 departmentDictionary["status"] = status
@@ -325,29 +294,7 @@ public class SwiftZendesk2Chat {
     
     private func connectionProviderStart() -> Void {
         zendeskPlugin?.statusObservationToken = Chat.connectionProvider?.observeConnectionStatus { (status) in
-            var connectionStatus: String? = nil
-            switch status {
-            case .connected:
-                connectionStatus = "CONNECTED"
-                break
-            case .connecting:
-                connectionStatus = "CONNECTING"
-                break
-            case .disconnected:
-                connectionStatus = "DISCONNECTED"
-                break
-            case .failed:
-                connectionStatus = "FAILED"
-                break
-            case .reconnecting:
-                connectionStatus = "RECONNECTING"
-                break
-            case .unreachable:
-                connectionStatus = "UNREACHABLE"
-                break
-            default:
-                connectionStatus = "UNKNOWN"
-            }
+            let connectionStatus = status.description
             
             var dictionary = [String: Any]()
             dictionary["connectionStatus"] = connectionStatus

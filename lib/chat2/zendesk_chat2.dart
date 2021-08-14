@@ -14,7 +14,7 @@ class Zendesk2Chat {
               _providersStream?.sink.add(providerModel);
               break;
             case 'sendChatConnectionStatusResult':
-              CONNECTION_STATUS? connectionStatus;
+              CONNECTION_STATUS connectionStatus = CONNECTION_STATUS.CONNECTING;
 
               final mConnectionStatus = arguments['connectionStatus'];
               switch (mConnectionStatus) {
@@ -36,8 +36,6 @@ class Zendesk2Chat {
                 case 'UNREACHABLE':
                   connectionStatus = CONNECTION_STATUS.UNREACHABLE;
                   break;
-                default:
-                  connectionStatus = CONNECTION_STATUS.UNKNOWN;
               }
               _connectionStatusStream?.sink.add(connectionStatus);
               break;

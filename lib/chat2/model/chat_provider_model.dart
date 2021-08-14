@@ -1,12 +1,12 @@
 import 'package:zendesk2/zendesk2.dart';
 
 class ChatProviderModel {
-  final bool? isChatting;
+  final bool isChatting;
   final CHAT_SESSION_STATUS chatSessionStatus;
   final Iterable<Agent> agents;
   final Iterable<ChatLog> logs;
-  final int? queuePosition;
-  final String? queueId;
+  final int queuePosition;
+  final String queueId;
 
   ChatProviderModel(
     this.isChatting,
@@ -20,17 +20,17 @@ class ChatProviderModel {
   bool get hasAgents => this.agents.isNotEmpty;
 
   factory ChatProviderModel.fromJson(Map map) {
-    bool? isChatting = map['isChatting'];
+    bool isChatting = map['isChatting'];
     Iterable<Agent> agents =
         ((map['agents'] ?? []) as Iterable).map((e) => Agent.fromJson(e));
 
     Iterable<ChatLog> logs =
         ((map['logs'] ?? []) as Iterable).map((e) => ChatLog.fromJson(e));
 
-    int? queuePosition = map['queuePosition'];
-    String? queueId = map['queueId'];
+    int queuePosition = map['queuePosition'] ?? -1;
+    String queueId = map['queueId'];
 
-    CHAT_SESSION_STATUS chatSessionStatus;
+    CHAT_SESSION_STATUS chatSessionStatus = CHAT_SESSION_STATUS.CONFIGURING;
 
     final mChatSessionStatus = map['chatSessionStatus'];
 
@@ -50,8 +50,6 @@ class ChatProviderModel {
       case 'STARTED':
         chatSessionStatus = CHAT_SESSION_STATUS.STARTED;
         break;
-      default:
-        chatSessionStatus = CHAT_SESSION_STATUS.UNKNOWN;
     }
 
     return ChatProviderModel(
@@ -67,30 +65,30 @@ class ChatProviderModel {
 
 class Agent {
   final String? avatar;
-  final String? displayName;
-  final bool? isTyping;
-  final String? nick;
+  final String displayName;
+  final bool isTyping;
+  final String nick;
 
   Agent(this.avatar, this.displayName, this.isTyping, this.nick);
 
   factory Agent.fromJson(Map map) {
     String? avatar = map['avatar'];
-    String? displayName = map['displayName'];
-    bool? isTyping = map['isTyping'];
-    String? nick = map['nick'];
+    String displayName = map['displayName'];
+    bool isTyping = map['isTyping'];
+    String nick = map['nick'];
     return Agent(avatar, displayName, isTyping, nick);
   }
 }
 
 class ChatLog {
-  final bool? createdByVisitor;
+  final bool createdByVisitor;
   final DateTime createdTimestamp;
-  final String? displayName;
+  final String displayName;
   final DateTime lastModifiedTimestamp;
-  final String? nick;
-  final ChatLogParticipant chatLogParticipant;
+  final String nick;
   final ChatLogDeliveryStatus chatLogDeliveryStatus;
   final ChatLogType chatLogType;
+  final CHAT_PARTICIPANT chatParticipant;
 
   ChatLog(
     this.createdByVisitor,
@@ -98,14 +96,14 @@ class ChatLog {
     this.displayName,
     this.lastModifiedTimestamp,
     this.nick,
-    this.chatLogParticipant,
     this.chatLogDeliveryStatus,
     this.chatLogType,
+    this.chatParticipant,
   );
 
   factory ChatLog.fromJson(Map map) {
-    bool? createdByVisitor = map['createdByVisitor'];
-    String? displayName = map['displayName'];
+    bool createdByVisitor = map['createdByVisitor'];
+    String displayName = map['displayName'];
 
     final mCreatedTimestamp = map['createdTimestamp'];
     final mLastModifiedTimestamp = map['lastModifiedTimestamp'];
@@ -120,33 +118,13 @@ class ChatLog {
             ? mLastModifiedTimestamp.toInt()
             : mLastModifiedTimestamp);
 
-    String? nick = map['nick'];
+    String nick = map['nick'];
 
-    ChatLogParticipant chatLogParticipant =
-        ChatLogParticipant.fromJson(map['participant']);
     ChatLogDeliveryStatus chatLogDeliveryStatus =
         ChatLogDeliveryStatus.fromJson(map['deliveryStatus']);
 
     ChatLogType chatLogType = ChatLogType.fromJson(map['type']);
-    return ChatLog(
-      createdByVisitor,
-      createdTimestamp,
-      displayName,
-      lastModifiedTimestamp,
-      nick,
-      chatLogParticipant,
-      chatLogDeliveryStatus,
-      chatLogType,
-    );
-  }
-}
 
-class ChatLogParticipant {
-  final CHAT_PARTICIPANT chatParticipant;
-
-  ChatLogParticipant(this.chatParticipant);
-
-  factory ChatLogParticipant.fromJson(Map map) {
     CHAT_PARTICIPANT chatParticipant = CHAT_PARTICIPANT.SYSTEM;
     String mChatParticipant = map['chatParticipant'];
 
@@ -165,7 +143,16 @@ class ChatLogParticipant {
         break;
     }
 
-    return ChatLogParticipant(chatParticipant);
+    return ChatLog(
+      createdByVisitor,
+      createdTimestamp,
+      displayName,
+      lastModifiedTimestamp,
+      nick,
+      chatLogDeliveryStatus,
+      chatLogType,
+      chatParticipant,
+    );
   }
 }
 
@@ -179,7 +166,7 @@ class ChatLogDeliveryStatus {
     bool isFailed = map['isFailed'] ?? false;
 
     String? mDeliveryStatus = map['status'];
-    DELIVERY_STATUS deliveryStatus = DELIVERY_STATUS.UNKNOWN;
+    DELIVERY_STATUS deliveryStatus = DELIVERY_STATUS.PENDING;
 
     switch (mDeliveryStatus) {
       case 'DELIVERED':
@@ -187,9 +174,6 @@ class ChatLogDeliveryStatus {
         break;
       case 'PENDING':
         deliveryStatus = DELIVERY_STATUS.PENDING;
-        break;
-      case 'UNKNOWN':
-        deliveryStatus = DELIVERY_STATUS.UNKNOWN;
         break;
     }
 
@@ -213,7 +197,7 @@ class ChatLogType {
   factory ChatLogType.fromJson(Map map) {
     String mLogType = map['type'];
 
-    LOG_TYPE logType = LOG_TYPE.UNKNOWN;
+    LOG_TYPE logType = LOG_TYPE.OPTIONS_MESSAGE;
 
     switch (mLogType) {
       case 'ATTACHMENT_MESSAGE':
@@ -230,9 +214,6 @@ class ChatLogType {
         break;
       case 'OPTIONS_MESSAGE':
         logType = LOG_TYPE.OPTIONS_MESSAGE;
-        break;
-      case 'UNKNOWN':
-        logType = LOG_TYPE.UNKNOWN;
         break;
     }
 
@@ -252,8 +233,6 @@ class ChatLogType {
       case LOG_TYPE.OPTIONS_MESSAGE:
         chatOptionsMessage =
             ChatOptionsMessage.fromJson(map['chatOptionsMessage']);
-        break;
-      case LOG_TYPE.UNKNOWN:
         break;
     }
     return ChatLogType(
@@ -325,7 +304,7 @@ class ChatAttachmentAttachment {
   final String? mimeType;
   final int? size;
   final String? url;
-  final ATTACHMENT_ERROR attachmentError;
+  final String? attachmentError;
 
   ChatAttachmentAttachment(
     this.name,
@@ -342,19 +321,7 @@ class ChatAttachmentAttachment {
     String? mimeType = map['mimeType'];
     int? size = map['size'];
     String? url = map['url'];
-    String? mAttachmentError = map['error'];
-
-    ATTACHMENT_ERROR attachmentError;
-    switch (mAttachmentError) {
-      case 'NONE':
-        attachmentError = ATTACHMENT_ERROR.NONE;
-        break;
-      case 'SIZE_LIMIT':
-        attachmentError = ATTACHMENT_ERROR.SIZE_LIMIT;
-        break;
-      default:
-        attachmentError = ATTACHMENT_ERROR.NONE;
-    }
+    String? attachmentError = map['error'];
 
     return ChatAttachmentAttachment(
       name,

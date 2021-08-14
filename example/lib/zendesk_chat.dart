@@ -92,7 +92,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                     children: [
                       if (_providerModel != null &&
                           _providerModel!.agents.isNotEmpty)
-                        if (_providerModel!.agents.first.isTyping ?? false)
+                        if (_providerModel!.agents.first.isTyping)
                           Text(
                             'Agent is typing...',
                             textAlign: TextAlign.start,
@@ -284,12 +284,11 @@ class _ZendeskChat extends State<ZendeskChat> {
 
               String message = chatMessage?.message ?? '';
 
-              String name = log.displayName ?? '';
+              String name = log.displayName;
 
               bool isAttachment = false;
               bool isJoinOrLeave = false;
-              bool isAgent = log.chatLogParticipant.chatParticipant ==
-                  CHAT_PARTICIPANT.AGENT;
+              bool isAgent = log.chatParticipant == CHAT_PARTICIPANT.AGENT;
 
               Agent? agent;
               if (isAgent)
@@ -315,13 +314,9 @@ class _ZendeskChat extends State<ZendeskChat> {
                 case LOG_TYPE.OPTIONS_MESSAGE:
                   message = 'Options message';
                   break;
-                case LOG_TYPE.UNKNOWN:
-                  message = 'Unknown';
-                  break;
               }
 
-              bool isVisitor = log.chatLogParticipant.chatParticipant ==
-                  CHAT_PARTICIPANT.VISITOR;
+              bool isVisitor = log.chatParticipant == CHAT_PARTICIPANT.VISITOR;
 
               final imageUrl = log.chatLogType.chatAttachment?.url;
 
