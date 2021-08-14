@@ -268,10 +268,41 @@ public class SwiftZendesk2Chat {
     private func accountProviderStart() -> Void {
         zendeskPlugin?.accountObservationToken = Chat.accountProvider?.observeAccount { (account) in
             let accountStatus = account.accountStatus
+            let departments = account.departments ?? []
             let isOnline = accountStatus == .online
             
             var dictionary = [String: Any]()
+            var departmentsList = Array<Dictionary<String, Any>>()
+            
+            for department in departments {
+                var departmentDictionary = [String: Any]()
+                
+                let id = department.id
+                let name = department.name
+                var status: String
+                
+                switch department.status {
+                case .away:
+                    status = "AWAY"
+                    break
+                case .offline:
+                    status = "OFFLINE"
+                    break
+                case .online:
+                    status = "ONLINE"
+                    break
+                default:
+                    status = "OFFLINE"
+                }
+                departmentDictionary["id"] = id
+                departmentDictionary["name"] = name
+                departmentDictionary["status"] = status
+                
+                departmentsList.append(departmentDictionary)
+            }
+            
             dictionary["isOnline"] = isOnline
+            dictionary["departments"] = departmentsList
             
             self.sendChatIsOnlineResult(dictionary)
         }

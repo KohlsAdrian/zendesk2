@@ -11,7 +11,7 @@ import zendesk.chat.*
 import java.io.File
 
 
-class Zendesk2Chat(private val activity: Activity?, private val channel: MethodChannel) {
+class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: MethodChannel) {
 
     fun logger(call: MethodCall) {
         var enabled = call.argument<Boolean>("enabled")
@@ -67,7 +67,7 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
     }
 
     private fun chatProviderStart() {
-        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(ObservationScope()) {
+        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(plugin.chatStateObservationScope) {
             this.agents = it.agents
             this.hasAgents = it.agents.isNotEmpty()
             this.logs = it.chatLogs
@@ -88,9 +88,12 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
     }
 
     private fun accountProviderStart() {
-        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(ObservationScope()) {
-            this.isOnline = it.status == AccountStatus.ONLINE
-            this.hasAgents = this.isOnline
+        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(plugin.accountObservationScope) {
+            val isOnline = it.status == AccountStatus.ONLINE
+            val deparments = it.departments
+            for (deparment  in deparments){
+                
+            }
             sendChatProvidersResult()
         }
 
@@ -110,7 +113,7 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
     }
 
     private fun settingsProviderStart() {
-        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(ObservationScope()) {
+        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(plugin.settingsObservationScope) {
             this.isFileSendingEnabled = it.isFileSendingEnabled
             sendChatProvidersResult()
 
@@ -118,7 +121,7 @@ class Zendesk2Chat(private val activity: Activity?, private val channel: MethodC
     }
 
     private fun connectionProviderStart() {
-        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(ObservationScope()){
+        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(plugin.connectionStatusObservationScope){
             this.connectionStatus = it.name.split('.').last()
             sendChatProvidersResult()
         }

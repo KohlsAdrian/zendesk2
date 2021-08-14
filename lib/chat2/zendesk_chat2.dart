@@ -47,8 +47,8 @@ class Zendesk2Chat {
               _chatSettingsStream?.sink.add(chatSettingsModel);
               break;
             case 'sendChatIsOnlineResult':
-              final isOnline = arguments['isOnline'];
-              _chatIsOnlineStream?.sink.add(isOnline);
+              final chatAccountModel = ChatAccountModel.fromJson(arguments);
+              _chatAccountStream?.sink.add(chatAccountModel);
               break;
           }
         } catch (e) {
@@ -68,7 +68,7 @@ class Zendesk2Chat {
   StreamController<ChatProviderModel>? _providersStream;
   StreamController<CONNECTION_STATUS>? _connectionStatusStream;
   StreamController<ChatSettingsModel>? _chatSettingsStream;
-  StreamController<bool>? _chatIsOnlineStream;
+  StreamController<ChatAccountModel>? _chatAccountStream;
 
   bool _isStreaming = false;
 
@@ -95,8 +95,8 @@ class Zendesk2Chat {
   /// Stream is triggered when socket receive new values
   ///
   /// Please see ```ChatAccountModel ```
-  Stream<bool>? get chatIsOnlineStream =>
-      _chatIsOnlineStream?.stream.asBroadcastStream();
+  Stream<ChatAccountModel>? get chatIsOnlineStream =>
+      _chatAccountStream?.stream.asBroadcastStream();
 
   /// Set on Native/Custom chat user information
   ///
@@ -141,7 +141,7 @@ class Zendesk2Chat {
         _providersStream = StreamController<ChatProviderModel>();
         _connectionStatusStream = StreamController<CONNECTION_STATUS>();
         _chatSettingsStream = StreamController<ChatSettingsModel>();
-        _chatIsOnlineStream = StreamController<bool>();
+        _chatAccountStream = StreamController<ChatAccountModel>();
         _isStreaming = true;
       }
 
@@ -251,13 +251,13 @@ class Zendesk2Chat {
       _chatSettingsStream?.sink.close();
       _chatSettingsStream?.close();
 
-      _chatIsOnlineStream?.sink.close();
-      _chatIsOnlineStream?.close();
+      _chatAccountStream?.sink.close();
+      _chatAccountStream?.close();
 
       _providersStream = null;
       _connectionStatusStream = null;
       _chatSettingsStream = null;
-      _chatIsOnlineStream = null;
+      _chatAccountStream = null;
 
       _isStreaming = false;
 

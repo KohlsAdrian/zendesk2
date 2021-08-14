@@ -18,35 +18,27 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
     private var activity: Activity? = null
 
+    val chatStateObservationScope : ObservationScope = ObservationScope()
+    val accountObservationScope : ObservationScope = ObservationScope()
+    val settingsObservationScope : ObservationScope = ObservationScope()
+    val connectionStatusObservationScope : ObservationScope = ObservationScope()
+
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        val zendesk2Chat = Zendesk2Chat(channel)
+        val zendesk2Chat = Zendesk2Chat(this, channel)
 
 
         var mResult: Any? = null
         when (call.method) {
-            "init" -> {
-                val accountKey = call.argument<String>("accountKey")!!
+            "init_answer" -> {
                 val appId = call.argument<String>("appId")!!
+                val clientId = call.argument<String>("clientId")!!
+                val zendeskUrl = call.argument<String>("clientId")!!
 
-                val sp = activity?.getPreferences(Context.MODE_PRIVATE)
-                val edit = sp?.edit()
-
-                edit?.putString("accountKey", accountKey)
-                edit?.putString("appId", appId)
-
-                edit?.apply()
-
-                if(accountKey != null && appId != null) {
-
-                }
             }
             "init_chat" -> {
-                val sp = activity?.getPreferences(Context.MODE_PRIVATE)
-                val accountKey = sp?.getString("accountKey", null)
-                val appId = sp?.getString("appId", null)
-                if(accountKey != null && appId != null) {
-                    Chat.INSTANCE.init(activity!!, accountKey, appId)
-                }
+                val accountKey = call.argument<String>("accountKey")!!
+                val appId = call.argument<String>("appId")!!
+                Chat.INSTANCE.init(activity!!, accountKey, appId)
             }
             // chat sdk method channels
             "logger" -> zendesk2Chat.logger(call)

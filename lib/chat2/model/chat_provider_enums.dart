@@ -61,3 +61,12 @@ enum ATTACHMENT_ERROR {
   NONE,
   SIZE_LIMIT,
 }
+
+///
+/// The enum name says it all :)
+///
+enum DEPARTMENT_STATUS {
+  ONLINE,
+  OFFLINE,
+  AWAY,
+}

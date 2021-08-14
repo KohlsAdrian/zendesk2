@@ -19,18 +19,18 @@ class _ZendeskChat extends State<ZendeskChat> {
   ChatProviderModel? _providerModel;
   ChatSettingsModel? _chatSettingsModel;
   CONNECTION_STATUS? _connectionStatus;
-  bool? _isOnline;
+  ChatAccountModel? _chatAccountModel;
 
   StreamSubscription<ChatProviderModel>? _subscriptionProvidersStream;
   StreamSubscription<CONNECTION_STATUS>? _subscriptionConnetionStatusStream;
   StreamSubscription<ChatSettingsModel>? _subscriptionChatSettingsStream;
-  StreamSubscription<bool>? _subscriptionChatIsOnlineStream;
+  StreamSubscription<ChatAccountModel>? _subscriptionAccountProvidersStream;
 
   Future<bool> _onWillPopScope() async {
     await _subscriptionProvidersStream?.cancel();
     await _subscriptionConnetionStatusStream?.cancel();
     await _subscriptionChatSettingsStream?.cancel();
-    await _subscriptionChatIsOnlineStream?.cancel();
+    await _subscriptionAccountProvidersStream?.cancel();
     await _z.dispose();
     await _z.disconnect();
     return true;
@@ -60,10 +60,10 @@ class _ZendeskChat extends State<ZendeskChat> {
         print('Connection Status: $_connectionStatus');
         setState(() {});
       });
-      _subscriptionChatIsOnlineStream =
-          _z.chatIsOnlineStream?.listen((isOnline) {
-        _isOnline = isOnline;
-        print('isOnline: $_isOnline');
+      _subscriptionAccountProvidersStream =
+          _z.chatIsOnlineStream?.listen((chatAccountModel) {
+        _chatAccountModel = chatAccountModel;
+        print('isOnline: $_chatAccountModel');
         setState(() {});
       });
     });
@@ -73,7 +73,8 @@ class _ZendeskChat extends State<ZendeskChat> {
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final size = mq.size;
-    final isOnline = ((_isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
+    final isOnline =
+        ((_chatAccountModel?.isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
     return WillPopScope(
       onWillPop: _onWillPopScope,
       child: Scaffold(
@@ -100,6 +101,20 @@ class _ZendeskChat extends State<ZendeskChat> {
                         padding: EdgeInsets.only(bottom: mq.viewPadding.bottom),
                         child: Column(
                           children: [
+                            if (_chatSettingsModel?.fileSizeLimit != null)
+                              Column(
+                                children: [
+                                  Text('Can send files: ' +
+                                      _chatSettingsModel!.isFileSendingEnabled!
+                                          .toString()),
+                                  Text('Fle size limit: ' +
+                                      (_chatSettingsModel!.fileSizeLimit! ~/
+                                              1024)
+                                          .toString()
+                                          .substring(0, 2) +
+                                      ' MB'),
+                                ],
+                              ),
                             Text('$_connectionStatus'),
                             _userWidget(),
                           ],
