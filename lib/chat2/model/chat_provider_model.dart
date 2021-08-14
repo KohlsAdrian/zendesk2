@@ -7,6 +7,7 @@ class ChatProviderModel {
   final Iterable<ChatLog> logs;
   final int queuePosition;
   final String queueId;
+  final ChatDepartment? chatDepartment;
 
   ChatProviderModel(
     this.isChatting,
@@ -15,6 +16,7 @@ class ChatProviderModel {
     this.logs,
     this.queuePosition,
     this.queueId,
+    this.chatDepartment,
   );
 
   bool get hasAgents => this.agents.isNotEmpty;
@@ -52,6 +54,10 @@ class ChatProviderModel {
         break;
     }
 
+    ChatDepartment? chatDepartment = map['department'] == null
+        ? null
+        : ChatDepartment.fromJson(map['department']);
+
     return ChatProviderModel(
       isChatting,
       chatSessionStatus,
@@ -59,6 +65,43 @@ class ChatProviderModel {
       logs,
       queuePosition,
       queueId,
+      chatDepartment,
+    );
+  }
+}
+
+class ChatDepartment {
+  final String name;
+  final String id;
+  final DEPARTMENT_STATUS status;
+
+  ChatDepartment(
+    this.name,
+    this.id,
+    this.status,
+  );
+
+  factory ChatDepartment.fromJson(Map json) {
+    String name = json['name'];
+    String id = json['id'];
+    DEPARTMENT_STATUS status = DEPARTMENT_STATUS.OFFLINE;
+    switch (json['status']) {
+      case 'AWAY':
+        status = DEPARTMENT_STATUS.AWAY;
+        break;
+      case 'ONLINE':
+        status = DEPARTMENT_STATUS.ONLINE;
+        break;
+      case 'OFFLINE':
+        status = DEPARTMENT_STATUS.OFFLINE;
+        break;
+      default:
+        status = DEPARTMENT_STATUS.OFFLINE;
+    }
+    return ChatDepartment(
+      name,
+      id,
+      status,
     );
   }
 }

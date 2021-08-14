@@ -93,19 +93,37 @@ public class SwiftZendesk2Chat {
             let agents = chatState.agents
             let logs = chatState.logs
             
+            
             let mQueuePosition = chatState.queuePosition
             let queuePosition = mQueuePosition.queue
             let queueId = mQueuePosition.id
             
+            let department = chatState.department
             let chatSessionStatus = chatState.chatSessionStatus.description
             
             var dictionary = [String:Any]()
+            
             dictionary["isChatting"] = isChatting
             dictionary["chatId"] = chatId
             dictionary["agents"] = agents
             dictionary["queuePosition"] = queuePosition
             dictionary["queueId"] = queueId
             dictionary["chatSessionStatus"] = chatSessionStatus
+            dictionary["department"] = nil
+            
+            if department != nil {
+                var departmentDict = [String: Any]()
+                
+                let id = department!.id
+                let name = department!.name
+                let status = department!.status.description
+
+                departmentDict["id"] = id
+                departmentDict["name"] = name
+                departmentDict["status"] = status
+                
+                dictionary["department"] = departmentDict
+            }
             
             var agentsList = Array<Dictionary<String, Any>>()
             for agent in agents {

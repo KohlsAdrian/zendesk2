@@ -74,6 +74,11 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
             val queuePosition = it.queuePosition
             val isChatting = it.isChatting
             val chatSessionStatus = it.chatSessionStatus.name.split('.').last()
+            val department = it.department
+
+            val dictionary = mutableMapOf<String, Any?>()
+
+
 
 
         }
