@@ -175,6 +175,9 @@ class ChatLogDeliveryStatus {
       case 'PENDING':
         deliveryStatus = DELIVERY_STATUS.PENDING;
         break;
+      case 'FAILED':
+        deliveryStatus = DELIVERY_STATUS.FAILED;
+        break;
     }
 
     return ChatLogDeliveryStatus(isFailed, deliveryStatus);

@@ -144,9 +144,10 @@ public class SwiftZendesk2Chat {
                 case .pending:
                     logDS["status"] = "PENDING"
                 case .failed(reason: let reason):
+                    logDS["status"] = "FAILED"
                     NSLog("MessageLog delivery error: ",reason.localizedDescription)
                 default:
-                    logDS["status"] = "UNKNOWN"
+                    logDS["status"] = "FAILED"
                 }
                 
                 var logT = [String: Any]()
