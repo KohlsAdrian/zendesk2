@@ -1,3 +1,7 @@
+# 1.6.2+0
+
+* Bugfix for when no matching agents found (@nimisis)
+
 # 1.6.1+0
 
 * [Not-breaking][Android] fixed setVisitorInfo on MethodChannel where Name, Email and Phone were conflicting with duplicate setup usage.
