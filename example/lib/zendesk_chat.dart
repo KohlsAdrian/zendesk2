@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zendesk2/zendesk2.dart';
+import 'package:collection/collection.dart';
 
 class ZendeskChat extends StatefulWidget {
   _ZendeskChat createState() => _ZendeskChat();
@@ -293,7 +294,7 @@ class _ZendeskChat extends State<ZendeskChat> {
               Agent? agent;
               if (isAgent)
                 agent = _providerModel!.agents
-                    .firstWhere((element) => element.displayName == name);
+                    .firstWhereOrNull((element) => element.displayName == name);
 
               switch (log.chatLogType.logType) {
                 case LOG_TYPE.ATTACHMENT_MESSAGE:
