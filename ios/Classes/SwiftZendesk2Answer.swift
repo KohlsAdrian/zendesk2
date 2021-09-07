@@ -33,12 +33,11 @@ public class SwiftZendesk2Answer {
             let zendesk = Zendesk.instance
             
             if zendesk != nil {
-                Support.initialize(withZendesk: zendesk)
+                Support.initialize(withZendesk: zendesk!)
                 
                 let support = Support.instance
                 
                 if support != nil {
-                    Support.initialize(withZendesk: zendesk!)
                     AnswerBot.initialize(withZendesk: zendesk!, support: support!)
                     success = true
                 }

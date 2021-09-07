@@ -18,7 +18,7 @@ public class SwiftZendesk2Chat {
         self.zendeskPlugin = flutterPlugin
     }
     
-    func initialize(_ arguments: Dictionary<String, Any>?) -> Void {
+    func initialize(_ arguments: Dictionary<String, Any>?) -> Void {        
         let accountKey = (arguments?["accountKey"] ?? "") as? String
         let appId = (arguments?["appId"] ?? "") as? String
         
