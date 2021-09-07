@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zendesk2/zendesk2.dart';
-import 'package:collection/collection.dart';
 
 class ZendeskChat extends StatefulWidget {
   _ZendeskChat createState() => _ZendeskChat();
@@ -73,7 +73,6 @@ class _ZendeskChat extends State<ZendeskChat> {
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
-    final size = mq.size;
     final isOnline =
         ((_chatAccountModel?.isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
     return WillPopScope(

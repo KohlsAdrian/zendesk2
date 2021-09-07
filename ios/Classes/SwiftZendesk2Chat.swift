@@ -26,10 +26,6 @@ public class SwiftZendesk2Chat {
     }
     
     func dispose() -> Void {
-        endChat()
-        Chat.instance?.resetIdentity({
-            NSLog("Identity reseted")
-        })
         Chat.instance?.clearCache()
     }
     
@@ -54,7 +50,11 @@ public class SwiftZendesk2Chat {
     
     /// startChat v2 Zendesk API Providers
     func startChatProviders() -> Void {
-        startProviders()
+        NSLog("zendesk_chat_start_providers")
+        chatProviderStart()
+        accountProviderStart()
+        settingsProviderStart()
+        connectionProviderStart()
     }
     
     func connect(){
@@ -62,14 +62,6 @@ public class SwiftZendesk2Chat {
     }
     func disconnect(){
         Chat.connectionProvider?.disconnect()
-    }
-    
-    private func startProviders() -> Void {
-        NSLog("zendesk_chat_start_providers")
-        chatProviderStart()
-        accountProviderStart()
-        settingsProviderStart()
-        connectionProviderStart()
     }
     
     private func sendChatProvidersResult(_ arguments: Dictionary<String, Any>?) -> Void {
@@ -375,6 +367,9 @@ public class SwiftZendesk2Chat {
             case .failure(let error):
                 NSLog(error.localizedDescription)
             }
+        })
+        Chat.instance?.resetIdentity({
+            NSLog("Identity reseted")
         })
     }
 }
