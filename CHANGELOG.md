@@ -25,6 +25,10 @@
         * Native Chat
         
         * Rating
+=======
+# 1.6.2+0
+
+* Bugfix for when no matching agents found (@nimisis)
 
 # 1.6.1+0
 
