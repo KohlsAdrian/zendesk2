@@ -14,6 +14,7 @@ public class SwiftZendesk2Answer {
     
     private var channel: FlutterMethodChannel? = nil
     private var zendeskPlugin: SwiftZendesk2Plugin? = nil
+    let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
     
     init(channel: FlutterMethodChannel, flutterPlugin: SwiftZendesk2Plugin) {
         self.channel = channel
@@ -61,7 +62,6 @@ public class SwiftZendesk2Answer {
     func deflectionQuery(_ arguments: Dictionary<String, Any>?) -> Void {
         let query: String = (arguments?["query"] ?? "") as! String
         
-        let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
         answerBotProvider?.getDeflectionForQuery(query: query, callback: { result in
             switch result {
             case .success(let deflectionResponse):
@@ -111,7 +111,6 @@ public class SwiftZendesk2Answer {
         
         if deflectionId != nil && articleId != nil && interactionAccessToken != nil {
             if(deflectionId is Int64 && articleId is Int64 && interactionAccessToken is String){
-                let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
                 answerBotProvider?.resolveWithArticle(deflectionId: deflectionId as! Int64, articleId: articleId as! Int64, interactionAccessToken: interactionAccessToken as! String, callback: { result in
                     var dictionary = [String: Any]()
                     switch result {
@@ -143,7 +142,6 @@ public class SwiftZendesk2Answer {
         
         if deflectionId != nil && articleId != nil && interactionAccessToken != nil {
             if(deflectionId is Int64 && articleId is Int64 && interactionAccessToken is String){
-                let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
                 answerBotProvider?.rejectWithArticle(deflectionId: deflectionId as! Int64, articleId: articleId as! Int64, interactionAccessToken: interactionAccessToken as! String, reason: mReason, callback: { result in
                     var dictionary = [String: Any]()
                     switch result {
