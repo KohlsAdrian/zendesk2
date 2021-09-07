@@ -37,7 +37,7 @@ class _Home extends State<Home> {
   String zendeskUrl = '';
 
   void answer() async {
-    z.initAnswerSDK(accountKey, clientId, zendeskUrl);
+    z.initAnswerSDK(appId, clientId, zendeskUrl);
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => ZendeskAnswerUI()));
   }
