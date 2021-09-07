@@ -273,6 +273,7 @@ class ChatLogType {
         break;
       case LOG_TYPE.MEMBER_JOIN:
       case LOG_TYPE.MEMBER_LEAVE:
+        break;
       case LOG_TYPE.MESSAGE:
         chatMessage = ChatMessage.fromJson(map['chatMessage']);
         break;
