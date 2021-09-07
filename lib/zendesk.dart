@@ -11,19 +11,19 @@ class Zendesk {
 
   /// Initialize the Zendesk Answer SDK
   ///
-  /// ```accountKey``` the zendesk created account key, unique by organization
+  /// ```appId``` the zendesk created appId
   ///
   /// ```clientId``` your company Zendesk client ID
   ///
   /// ```zendeskUrl``` your company Zendesk domain URL
   Future<void> initAnswerSDK(
-    String accountKey,
+    String appId,
     String clientId,
     String zendeskUrl,
   ) async {
     if (_answerInitialized) return;
     Map arguments = {
-      'accountKey': accountKey,
+      'appId': appId,
       'clientId': clientId,
       'zendeskUrl': zendeskUrl,
     };

@@ -4,18 +4,16 @@
 //
 //  Created by Adrian Kohls on 12/08/21.
 //
-import AnswerBotProvidersSDK
 import Flutter
 import Foundation
 import ZendeskCoreSDK
 import SupportProvidersSDK
+import AnswerBotProvidersSDK
 
 public class SwiftZendesk2Answer {
     
     private var channel: FlutterMethodChannel? = nil
     private var zendeskPlugin: SwiftZendesk2Plugin? = nil
-    
-    private let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
     
     init(channel: FlutterMethodChannel, flutterPlugin: SwiftZendesk2Plugin) {
         self.channel = channel
@@ -23,14 +21,30 @@ public class SwiftZendesk2Answer {
     }
     
     func initialize(_ arguments: Dictionary<String, Any>?) -> Void {
+        var success = false
         let appId = (arguments?["appId"] ?? "") as? String
         let clientId = (arguments?["clientId"] ?? "") as? String
         let zendeskUrl = (arguments?["zendeskUrl"] ?? "") as? String
         
-        if clientId != nil && zendeskUrl != nil {
+        if appId != nil && clientId != nil && zendeskUrl != nil {
             Zendesk.initialize(appId: appId!, clientId: clientId!, zendeskUrl: zendeskUrl!)
-            Support.initialize(withZendesk: Zendesk.instance!)
-            AnswerBot.initialize(withZendesk: Zendesk.instance, support: Support.instance!)
+                
+            let zendesk = Zendesk.instance
+            
+            if zendesk != nil {
+                Support.initialize(withZendesk: zendesk)
+                
+                let support = Support.instance
+                
+                if support != nil {
+                    Support.initialize(withZendesk: zendesk!)
+                    AnswerBot.initialize(withZendesk: zendesk!, support: support!)
+                    success = true
+                }
+            }
+        }
+        if !success {
+            NSLog("Could not initialize Answer SDK")
         }
     }
     
@@ -47,6 +61,7 @@ public class SwiftZendesk2Answer {
     func deflectionQuery(_ arguments: Dictionary<String, Any>?) -> Void {
         let query: String = (arguments?["query"] ?? "") as! String
         
+        let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
         answerBotProvider?.getDeflectionForQuery(query: query, callback: { result in
             switch result {
             case .success(let deflectionResponse):
@@ -96,6 +111,7 @@ public class SwiftZendesk2Answer {
         
         if deflectionId != nil && articleId != nil && interactionAccessToken != nil {
             if(deflectionId is Int64 && articleId is Int64 && interactionAccessToken is String){
+                let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
                 answerBotProvider?.resolveWithArticle(deflectionId: deflectionId as! Int64, articleId: articleId as! Int64, interactionAccessToken: interactionAccessToken as! String, callback: { result in
                     var dictionary = [String: Any]()
                     switch result {
@@ -127,6 +143,7 @@ public class SwiftZendesk2Answer {
         
         if deflectionId != nil && articleId != nil && interactionAccessToken != nil {
             if(deflectionId is Int64 && articleId is Int64 && interactionAccessToken is String){
+                let answerBotProvider: AnswerBotProvider? = AnswerBot.instance?.provider
                 answerBotProvider?.rejectWithArticle(deflectionId: deflectionId as! Int64, articleId: articleId as! Int64, interactionAccessToken: interactionAccessToken as! String, reason: mReason, callback: { result in
                     var dictionary = [String: Any]()
                     switch result {

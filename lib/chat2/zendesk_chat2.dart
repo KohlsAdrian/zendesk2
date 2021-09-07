@@ -17,7 +17,7 @@ class Zendesk2Chat {
               CONNECTION_STATUS connectionStatus = CONNECTION_STATUS.CONNECTING;
 
               final mConnectionStatus = arguments['connectionStatus'];
-              switch (mConnectionStatus.toString().toUpperCase()) {
+              switch (mConnectionStatus) {
                 case 'CONNECTED':
                   connectionStatus = CONNECTION_STATUS.CONNECTED;
                   break;

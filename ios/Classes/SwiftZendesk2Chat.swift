@@ -91,7 +91,7 @@ public class SwiftZendesk2Chat {
             let queueId = mQueuePosition.id
             
             let department = chatState.department
-            let chatSessionStatus = chatState.chatSessionStatus.description
+            let chatSessionStatus = chatState.chatSessionStatus.description.uppercased()
             
             var dictionary = [String:Any]()
             
@@ -108,7 +108,7 @@ public class SwiftZendesk2Chat {
                 
                 let id = department!.id
                 let name = department!.name
-                let status = department!.status.description
+                let status = department!.status.description.uppercased()
 
                 departmentDict["id"] = id
                 departmentDict["name"] = name
@@ -142,7 +142,7 @@ public class SwiftZendesk2Chat {
                 logDict["displayName"] = log.displayName
                 logDict["lastModifiedTimestamp"] = log.lastModifiedTimestamp
                 logDict["nick"] = log.nick
-                logDict["chatParticipant"] = log.participant.description
+                logDict["chatParticipant"] = log.participant.description.uppercased()
                 
                 var logDS = [String: Any]()
                 let deliveryStatus = log.status
@@ -215,7 +215,7 @@ public class SwiftZendesk2Chat {
                             mError = attachmentError!.localizedDescription
                         case .some(let error):
                             let code = error.errorCode
-                            let userInfo = error.errorUserInfo.description
+                            let userInfo = error.errorUserInfo.description.uppercased()
                             let description = error.errorDescription ?? ""
                             let reason = error.failureReason ?? ""
                             mError = "code: \(code)\nuserInfo: \(userInfo)\ndescription: \(description)\nreason: \(reason)"
@@ -272,7 +272,7 @@ public class SwiftZendesk2Chat {
                 
                 let id = department.id
                 let name = department.name
-                let status = department.status.description
+                let status = department.status.description.uppercased()
                 
                 departmentDictionary["id"] = id
                 departmentDictionary["name"] = name
@@ -305,7 +305,7 @@ public class SwiftZendesk2Chat {
     
     private func connectionProviderStart() -> Void {
         zendeskPlugin?.statusObservationToken = Chat.connectionProvider?.observeConnectionStatus { (status) in
-            let connectionStatus = status.description
+            let connectionStatus = status.description.uppercased()
             
             var dictionary = [String: Any]()
             dictionary["connectionStatus"] = connectionStatus
@@ -347,7 +347,7 @@ public class SwiftZendesk2Chat {
                 let messageId = error.messageId
                 if(messageId != nil && !(messageId?.isEmpty ?? false)){
                     Chat.chatProvider?.resendFailedFile(withId: messageId!, onProgress: { (progress) in
-                        NSLog(progress.description)
+                        NSLog(progress.description.uppercased())
                     }, completion: nil)
                 }
             }
@@ -363,7 +363,7 @@ public class SwiftZendesk2Chat {
         Chat.chatProvider?.endChat({ (result) in
             switch result {
             case .success(let success):
-                NSLog(success.description)
+                NSLog(success.description.uppercased())
             case .failure(let error):
                 NSLog(error.localizedDescription)
             }

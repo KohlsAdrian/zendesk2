@@ -36,7 +36,7 @@ class ChatProviderModel {
 
     final mChatSessionStatus = map['chatSessionStatus'];
 
-    switch (mChatSessionStatus.toString().toUpperCase()) {
+    switch (mChatSessionStatus) {
       case 'CONFIGURING':
         chatSessionStatus = CHAT_SESSION_STATUS.CONFIGURING;
         break;
