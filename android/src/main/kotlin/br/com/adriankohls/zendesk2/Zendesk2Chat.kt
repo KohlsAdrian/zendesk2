@@ -127,7 +127,7 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
 
                 mAgents.add(agentDict)
             }
-            dictionary["agents"] = mAgents.toArray()
+            dictionary["agents"] = mAgents.toList()
 
             val mLogs = arrayListOf<Map<String, Any?>>()
             for (log in logs) {
@@ -260,7 +260,7 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
             val dictionary = mutableMapOf<String, Any?>()
 
             dictionary["isFileSendingEnabled"] = isFileSendingEnabled
-            dictionary["supportedFileTypes"] = supportedFileTypes
+            dictionary["supportedFileTypes"] = supportedFileTypes.toList()
             dictionary["fileSizeLimit"] = fileSizeLimit
 
             channel.invokeMethod("sendChatSettingsResult", dictionary)
