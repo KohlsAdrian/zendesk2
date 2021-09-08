@@ -131,7 +131,9 @@ class Zendesk2Chat {
   /// Start chat providers for custom UI handling
   ///
   /// ```periodicRetrieve``` periodic time to update the ```providersStream```
+  /// 
   /// ```autoConnect``` Determines if you also want to connect to the chat socket
+  /// 
   /// The user will not receive push notifications while connected
   Future<void> startChatProviders({bool autoConnect = true}) async {
     try {
@@ -167,7 +169,7 @@ class Zendesk2Chat {
   ///  Usefull when going to background inside the chat screeen. The user will start receiving push notifications for new messages.
   Future<void> disconnect() async {
     try {
-      await _channel.invokeMethod('disconnect');
+      await _channel.invokeMethod('chat_disconnect');
     } catch (e) {
       print(e);
     }

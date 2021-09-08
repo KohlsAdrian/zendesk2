@@ -79,7 +79,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         case "chat_connect":
             zendesk2Chat.connect()
             break
-        case "disconnect":
+        case "chat_disconnect":
             zendesk2Chat.disconnect()
             break
         case "chat_dispose":

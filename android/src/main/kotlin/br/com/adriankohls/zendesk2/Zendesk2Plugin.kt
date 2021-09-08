@@ -56,8 +56,8 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
             "endChat" -> zendesk2Chat.endChat()
             "sendIsTyping" -> zendesk2Chat.sendTyping(call)
             "registerToken" -> zendesk2Chat.registerToken(call)
-            "connect" -> zendesk2Chat.connect()
-            "disconnect" -> zendesk2Chat.disconnect()
+            "chat_connect" -> zendesk2Chat.connect()
+            "chat_disconnect" -> zendesk2Chat.disconnect()
             "sendChatProvidersResult" -> mResult = call.arguments
             "sendChatConnectionStatusResult" -> mResult = call.arguments
             "sendChatSettingsResult" -> mResult = call.arguments
