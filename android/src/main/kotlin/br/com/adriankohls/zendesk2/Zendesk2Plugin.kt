@@ -16,14 +16,14 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
 
     var activity: Activity? = null
-    var chatStateObservationScope : ObservationScope? = null
-    var accountObservationScope : ObservationScope? = null
-    var settingsObservationScope : ObservationScope? = null
-    var connectionStatusObservationScope : ObservationScope? = null
+    val chatStateObservationScope: ObservationScope = ObservationScope()
+    val accountObservationScope: ObservationScope = ObservationScope()
+    val settingsObservationScope: ObservationScope = ObservationScope()
+    val connectionStatusObservationScope: ObservationScope = ObservationScope()
 
 
-    private var streamingChatSDK: Boolean = false
-    private var streamingAnswerSDK: Boolean = false
+    var streamingChatSDK: Boolean = false
+    var streamingAnswerSDK: Boolean = false
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         val zendesk2Chat = Zendesk2Chat(this, channel)
@@ -33,14 +33,18 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
         var mResult: Any? = null
         when (call.method) {
             "init_chat" -> {
-                zendesk2Chat.initialize(call)
+                if (streamingChatSDK) {
+                    print("Chat SDK is already running!")
+                } else {
+                    zendesk2Chat.initialize(call)
+                }
             }
             // chat sdk method channels
             "dispose" -> {
-                chatStateObservationScope?.cancel()
-                accountObservationScope?.cancel()
-                settingsObservationScope?.cancel()
-                connectionStatusObservationScope?.cancel()
+                chatStateObservationScope.cancel()
+                accountObservationScope.cancel()
+                settingsObservationScope.cancel()
+                connectionStatusObservationScope.cancel()
                 zendesk2Chat.dispose()
             }
             "logger" -> zendesk2Chat.logger(call)
@@ -60,7 +64,11 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
             "sendChatIsOnlineResult" -> mResult = call.arguments
             // answer sdk method channels
             "init_answer" -> {
-                zendesk2Answer.initialize(call)
+                if (streamingAnswerSDK) {
+                    print("Answer SDK is already running!")
+                } else {
+                    zendesk2Answer.initialize(call)
+                }
             }
             "query" -> zendesk2Answer.deflectionQuery(call)
             "resolve_article" -> zendesk2Answer.resolveArticleDeflection(call)
@@ -71,7 +79,7 @@ class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
             else -> print("method not implemented")
         }
 
-        if(mResult != null){
+        if (mResult != null) {
             result.success(mResult)
         } else {
             result.success(0)

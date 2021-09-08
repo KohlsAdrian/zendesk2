@@ -47,6 +47,7 @@ class Zendesk2Answer(private val plugin: Zendesk2Plugin, private val channel: Me
 
             guide.init(zendesk)
             answer.init(zendesk, guide)
+            plugin.streamingAnswerSDK = true
         } else {
             print("Plugin Context is NULL!")
         }

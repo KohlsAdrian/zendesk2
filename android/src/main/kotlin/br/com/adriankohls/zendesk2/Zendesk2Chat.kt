@@ -15,8 +15,9 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
         val accountKey = call.argument<String>("accountKey")!!
         val appId = call.argument<String>("appId")!!
 
-        if(plugin.activity != null) {
+        if (plugin.activity != null) {
             Chat.INSTANCE.init(plugin.activity!!, accountKey, appId)
+            plugin.streamingChatSDK = true
         } else {
             print("Plugin Context is NULL!")
         }
@@ -75,8 +76,8 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
     }
 
     private fun chatProviderStart() {
-        plugin.chatStateObservationScope = ObservationScope()
-        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(plugin.chatStateObservationScope!!) {
+        val observationScope = plugin.chatStateObservationScope
+        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(observationScope) {
             val isChatting = it.isChatting
             val chatId = it.chatId
             val agents = it.agents
@@ -96,7 +97,7 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
             dictionary["chatSessionStatus"] = chatSessionStatus
             dictionary["department"] = null
 
-            if(department != null){
+            if (department != null) {
                 val departmentDict = mutableMapOf<String, Any?>()
 
                 val id = department.id
@@ -129,7 +130,7 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
             dictionary["agents"] = mAgents.toArray()
 
             val mLogs = arrayListOf<Map<String, Any?>>()
-            for (log in logs){
+            for (log in logs) {
                 val logDict = mutableMapOf<String, Any?>()
                 logDict["id"] = log.id
                 logDict["createdByVisitor"] = log.chatParticipant == ChatParticipant.VISITOR
@@ -142,7 +143,7 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
 
                 val logDS = mutableMapOf<String, Any?>()
                 val deliveryStatus = log.deliveryStatus.name.uppercase()
-                val isFailed = when(log.deliveryStatus){
+                val isFailed = when (log.deliveryStatus) {
                     DeliveryStatus.FAILED_FILE_SENDING_DISABLED -> true
                     DeliveryStatus.FAILED_FILE_SIZE_TOO_LARGE -> true
                     DeliveryStatus.FAILED_INTERNAL_SERVER_ERROR -> true
@@ -220,8 +221,8 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
     }
 
     private fun accountProviderStart() {
-        plugin.accountObservationScope = ObservationScope()
-        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(plugin.accountObservationScope!!) {
+        val observationScope = plugin.accountObservationScope
+        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(observationScope) {
             val isOnline = it.status == AccountStatus.ONLINE
             val deparments = it.departments ?: listOf<Department>()
 
@@ -250,8 +251,8 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
     }
 
     private fun settingsProviderStart() {
-        plugin.settingsObservationScope = ObservationScope()
-        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(plugin.settingsObservationScope!!) {
+        val observationScope = plugin.settingsObservationScope
+        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(observationScope) {
             val isFileSendingEnabled = it.isFileSendingEnabled
             val supportedFileTypes = it.allowedFileTypes
             val fileSizeLimit = it.maxFileSize
@@ -267,8 +268,8 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
     }
 
     private fun connectionProviderStart() {
-        plugin.connectionStatusObservationScope = ObservationScope()
-        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(plugin.connectionStatusObservationScope!!) {
+        val observationScope = plugin.connectionStatusObservationScope
+        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(observationScope) {
             val connectionStatus = it.name.uppercase()
 
             val dictionary = mutableMapOf<String, Any?>()
@@ -319,6 +320,7 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
             override fun onSuccess(v: Void?) {
                 print("success")
             }
+
             override fun onError(e: ErrorResponse?) {
                 print(e)
             }

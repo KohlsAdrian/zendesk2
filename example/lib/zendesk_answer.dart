@@ -27,6 +27,7 @@ class _ZendeskAnswerUI extends State<ZendeskAnswerUI> {
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       _subscritionProvidersDeflection = _zAnswer.providersDeflection
           .listen((answerProviderModel) => setState(() {
+                _articleDeflection = null;
                 _answerProviderModel = answerProviderModel;
                 _articles = _answerProviderModel?.articles.toList() ?? [];
               }));
@@ -37,11 +38,13 @@ class _ZendeskAnswerUI extends State<ZendeskAnswerUI> {
                   () => _articles.remove(_articleDeflection),
                 )
               : {});
-      _zAnswer.providersRejectArticleDeflection.listen((rejected) => rejected
-          ? setState(
-              () => _articles.remove(_articleDeflection),
-            )
-          : {});
+      _subscritionProvidersRejectArticleDeflection = _zAnswer
+          .providersRejectArticleDeflection
+          .listen((rejected) => rejected
+              ? setState(
+                  () => _articles.remove(_articleDeflection),
+                )
+              : {});
     });
   }
 

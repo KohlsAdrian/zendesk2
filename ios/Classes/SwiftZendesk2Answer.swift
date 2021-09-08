@@ -128,13 +128,13 @@ public class SwiftZendesk2Answer {
                 dictionary["success"] = false
                 NSLog("Error resolving article deflection: %@", error.localizedDescription)
             }
-            self.channel?.invokeMethod("sendResolveArticleDeflection", arguments: arguments)
+            self.channel?.invokeMethod("sendResolveArticleDeflection", arguments: dictionary)
         })
     }
     
     func rejectArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
-        let deflectionId = arguments?["deflectionArticleId"] as! Int64
-        let articleId = arguments?["articleId"] as! Int64
+        let deflectionId = arguments?["deflectionArticleId"] as! String
+        let articleId = arguments?["articleId"] as! String
         let interactionAccessToken = arguments?["interactionAccessToken"] as! String
         let reason = (arguments?["reason"] ?? "") as! String
         
@@ -146,7 +146,7 @@ public class SwiftZendesk2Answer {
             }
         }()
         
-        answerBotProvider?.rejectWithArticle(deflectionId: deflectionId, articleId: articleId, interactionAccessToken: interactionAccessToken, reason: mReason, callback: { result in
+        answerBotProvider?.rejectWithArticle(deflectionId: Int64(deflectionId)!, articleId: Int64(articleId)!, interactionAccessToken: interactionAccessToken, reason: mReason, callback: { result in
             var dictionary = [String: Any]()
             switch result {
             case .success(let response):

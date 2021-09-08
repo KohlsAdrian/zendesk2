@@ -30,7 +30,7 @@ class ChatProviderModel {
         ((map['logs'] ?? []) as Iterable).map((e) => ChatLog.fromJson(e));
 
     int queuePosition = map['queuePosition'] ?? -1;
-    String queueId = map['queueId'];
+    String queueId = map['queueId'] ?? '-1';
 
     CHAT_SESSION_STATUS chatSessionStatus = CHAT_SESSION_STATUS.CONFIGURING;
 
