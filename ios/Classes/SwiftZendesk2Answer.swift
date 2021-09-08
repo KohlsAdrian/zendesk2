@@ -140,8 +140,8 @@ public class SwiftZendesk2Answer {
         
         let mReason: RejectionReason = {
             switch reason {
-            case "notRelated": return RejectionReason.notRelated
-            case "relatedButDidntAnswer": return RejectionReason.relatedButDidntAnswer
+            case "NOT_RELATED": return RejectionReason.notRelated
+            case "RELATED_BUT_DIDNT_ANSWER": return RejectionReason.relatedButDidntAnswer
             default: return RejectionReason.unknown
             }
         }()
