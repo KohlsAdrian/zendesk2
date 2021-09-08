@@ -1,31 +1,31 @@
 # 2.0.0+0
 
-* Huge update 🎉
+## Huge update 🎉
 
-* [Features]
+### [Features]
 
-    * Answer SDK providers
+* Answer SDK providers
 
-* [BREAKING CHANGES]
+### [BREAKING CHANGES]
 
-    * Plugin wrapped features: `Zendesk`, `ZendeskChat` and `ZendeskAnswer` (see README.md)
+* Plugin wrapped: `Zendesk`, `ZendeskChat` and `ZendeskAnswer` (see README.md)
 
-    * Wrapped 3 new streams: `Connection Status`, `Chat Settings` and `isOnline` status (`ProviderModel` optimisation)
+* Wrapped 3 new streams: `Connection Status`, `Chat Settings` and `isOnline` status
 
-    * Optimised `null-safety` on `ProviderModel` object
+* Optimised `null-safety` on `ProviderModel` object
 
-    * Moved SDK initialization to general Zendesk class (see README.md)
+* Moved SDK initialization to general Zendesk class (see README.md)
 
-* [OPTIMISATION]
+### [OPTIMISATION]
 
-    * Removed unused SDKs and unused code
+* Removed unused SDKs and unused code
 
-    * Removed deprecated functions:
+* Removed deprecated functions:
         
-        * Native Chat
+    * Native Chat
         
-        * Rating
-=======
+    * Rating
+
 # 1.6.2+0
 
 * Bugfix for when no matching agents found (@nimisis)
