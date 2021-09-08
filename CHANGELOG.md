@@ -1,3 +1,31 @@
+# 2.0.0+0
+
+## Huge update 🎉
+
+### [Features]
+
+* Answer SDK providers
+
+### [BREAKING CHANGES]
+
+* Plugin wrapped: `Zendesk`, `ZendeskChat` and `ZendeskAnswer` (see README.md)
+
+* Wrapped 3 new streams: `Connection Status`, `Chat Settings` and `isOnline` status
+
+* Optimised `null-safety` on `ProviderModel` object
+
+* Moved SDK initialization to general Zendesk class (see README.md)
+
+### [OPTIMISATION]
+
+* Removed unused SDKs and unused code
+
+* Removed deprecated functions:
+        
+    * Native Chat
+        
+    * Rating
+
 # 1.6.2+0
 
 * Bugfix for when no matching agents found (@nimisis)
@@ -14,17 +42,17 @@
 
 * Support for push notifications
 
-Pull request from https://github.com/diegogarciar
+* Pull request from https://github.com/diegogarciar
 
-Fix README.md
+* Fix README.md
 
-Fixed FirebaseService Example
+F* ixed FirebaseService Example
 
 ## 1.5.0
 
 * [Breaking change] replaced `Timer.periodic` by `invokeMethod`
 
-Optimisation made by https://github.com/kiplelive-zariman
+* Optimisation made by https://github.com/kiplelive-zariman
 
 ## 1.4.1
 
@@ -58,9 +86,9 @@ Optimisation made by https://github.com/kiplelive-zariman
 
 * Hotfix
 
- - mistype mimeType in ProviderModel
+* mistype mimeType in ProviderModel
 
- - You must call supported types after providers finished initializing
+* You must call supported types after providers finished initializing
 
 ## 1.1.0+1
 

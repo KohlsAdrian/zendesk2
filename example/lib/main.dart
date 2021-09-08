@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zendesk2/zendesk2.dart';
+import 'package:zendesk2_example/zendesk_answer.dart';
 import 'package:zendesk2_example/zendesk_chat.dart';
 
 void main() {
@@ -28,51 +29,39 @@ class Home extends StatefulWidget {
 }
 
 class _Home extends State<Home> {
-  void zendesk(bool isNativeChat, BuildContext context) async {
-    String accountKey = '';
-    String appId = '';
+  final z = Zendesk.instance;
 
+  String accountKey = '';
+  String appId = '';
+  String clientId = '';
+  String zendeskUrl = '';
+
+  void answer() async {
+    z.initAnswerSDK(appId, clientId, zendeskUrl);
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => ZendeskAnswerUI()));
+  }
+
+  void chat() async {
     String name = '';
     String email = '';
     String phoneNumber = '';
 
-    Zendesk2Chat z = Zendesk2Chat.instance;
+    await z.initChatSDK(accountKey, appId);
 
-    await z.logger(true);
+    Zendesk2Chat zChat = Zendesk2Chat.instance;
 
-    await z.init(accountKey, appId, iosThemeColor: Colors.yellow);
-
-    await z.setVisitorInfo(
+    await zChat.setVisitorInfo(
       name: name,
       email: email,
       phoneNumber: phoneNumber,
       tags: ['app', 'zendesk2_plugin'],
     );
-    await z.customize(
-      departmentFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      emailFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      nameFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      phoneFieldStatus: PRE_CHAT_FIELD_STATUS.HIDDEN,
-      transcriptChatEnabled: true,
-      agentAvailability: false,
-      endChatEnabled: true,
-      offlineForms: true,
-      preChatForm: true,
-      transcript: true,
-    );
 
-    if (isNativeChat) {
-      await z.startChat(
-        toolbarTitle: 'Talk to us',
-        backButtonLabel: 'Back',
-        botLabel: 'bip bop boting',
-      );
-    } else {
-      await Zendesk2Chat.instance.startChatProviders();
+    await Zendesk2Chat.instance.startChatProviders(autoConnect: false);
 
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
-    }
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
   }
 
   @override
@@ -84,11 +73,22 @@ class _Home extends State<Home> {
       body: Center(
         child: Text('Press on FAB to start chat'),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'customChat',
-        icon: Icon(FontAwesomeIcons.comments),
-        label: Text('Custom Chat'),
-        onPressed: () => zendesk(false, context),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'answer',
+            icon: Icon(FontAwesomeIcons.comments),
+            label: Text('Answer BOT'),
+            onPressed: answer,
+          ),
+          FloatingActionButton.extended(
+            heroTag: 'chat',
+            icon: Icon(FontAwesomeIcons.comments),
+            label: Text('Chat SDK V2'),
+            onPressed: chat,
+          ),
+        ],
       ),
     );
   }

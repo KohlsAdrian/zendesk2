@@ -4,87 +4,125 @@ import ChatProvidersSDK
 
 public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
     
-    private var navigationController: UINavigationController? = nil
-    private var zendesk2Chat: SwiftZendesk2Chat? = nil
+    
+    var chatStateObservationToken: ObservationToken? = nil
+    var accountObservationToken: ObservationToken? = nil
+    var settingsObservationToken: ObservationToken? = nil
+    var statusObservationToken: ObservationToken? = nil
+    
+    private var streamingChatSDK: Bool = false
+    private var streamingAnswerSDK: Bool = false
+    
     private var channel: FlutterMethodChannel
     
     public static func register(with registrar: FlutterPluginRegistrar) -> Void {
         let channel = FlutterMethodChannel(name: "zendesk2", binaryMessenger: registrar.messenger())
+        
         let instance = SwiftZendesk2Plugin(channel: channel)
-
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
     }
-
-     init(channel: FlutterMethodChannel) {
+    
+    init(channel: FlutterMethodChannel) {
         self.channel = channel
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
-        if zendesk2Chat == nil {
-            zendesk2Chat = SwiftZendesk2Chat(channel: channel)
-        }
-        
+        let method = call.method
         let arguments = call.arguments as? Dictionary<String, Any>
+        
         var mResult: Any? = nil
-        switch(call.method){
-        case "init":
-            mResult = zendesk2Chat?.zendeskInit(arguments)
-            break
-        case "logger":
-            mResult = zendesk2Chat?.logger(arguments)
-            break
+        
+        let zendesk2Chat = SwiftZendesk2Chat(channel: channel, flutterPlugin: self)
+        let zendesk2Answer = SwiftZendesk2Answer(channel: channel, flutterPlugin: self)
+        
+        switch(method){
+        // chat sdk method channels
+        case "init_chat":
+            zendesk2Chat.initialize(arguments)
+            break;
         case "setVisitorInfo":
-            mResult = zendesk2Chat?.setVisitorInfo(arguments)
-            break
-        case "startChat":
-            mResult = zendesk2Chat?.startChat(arguments)
+            zendesk2Chat.setVisitorInfo(arguments)
             break
         case "startChatProviders":
-            mResult = zendesk2Chat?.startChatProviders(arguments)
+            if streamingChatSDK {
+                NSLog("Chat Providers already started!")
+            } else {
+                zendesk2Chat.startChatProviders()
+                streamingChatSDK = true
+            }
             break
-        case "dispose":
-            mResult = zendesk2Chat?.dispose()
+        case "sendChatProvidersResult":
+            mResult = arguments
             break
-        case "customize":
-            mResult = zendesk2Chat?.customize(arguments)
+        case "sendChatConnectionStatusResult":
+            mResult = arguments
             break
-        case "getChatProviders":
-            mResult = zendesk2Chat?.getChatProviders()
+        case "sendChatSettingsResult":
+            mResult = arguments
+            break
+        case "sendChatIsOnlineResult":
+            mResult = arguments
             break
         case "sendMessage":
-            mResult = zendesk2Chat?.sendMessage(arguments)
+            zendesk2Chat.sendMessage(arguments)
             break
         case "sendFile":
-            mResult = zendesk2Chat?.sendFile(arguments)
-            break
-        case "compatibleAttachmentsExtensions":
-            mResult = zendesk2Chat?.getAttachmentsExtension()
+            zendesk2Chat.sendFile(arguments)
             break
         case "endChat":
-            mResult = zendesk2Chat?.endChat()
-            break
-        case "sendRatingComment":
-            mResult = zendesk2Chat?.sendRatingComment(arguments)
-            break
-        case "sendRatingReview":
-            mResult = zendesk2Chat?.sendRatingReview(arguments)
+            zendesk2Chat.endChat()
             break
         case "sendIsTyping":
-            mResult = zendesk2Chat?.sendTyping(arguments)
-        case "connect":
-            mResult = zendesk2Chat?.connect()
-        case "disconnect":
-            mResult = zendesk2Chat?.disconnect()
+            zendesk2Chat.sendTyping(arguments)
+            break
+        case "chat_connect":
+            zendesk2Chat.connect()
+            break
+        case "chat_disconnect":
+            zendesk2Chat.disconnect()
+            break
+        case "chat_dispose":
+            self.chatStateObservationToken?.cancel()
+            self.accountObservationToken?.cancel()
+            self.settingsObservationToken?.cancel()
+            self.statusObservationToken?.cancel()
+            zendesk2Chat.dispose()
+            streamingChatSDK = false
+            break
+        // answer sdk method channels
+        case "init_answer":
+            if streamingAnswerSDK {
+                NSLog("Answer Providers already started!")
+            } else {
+                zendesk2Answer.initialize(arguments)
+            }
+            break
+        case "query":
+            zendesk2Answer.deflectionQuery(arguments)
+            break
+        case "resolve_article":
+            zendesk2Answer.resolveArticleDeflection(arguments)
+            break
+        case "reject_article":
+            zendesk2Answer.rejectArticleDeflection(arguments)
+            break
+        case "sendAnswerProviderModel":
+            mResult = arguments
+            break
+        case "sendResolveArticleDeflection":
+            mResult = arguments
+            break
+        case "sendRejectArticleDeflection":
+            mResult = arguments
+            break
         default:
             break
         }
-        
-        if mResult is Array<Any?> || mResult is Dictionary<String, Any?> {
+        if mResult != nil {
             result(mResult)
         }
-        
-        result(0)
+        result(nil)
     }
     
     

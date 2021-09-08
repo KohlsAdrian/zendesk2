@@ -1,121 +1,144 @@
 ![](zendesk2.jpg)
 
+```text
 An Android and iOS SDK port of Zendesk for Flutter
 
 Android min SDK 16 and iOS min OS Version 10.0
 
 Easy and fast to use
+````
 
-# <del>Setup for Native Chat</del> 
-(Native chat is obsolete and is discouraged to be used)
+# Setup ( `yourdomain` - your company zendesk domain)
 
-<details>
-  <summary><del>Android Min SDK - 16</del></summary>
+* AccountKey - https://yourdomain.zendesk.com/chat/agent#home > Profile Picture > Check Connection
 
+* AppId - https://yourdomain.zendesk.com/agent/admin/mobile_sdk
 
-  android/app/src/main/res/values/styles.xml
-  
-  Add the following style
+* ClientId - https://yourdomain.zendesk.com/agent/admin/mobile_sdk (for Answer SDK)
 
-        <style name="ZendeskTheme" parent="ZendeskSdkTheme.Light">    
-          <item name="colorPrimary">#FF5148</item>
-          <item name="colorPrimaryDark">#FF5148</item>
-          <item name="colorAccent">#FF5148</item>
-        </style>
+* zendeskUrl - https://yourdomain.zendesk.com/agent/admin/mobile_sdk (for Answer SDK)
+
+* Update Cocoapods to latest version
 
 
-  android/app/src/main/AndroidManifest.xml
+## Initialize the Zendesk SDK
 
-  Inside <application> tag, insert the following Activity
+```dart
+await Zendesk2.instance.init(accountKey, appId);
+```
 
+````dart
+final z = Zendesk2.instance; // general Zendesk
 
-        <activity android:name="zendesk.messaging.MessagingActivity"
-            android:theme="@style/ZendeskTheme" />
+// initialize the Chat SDK
+await z.initChatSDK(accountKey, appId); 
 
-</details>
+// initialize the Answer SDK
+await z.initAnswerSDK(accountKey, clientId, zendeskUrl); 
 
-<details>
-  <summary><del>iOS Min OS Version - 10.0</del></summary>
-  
-  In AppDelegate.swift should look like this
-  
-    override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-      GeneratedPluginRegistrant.register(with: self)
-    
-      //Snippet to make rootView as navigatable
-      let flutterViewController = window?.rootViewController as! FlutterViewController
-      let navigationController = UINavigationController.init(rootViewController: flutterViewController)
-      navigationController.isNavigationBarHidden = true
-      window.rootViewController = navigationController
-      window.makeKeyAndVisible()
+// initialize the Chat SDK
+await z.initChatSDK(); 
 
-      return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    }
-  
-  You can have pre loaded localization with "Localizable.string"
-  
-  See [example/ios/Runnner/Localizable.string](https://github.com/KohlsAdrian/zendesk2/blob/main/example/ios/Runner)
-  
-  See: https://developer.zendesk.com/embeddables/docs/ios_support_sdk/localize_text
-  
-</details>
+final zChat = Zendesk2Chat.instance; // Zendesk Chat Providers
+final zAnswer = Zendesk2Answer.instance; // Zendesk Answer Providers
+````
 
-# Custom UI (Providers)
+# How to use - Chat SDK V2
 
 ```dart
 /// Zendesk Chat instance
-Zendesk2Chat z = Zendesk2Chat.instance;
-
-/// Initialize Zendesk SDK
-await z.init(accountKey, appId);
+Zendesk2Chat zChat = Zendesk2Chat.instance;
 
 /// Optional Visitor Info information
-await z.setVisitorInfo(
+await zChat.setVisitorInfo(
     name: name,
     email: email,
     phoneNumber: phoneNumber,
   );
 
 /// Very important, for custom UI, prepare Stream for ProviderModel
-await z.startChatProviders();
+await zChat.startChatProviders();
 
-/// Get the updated provider Model from SDK
-z.providersStream.listen((providerModel) {
-  /// this stream retrieve all Chat data and Logs from SDK
+/// Get the updated provider Model (LOGS, AGENTS, etc)
+_subscriptionProviderModel = zChat.providersStream.listen((providerModel) {
   _providerModel = providerModel;
 });
 
-/// It is also important to disconnect and reconnect and when the app enters  and exits background, to do this you can simply calll
-z.disconnect() 
-z.connect()  
+/// Get the updated connection status
+_subscriptionConnectionStatus = zChat.connectionStatusStream.listen((connectionStatus) {
+  _connectionStatus = connectionsStatus;
+});
+
+/// Get the updated current chat settings (sendingle enabled, file limite, compatible formats)
+_subscriptionChatSettingsStream = zChat.chatSettingsStream.listen((chatSettingsModel) {
+  _chatSettingsModel = chatSettingsModel;
+});
+
+/// Get the current account status (online or offline)
+_subscriptionIsOnlineStream = zChat.chatIsOnlineStream.listen((isOnline) {
+  _isOnline = isOnline;
+});
+
+/// It is also important to disconnect and reconnect 
+/// and when the app enters and exits background, 
+/// to do this you can simply calll
+await zChat.disconnect();
+/// or
+await zChat.connect(); 
+
+/// After you release resources
+await zChat.dispose();
 ```
 
+# How to use - Answer SDK
+
+```dart
+/// String query
+await zAnswer.query(query);
+
+// Stream subscrition resulting on query success
+_subscription = zAnswer.providersDeflection.listen((answerProviderModel) {
+      /// this stream retrieve all Answer data from the SDK
+      /// in ONE unique reliable object :)
+      _answerProviderModel = answerProviderModel;
+      }
+    );
+```
+</details>
 
 
 # Push Notifications
 
-   To configure chat notifications, you will need to do the following configuration per platform
+To configure chat notifications, you will need to do the following configuration per platform
 
-## iOS
+<details><summary> iOS </summary>
 
-  Inside your AppDelegate.swift import the ChatSdk
-  `import ChatProvidersSDK`
+  Inside your `AppDelegate.swift` import the ChatSDK as 
+  
+  ```swift
+  import ChatProvidersSDK
+  ```
 
   Add the following method
   ``` swift
-    override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        //Messaging.messaging().apnsToken = deviceToken  /// You might already have this if you are using firebase messaging
+    override func application(
+      _ application: UIApplication, 
+      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        // You might already have this if you are using firebase messaging
+        // Messaging.messaging().apnsToken = deviceToken  
         
         Chat.registerPushToken(deviceToken)
     }
   ```
-### Android
+
+<details><summary> Android </summary>
 
 Using FCM messaging, get your FCM token and register it as follows:
 
 ``` dart
-Zendesk2Chat z = Zendesk2Chat.instance;
-await z.registerFCMToken(fcmToken);
+Zendesk2Chat zChat = Zendesk2Chat.instance;
+await zChat.registerFCMToken(fcmToken);
 ```
 (calling this function has no effect on iOS)
 
@@ -130,30 +153,4 @@ To display the notifications, you will need to register your own `FirebaseMessag
     </intent-filter>
 </service>
 ```
-
-
-# What you need
-
- * AccountKey
-
- * AppId
- 
- * Update Cocoapods to latest version
-
-# STATUS
-
-  Chat SDK
-
-    Live Chat, Customization and Providers for custom UI
-  
-    Live Chat - OK
-    Support SDK - OK
-    Customization - OK
-    
-# Far development
-
-  Unified SDK
-
-  Answer BOT SDK
-  
-  Talk SDK
+</details>

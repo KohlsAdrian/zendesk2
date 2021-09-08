@@ -1,12 +1,13 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:zendesk2/chat2/model/provider_model.dart';
 import 'package:zendesk2/zendesk2.dart';
-import 'package:collection/collection.dart';
 
 class ZendeskChat extends StatefulWidget {
   _ZendeskChat createState() => _ZendeskChat();
@@ -16,24 +17,115 @@ class _ZendeskChat extends State<ZendeskChat> {
   final Zendesk2Chat _z = Zendesk2Chat.instance;
 
   final _tecM = TextEditingController();
-  ProviderModel? _providerModel;
+  ChatProviderModel? _providerModel;
+  ChatSettingsModel? _chatSettingsModel;
+  CONNECTION_STATUS? _connectionStatus;
+  ChatAccountModel? _chatAccountModel;
 
-  @override
-  void dispose() {
-    _z.dispose();
-    super.dispose();
+  StreamSubscription<ChatProviderModel>? _subscriptionProvidersStream;
+  StreamSubscription<CONNECTION_STATUS>? _subscriptionConnetionStatusStream;
+  StreamSubscription<ChatSettingsModel>? _subscriptionChatSettingsStream;
+  StreamSubscription<ChatAccountModel>? _subscriptionAccountProvidersStream;
+
+  Future<bool> _onWillPopScope() async {
+    await _subscriptionProvidersStream?.cancel();
+    await _subscriptionConnetionStatusStream?.cancel();
+    await _subscriptionChatSettingsStream?.cancel();
+    await _subscriptionAccountProvidersStream?.cancel();
+    await _z.dispose();
+    await _z.disconnect();
+    return true;
   }
 
   @override
   void initState() {
     super.initState();
 
-    Future.delayed(Duration(), () async {
-      _z.providersStream.listen((providerModel) {
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      await _z.connect();
+      _subscriptionProvidersStream =
+          _z.providersStream?.listen((providerModel) {
         _providerModel = providerModel;
+        print('ProviderModel: $_providerModel');
+        setState(() {});
+      });
+      _subscriptionChatSettingsStream =
+          _z.chatSettingsStream?.listen((settingsModel) {
+        _chatSettingsModel = settingsModel;
+        print('Chat Settings: $_chatSettingsModel');
+        setState(() {});
+      });
+      _subscriptionConnetionStatusStream =
+          _z.connectionStatusStream?.listen((connectionStatus) {
+        _connectionStatus = connectionStatus;
+        print('Connection Status: $_connectionStatus');
+        setState(() {});
+      });
+      _subscriptionAccountProvidersStream =
+          _z.chatIsOnlineStream?.listen((chatAccountModel) {
+        _chatAccountModel = chatAccountModel;
+        print('isOnline: $_chatAccountModel');
         setState(() {});
       });
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final isOnline =
+        ((_chatAccountModel?.isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
+    return WillPopScope(
+      onWillPop: _onWillPopScope,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Custom Chat UI: $isOnline'),
+        ),
+        body: _providerModel == null
+            ? Center(child: CircularProgressIndicator())
+            : Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  if (_providerModel != null) _chat(),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_providerModel != null &&
+                          _providerModel!.agents.isNotEmpty)
+                        if (_providerModel!.agents.first.isTyping)
+                          Text(
+                            'Agent is typing...',
+                            textAlign: TextAlign.start,
+                          ),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: mq.viewPadding.bottom),
+                        child: Column(
+                          children: [
+                            if (_chatSettingsModel?.fileSizeLimit != null)
+                              Column(
+                                children: [
+                                  Text('Can send files: ' +
+                                      _chatSettingsModel!.isFileSendingEnabled!
+                                          .toString()),
+                                  Text('Fle size limit: ' +
+                                      (_chatSettingsModel!.fileSizeLimit! ~/
+                                              1024)
+                                          .toString()
+                                          .substring(0, 2) +
+                                      ' MB'),
+                                ],
+                              ),
+                            Text('$_connectionStatus'),
+                            _userWidget(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+      ),
+    );
   }
 
   void _attach() async {
@@ -65,21 +157,22 @@ class _ZendeskChat extends State<ZendeskChat> {
         ],
       ),
     );
-    if (isPhoto == null) return;
-    final compatibleExt = await _z.getAttachmentExtensions();
+
+    final compatibleExt = _chatSettingsModel?.supportedFileTypes;
+
     final result = isPhoto
-        ? await ImagePicker().getImage(source: ImageSource.camera)
+        ? await ImagePicker().pickImage(source: ImageSource.gallery)
         : await FilePicker.platform.pickFiles(
             allowMultiple: false,
             type: FileType.custom,
-            allowedExtensions: compatibleExt,
+            allowedExtensions: compatibleExt?.toList() ?? [],
           );
     if (result != null) {
       final file = result is FilePickerResult
           ? result.files.single
-          : (result as PickedFile);
+          : (result as XFile);
 
-      final path = file is PlatformFile ? file.path : (file as PickedFile).path;
+      final path = file is PlatformFile ? file.path : (file as XFile).path;
 
       if (path != null) {
         _z.sendFile(path);
@@ -104,78 +197,6 @@ class _ZendeskChat extends State<ZendeskChat> {
             onTap: () async {
               await _z.endChat();
               Navigator.of(context).pop(true);
-            },
-          ),
-          ListTile(
-            title: Row(
-              children: [
-                Icon(Icons.rate_review),
-                Text('Rate'),
-              ],
-            ),
-            onTap: () async {
-              final Map<RATING, bool> rate = {
-                RATING.GOOD: false,
-                RATING.BAD: false,
-                RATING.NONE: true,
-              };
-              Navigator.of(context).pop();
-              final tec = TextEditingController();
-              RATING rating = RATING.NONE;
-              final text = await showDialog(
-                context: context,
-                builder: (context) => StatefulBuilder(
-                  builder: (context, setState) => AlertDialog(
-                    title: Text('Rate and Comment'),
-                    content: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: RATING.values
-                                    .map((e) => TextButton(
-                                          onPressed: () => setState(() {
-                                            rate.keys.forEach((element) =>
-                                                rate[element] = element == e);
-                                            rating = e;
-                                          }),
-                                          child: Text(e
-                                              .toString()
-                                              .replaceAll('RATING.', '')),
-                                        ))
-                                    .toList()),
-                          ),
-                          TextField(
-                            controller: tec,
-                            decoration: InputDecoration(
-                                labelText: 'Comment (Optional)'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(null),
-                        child: Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(tec.text),
-                        child: Text('Rate'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-              if (text is String && text != null && text.isNotEmpty) {
-                _z.sendRateComment(text);
-              }
-              if (rating != null) {
-                _z.sendRateReview(rating);
-              }
             },
           ),
           SizedBox(height: 50),
@@ -254,204 +275,136 @@ class _ZendeskChat extends State<ZendeskChat> {
         ),
       );
 
-  Widget _chat() => ListView.builder(
+  Widget _chat() => Padding(
         padding: EdgeInsets.only(bottom: 200),
-        itemCount: _providerModel!.logs.length,
-        itemBuilder: (context, index) {
-          ChatLog log = _providerModel!.logs[index];
-          ChatMessage chatMessage = log.chatLogType.chatMessage;
+        child: Column(
+          children: (_providerModel?.logs ?? []).map(
+            (log) {
+              ChatMessage? chatMessage = log.chatLogType.chatMessage;
 
-          String message = chatMessage.message ?? '';
+              String message = chatMessage?.message ?? '';
 
-          String name = log.displayName ?? '';
+              String name = log.displayName;
 
-          bool isAttachment = false;
-          bool isJoinOrLeave = false;
-          bool isRatingReview = false;
-          bool isRatingComment = false;
-          bool isAgent =
-              log.chatLogParticipant.chatParticipant == CHAT_PARTICIPANT.AGENT;
+              bool isAttachment = false;
+              bool isJoinOrLeave = false;
+              bool isAgent = log.chatParticipant == CHAT_PARTICIPANT.AGENT;
 
-          Agent? agent;
-          if (isAgent)
-            agent = _providerModel!.agents
-                .firstWhereOrNull((element) => element.displayName == name);
+              Agent? agent;
+              if (isAgent)
+                agent = _providerModel!.agents
+                    .firstWhereOrNull((element) => element.displayName == name);
 
-          switch (log.chatLogType.logType) {
-            case LOG_TYPE.ATTACHMENT_MESSAGE:
-              message = 'Attachment';
-              isAttachment = true;
-              break;
-            case LOG_TYPE.CHAT_COMMENT:
-              ChatComment chatComment = log.chatLogType.chatComment;
-              final comment = chatComment.comment ?? '';
-              final newComment = chatComment.newComment ?? '';
-              message = 'Rating comment: $comment\n'
-                  'New comment: $newComment';
-              isRatingComment = true;
-              break;
-            case LOG_TYPE.CHAT_RATING:
-              message = 'Rating review: ' +
-                  log.chatLogType.chatRating.rating
-                      .toString()
-                      .replaceAll('RATING.', '');
-              isRatingReview = true;
-              break;
-            case LOG_TYPE.CHAT_RATING_REQUEST:
-              message = 'Rating request';
-              break;
-            case LOG_TYPE.MEMBER_JOIN:
-              message = '$name Joined!';
-              isJoinOrLeave = true;
-              break;
-            case LOG_TYPE.MEMBER_LEAVE:
-              message = '$name Left!';
-              isJoinOrLeave = true;
-              break;
-            case LOG_TYPE.MESSAGE:
-              message = message;
-              break;
-            case LOG_TYPE.OPTIONS_MESSAGE:
-              message = 'Options message';
-              break;
-            case LOG_TYPE.UNKNOWN:
-              message = 'Unknown';
-              break;
-            case null:
-              message = 'LogType=null';
-              break;
-          }
+              switch (log.chatLogType.logType) {
+                case LOG_TYPE.ATTACHMENT_MESSAGE:
+                  message = 'Attachment';
+                  isAttachment = true;
+                  break;
+                case LOG_TYPE.MEMBER_JOIN:
+                  message = '$name Joined!';
+                  isJoinOrLeave = true;
+                  break;
+                case LOG_TYPE.MEMBER_LEAVE:
+                  message = '$name Left!';
+                  isJoinOrLeave = true;
+                  break;
+                case LOG_TYPE.MESSAGE:
+                  message = message;
+                  break;
+                case LOG_TYPE.OPTIONS_MESSAGE:
+                  message = 'Options message';
+                  break;
+              }
 
-          bool isVisitor = log.chatLogParticipant.chatParticipant ==
-              CHAT_PARTICIPANT.VISITOR;
+              bool isVisitor = log.chatParticipant == CHAT_PARTICIPANT.VISITOR;
 
-          final imageUrl = log.chatLogType.chatAttachment.url;
+              final imageUrl = log.chatLogType.chatAttachment?.url;
 
-          final mimeType = log
-              .chatLogType.chatAttachment.chatAttachmentAttachment.mimeType
-              ?.toLowerCase();
-          final isImage = mimeType == null
-              ? false
-              : (mimeType.contains('jpg') ||
-                  mimeType.contains('png') ||
-                  mimeType.contains('jpeg') ||
-                  mimeType.contains('gif'));
+              final mimeType = log
+                  .chatLogType.chatAttachment?.chatAttachmentAttachment.mimeType
+                  ?.toLowerCase();
+              final isImage = mimeType == null
+                  ? false
+                  : (mimeType.contains('jpg') ||
+                      mimeType.contains('png') ||
+                      mimeType.contains('jpeg') ||
+                      mimeType.contains('gif'));
 
-          return isJoinOrLeave || isRatingReview || isRatingComment
-              ? Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Text(
-                    message,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: isVisitor
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.start,
-                  children: [
-                    Container(
+              return isJoinOrLeave
+                  ? Padding(
                       padding: EdgeInsets.all(5),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          if (isAgent)
-                            agent?.avatar != null
-                                ? CachedNetworkImage(
-                                    imageUrl: agent!.avatar ?? '')
-                                : Icon(Icons.person),
-                          Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0)),
-                            child: Container(
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              padding: EdgeInsets.all(10),
-                              child: Column(
-                                children: [
-                                  if (isAttachment)
-                                    GestureDetector(
-                                      onTap: () => launch(log
-                                              .chatLogType
-                                              .chatAttachment
-                                              .chatAttachmentAttachment
-                                              .url ??
-                                          ''),
-                                      child: isImage
-                                          ? CachedNetworkImage(
-                                              imageUrl: imageUrl ?? '',
-                                              placeholder: (context, url) =>
-                                                  CircularProgressIndicator(),
-                                            )
-                                          : Column(
-                                              children: [
-                                                Icon(FontAwesomeIcons.file),
-                                                Text(log
-                                                        .chatLogType
-                                                        .chatAttachment
-                                                        .chatAttachmentAttachment
-                                                        .name ??
-                                                    '')
-                                              ],
-                                            ),
-                                    ),
-                                  Text(message),
-                                ],
-                              ),
-                            ),
-                          ),
-                          if (isVisitor) Icon(Icons.person),
-                        ],
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                     )
-                  ],
-                );
-        },
+                  : Row(
+                      mainAxisAlignment: isVisitor
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(5),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              if (isAgent)
+                                agent?.avatar != null
+                                    ? CachedNetworkImage(
+                                        imageUrl: agent!.avatar ?? '')
+                                    : Icon(Icons.person),
+                              Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0)),
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5,
+                                  padding: EdgeInsets.all(10),
+                                  child: Column(
+                                    children: [
+                                      if (isAttachment)
+                                        GestureDetector(
+                                          onTap: () => launch(log
+                                                  .chatLogType
+                                                  .chatAttachment
+                                                  ?.chatAttachmentAttachment
+                                                  .url ??
+                                              ''),
+                                          child: isImage
+                                              ? CachedNetworkImage(
+                                                  imageUrl: imageUrl ?? '',
+                                                  placeholder: (context, url) =>
+                                                      CircularProgressIndicator(),
+                                                )
+                                              : Column(
+                                                  children: [
+                                                    Icon(FontAwesomeIcons.file),
+                                                    Text(log
+                                                            .chatLogType
+                                                            .chatAttachment
+                                                            ?.chatAttachmentAttachment
+                                                            .name ??
+                                                        '')
+                                                  ],
+                                                ),
+                                        ),
+                                      Text(message),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (isVisitor) Icon(Icons.person),
+                            ],
+                          ),
+                        )
+                      ],
+                    );
+            },
+          ).toList(),
+        ),
       );
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Custom Chat UI'),
-        actions: [
-          if (_providerModel != null)
-            Icon(
-              Icons.circle,
-              color: _providerModel!.connectionStatus ==
-                      CONNECTION_STATUS.CONNECTED
-                  ? Colors.green
-                  : _providerModel!.connectionStatus ==
-                          CONNECTION_STATUS.CONNECTING
-                      ? Colors.yellow
-                      : Colors.red,
-            )
-        ],
-      ),
-      body: _providerModel == null
-          ? Center(child: CircularProgressIndicator())
-          : Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                if (_providerModel != null) _chat(),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_providerModel != null &&
-                        _providerModel!.agents.isNotEmpty)
-                      if (_providerModel!.agents.first.isTyping ?? false)
-                        Text(
-                          'Agent is typing...',
-                          textAlign: TextAlign.start,
-                        ),
-                    _userWidget(),
-                  ],
-                ),
-              ],
-            ),
-    );
-  }
 }

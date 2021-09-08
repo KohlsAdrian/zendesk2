@@ -1,6 +1,7 @@
 name: zendesk2_example
 description: Demonstrates how to use the zendesk2 plugin.
 publish_to: 'none' 
+version: 1.0.0+0
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
@@ -19,10 +20,6 @@ dependencies:
   image_picker:
   cached_network_image:
   url_launcher:
-    
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
     
 flutter:
   uses-material-design: true

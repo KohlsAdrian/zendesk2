@@ -8,7 +8,6 @@ enum CONNECTION_STATUS {
   FAILED,
   RECONNECTING,
   UNREACHABLE,
-  UNKNOWN,
 }
 
 ///
@@ -20,7 +19,6 @@ enum CHAT_SESSION_STATUS {
   ENDING,
   INITIALIZING,
   STARTED,
-  UNKNOWN,
 }
 
 ///
@@ -29,7 +27,7 @@ enum CHAT_SESSION_STATUS {
 enum DELIVERY_STATUS {
   DELIVERED,
   PENDING,
-  UNKNOWN,
+  FAILED,
 }
 
 ///
@@ -37,14 +35,10 @@ enum DELIVERY_STATUS {
 ///
 enum LOG_TYPE {
   ATTACHMENT_MESSAGE,
-  CHAT_COMMENT,
-  CHAT_RATING,
-  CHAT_RATING_REQUEST,
   MEMBER_JOIN,
   MEMBER_LEAVE,
   MESSAGE,
   OPTIONS_MESSAGE,
-  UNKNOWN,
 }
 
 ///
@@ -60,25 +54,8 @@ enum CHAT_PARTICIPANT {
 ///
 /// The enum name says it all :)
 ///
-enum RATING {
-  NONE,
-  GOOD,
-  BAD,
-}
-
-///
-/// The enum name says it all :)
-///
-enum ATTACHMENT_ERROR {
-  NONE,
-  SIZE_LIMIT,
-}
-
-///
-/// The enum name says it all :)
-///
-enum PRE_CHAT_FIELD_STATUS {
-  OPTIONAL,
-  HIDDEN,
-  REQUIRED,
+enum DEPARTMENT_STATUS {
+  ONLINE,
+  OFFLINE,
+  AWAY,
 }
