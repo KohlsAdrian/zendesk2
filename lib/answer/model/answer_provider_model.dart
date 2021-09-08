@@ -1,3 +1,9 @@
+enum ARTICLE_REJECT_REASON {
+  NOT_RELATED,
+  RELATED_BUT_DIDNT_ANSWER,
+  UNKNOWN,
+}
+
 class AnswerProviderModel {
   final String interactionAccessToken;
   final int deflectionId;
@@ -59,7 +65,7 @@ class ArticleModel {
     int articleId = map['articleId'];
     String body = map['body'];
     String htmlURL = map['htmlURL'];
-    Iterable<String> labels = map['labels'] ?? [];
+    Iterable<String> labels = ((map['labels'] ?? []) as Iterable).map((e) => e);
     String locale = map['locale'];
     double score = map['score'];
     String snippet = map['snippet'];

@@ -101,6 +101,12 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         case "query":
             zendesk2Answer.deflectionQuery(arguments)
             break
+        case "resolve_article":
+            zendesk2Answer.resolveArticleDeflection(arguments)
+            break
+        case "reject_article":
+            zendesk2Answer.rejectArticleDeflection(arguments)
+            break
         case "sendAnswerProviderModel":
             mResult = arguments
             break

@@ -15,8 +15,9 @@ class _ZendeskAnswerUI extends State<ZendeskAnswerUI> {
   StreamSubscription<bool>? _subscritionProvidersRejectArticleDeflection;
 
   AnswerProviderModel? _answerProviderModel;
-  bool? _resolved;
-  bool? _rejected;
+  List<ArticleModel> _articles = [];
+
+  ArticleModel? _articleDeflection;
 
   final _tecQuery = TextEditingController();
 
@@ -24,14 +25,23 @@ class _ZendeskAnswerUI extends State<ZendeskAnswerUI> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) {
-      _subscritionProvidersDeflection = _zAnswer.providersDeflection.listen(
-          (answerProviderModel) =>
-              setState(() => _answerProviderModel = answerProviderModel));
+      _subscritionProvidersDeflection = _zAnswer.providersDeflection
+          .listen((answerProviderModel) => setState(() {
+                _answerProviderModel = answerProviderModel;
+                _articles = _answerProviderModel?.articles.toList() ?? [];
+              }));
       _subscritionProvidersResolveArticleDeflection = _zAnswer
           .providersResolveArticleDeflection
-          .listen((resolved) => setState(() => _resolved = resolved));
-      _zAnswer.providersRejectArticleDeflection
-          .listen((rejected) => setState(() => _rejected = rejected));
+          .listen((resolved) => resolved
+              ? setState(
+                  () => _articles.remove(_articleDeflection),
+                )
+              : {});
+      _zAnswer.providersRejectArticleDeflection.listen((rejected) => rejected
+          ? setState(
+              () => _articles.remove(_articleDeflection),
+            )
+          : {});
     });
   }
 
@@ -43,6 +53,22 @@ class _ZendeskAnswerUI extends State<ZendeskAnswerUI> {
   }
 
   void _query() => _zAnswer.query(_tecQuery.text);
+
+  void _resolve(ArticleModel articleModel) {
+    final deflectionId = articleModel.deflectionArticleId;
+    final articleId = articleModel.articleId;
+    final token = _answerProviderModel!.interactionAccessToken;
+    _articleDeflection = articleModel;
+    _zAnswer.resolveArticle(deflectionId, articleId, token);
+  }
+
+  void _reject(ArticleModel articleModel) {
+    final deflectionId = articleModel.deflectionArticleId;
+    final articleId = articleModel.articleId;
+    final token = _answerProviderModel!.interactionAccessToken;
+    _articleDeflection = articleModel;
+    _zAnswer.rejectArticle(deflectionId, articleId, token);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,21 +98,34 @@ class _ZendeskAnswerUI extends State<ZendeskAnswerUI> {
               height: size.height * 0.8,
               child: SingleChildScrollView(
                 child: Column(
-                  children: (_answerProviderModel?.articles ?? []).map(
+                  children: _articles.map(
                     (article) {
                       final title = article.title;
+                      final snippet = article.snippet;
                       final url = article.url;
-                      final labels = article.labels;
                       final score = article.score;
-                      return ListTile(
-                        title: Text('$title ($score)'),
-                        subtitle: Row(
-                          children: labels
-                              .map((l) =>
-                                  Text(l + (labels.last == l ? '' : ', ')))
-                              .toList(),
-                        ),
-                        onTap: () => print(url),
+                      return Column(
+                        children: [
+                          ListTile(
+                            title: Text('$title ($score)'),
+                            subtitle: Text(snippet),
+                            onTap: () => print(url),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                child: Text('Resolve Article'),
+                                onPressed: () => _resolve(article),
+                              ),
+                              ElevatedButton(
+                                child: Text('Reject Article'),
+                                onPressed: () => _reject(article),
+                              ),
+                            ],
+                          ),
+                          Divider(),
+                        ],
                       );
                     },
                   ).toList(),

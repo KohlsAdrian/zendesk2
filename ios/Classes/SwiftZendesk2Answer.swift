@@ -27,10 +27,20 @@ public class SwiftZendesk2Answer {
         let clientId = (arguments?["clientId"] ?? "") as? String
         let zendeskUrl = (arguments?["zendeskUrl"] ?? "") as? String
         
+        let token = arguments?["token"] as? String
+        let name = arguments?["name"] as? String
+        let email = arguments?["email"] as? String
+        
         if appId != nil && clientId != nil && zendeskUrl != nil {
             Zendesk.initialize(appId: appId!, clientId: clientId!, zendeskUrl: zendeskUrl!)
-                
+            
             let zendesk = Zendesk.instance
+            
+            let identity: Identity = token != nil ?
+                Identity.createJwt(token: token!) :
+                Identity.createAnonymous(name: name, email: email)
+            
+            Zendesk.instance?.setIdentity(identity)
             
             if zendesk != nil {
                 Support.initialize(withZendesk: zendesk!)
@@ -103,32 +113,29 @@ public class SwiftZendesk2Answer {
         })
     }
     
-    private func resolveArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
-        let deflectionId = arguments?["deflectionId"]
-        let articleId = arguments?["articleId"]
-        let interactionAccessToken = arguments?["interactionAccessToken"]
+    func resolveArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
+        let deflectionId = arguments?["deflectionArticleId"] as! Int64
+        let articleId = arguments?["articleId"] as! Int64
+        let interactionAccessToken = arguments?["interactionAccessToken"] as! String
         
-        if deflectionId != nil && articleId != nil && interactionAccessToken != nil {
-            if(deflectionId is Int64 && articleId is Int64 && interactionAccessToken is String){
-                answerBotProvider?.resolveWithArticle(deflectionId: deflectionId as! Int64, articleId: articleId as! Int64, interactionAccessToken: interactionAccessToken as! String, callback: { result in
-                    var dictionary = [String: Any]()
-                    switch result {
-                    case .success(let response):
-                        dictionary["success"] = true
-                        NSLog("Success resolved article deflection: %@", response)
-                    case .failure(let error):
-                        dictionary["success"] = false
-                        NSLog("Error resolving article deflection: %@", error.localizedDescription)
-                    }
-                    self.sendResolveArticleDeflection(dictionary)
-                })}
-        }
+        answerBotProvider?.resolveWithArticle(deflectionId: deflectionId, articleId: articleId, interactionAccessToken: interactionAccessToken, callback: { result in
+            var dictionary = [String: Any]()
+            switch result {
+            case .success(let response):
+                dictionary["success"] = true
+                NSLog("Success resolved article deflection: %@", response)
+            case .failure(let error):
+                dictionary["success"] = false
+                NSLog("Error resolving article deflection: %@", error.localizedDescription)
+            }
+            self.sendResolveArticleDeflection(dictionary)
+        })
     }
     
-    private func rejectArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
-        let deflectionId = arguments?["deflectionId"]
-        let articleId = arguments?["articleId"]
-        let interactionAccessToken = arguments?["interactionAccessToken"]
+    func rejectArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
+        let deflectionId = arguments?["deflectionArticleId"] as! Int64
+        let articleId = arguments?["articleId"] as! Int64
+        let interactionAccessToken = arguments?["interactionAccessToken"] as! String
         let reason = (arguments?["reason"] ?? "") as! String
         
         let mReason: RejectionReason = {
@@ -139,21 +146,17 @@ public class SwiftZendesk2Answer {
             }
         }()
         
-        if deflectionId != nil && articleId != nil && interactionAccessToken != nil {
-            if(deflectionId is Int64 && articleId is Int64 && interactionAccessToken is String){
-                answerBotProvider?.rejectWithArticle(deflectionId: deflectionId as! Int64, articleId: articleId as! Int64, interactionAccessToken: interactionAccessToken as! String, reason: mReason, callback: { result in
-                    var dictionary = [String: Any]()
-                    switch result {
-                    case .success(let response):
-                        dictionary["success"] = true
-                        NSLog("Success rejecting article deflection: %@", response)
-                    case .failure(let error):
-                        dictionary["success"] = false
-                        NSLog("Error rejecting article deflection: %@", error.localizedDescription)
-                    }
-                    self.sendRejectArticleDeflection(arguments)
-                })
+        answerBotProvider?.rejectWithArticle(deflectionId: deflectionId, articleId: articleId, interactionAccessToken: interactionAccessToken, reason: mReason, callback: { result in
+            var dictionary = [String: Any]()
+            switch result {
+            case .success(let response):
+                dictionary["success"] = true
+                NSLog("Success rejecting article deflection: %@", response)
+            case .failure(let error):
+                dictionary["success"] = false
+                NSLog("Error rejecting article deflection: %@", error.localizedDescription)
             }
-        }
+            self.sendRejectArticleDeflection(dictionary)
+        })
     }
 }

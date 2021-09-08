@@ -8,18 +8,18 @@ class ZendeskAnswer {
       (call) async {
         try {
           switch (call.method) {
-            case 'sendDeflectionProvider':
+            case 'sendAnswerProviderModel':
               final arguments = call.arguments;
               final answerProviderModel =
                   AnswerProviderModel.fromJson(arguments);
               _providersDeflection.sink.add(answerProviderModel);
               break;
-            case 'sendResolveArticleDeflectionProvider':
-              final success = call.arguments['success'];
+            case 'sendResolveArticleDeflection':
+              final success = call.arguments['success'] ?? false;
               _providersResolveArticleDeflection.sink.add(success);
               break;
-            case 'sendRejectArticleProvider':
-              final success = call.arguments['success'];
+            case 'sendRejectArticleDeflection':
+              final success = call.arguments['success'] ?? false;
               _providersRejectArticleDeflection.sink.add(success);
               break;
           }
@@ -61,10 +61,46 @@ class ZendeskAnswer {
     }
   }
 
+  Future<void> resolveArticle(
+    int deflectionArticleId,
+    int articleId,
+    String interactionAccessToken,
+  ) async {
+    try {
+      final arguments = {
+        'deflectionArticleId': deflectionArticleId,
+        'articleId': articleId,
+        'interactionAccessToken': interactionAccessToken,
+      };
+      await _channel.invokeMethod('resolve_article', arguments);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> rejectArticle(
+    int deflectionArticleId,
+    int articleId,
+    String interactionAccessToken, {
+    ARTICLE_REJECT_REASON reason = ARTICLE_REJECT_REASON.UNKNOWN,
+  }) async {
+    try {
+      final arguments = {
+        'deflectionArticleId': deflectionArticleId,
+        'articleId': articleId,
+        'interactionAccessToken': interactionAccessToken,
+        'reason': reason.toString().split('.').last,
+      };
+      await _channel.invokeMethod('reject_article', arguments);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<void> dispose() async {
     _providersDeflection.sink.close();
     _providersDeflection.close();
-    
+
     _providersResolveArticleDeflection.sink.close();
     _providersResolveArticleDeflection.close();
 
