@@ -1,3 +1,9 @@
+# 2.1.0+0
+
+### [Features]
+
+* TalkSDK
+
 # 2.0.0+0
 
 ## Huge update 🎉
