@@ -146,7 +146,7 @@ class ChatLog {
 
   factory ChatLog.fromJson(Map map) {
     bool createdByVisitor = map['createdByVisitor'];
-    String displayName = map['displayName'];
+    String displayName = map['displayName'] ?? '';
 
     final mCreatedTimestamp = map['createdTimestamp'];
     final mLastModifiedTimestamp = map['lastModifiedTimestamp'];
@@ -161,7 +161,7 @@ class ChatLog {
             ? mLastModifiedTimestamp.toInt()
             : mLastModifiedTimestamp);
 
-    String nick = map['nick'];
+    String nick = map['nick'] ?? '';
 
     ChatLogDeliveryStatus chatLogDeliveryStatus =
         ChatLogDeliveryStatus.fromJson(map['deliveryStatus']);
