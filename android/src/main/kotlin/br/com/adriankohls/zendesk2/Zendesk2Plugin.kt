@@ -1,8 +1,6 @@
 package br.com.adriankohls.zendesk2
 
 import android.app.Activity
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -16,45 +14,60 @@ import zendesk.chat.*
 class Zendesk2Plugin : ActivityAware, FlutterPlugin, MethodCallHandler {
 
     private lateinit var channel: MethodChannel
-    private var activity: Activity? = null
 
-    val chatStateObservationScope : ObservationScope = ObservationScope()
-    val accountObservationScope : ObservationScope = ObservationScope()
-    val settingsObservationScope : ObservationScope = ObservationScope()
-    val connectionStatusObservationScope : ObservationScope = ObservationScope()
+    var activity: Activity? = null
+    var chatStateObservationScope : ObservationScope? = null
+    var accountObservationScope : ObservationScope? = null
+    var settingsObservationScope : ObservationScope? = null
+    var connectionStatusObservationScope : ObservationScope? = null
+
+
+    private var streamingChatSDK: Boolean = false
+    private var streamingAnswerSDK: Boolean = false
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         val zendesk2Chat = Zendesk2Chat(this, channel)
+        val zendesk2Answer = Zendesk2Answer(this, channel)
 
 
         var mResult: Any? = null
         when (call.method) {
-            "init_answer" -> {
-                val appId = call.argument<String>("appId")!!
-                val clientId = call.argument<String>("clientId")!!
-                val zendeskUrl = call.argument<String>("clientId")!!
-
-            }
             "init_chat" -> {
-                val accountKey = call.argument<String>("accountKey")!!
-                val appId = call.argument<String>("appId")!!
-                Chat.INSTANCE.init(activity!!, accountKey, appId)
+                zendesk2Chat.initialize(call)
             }
             // chat sdk method channels
+            "dispose" -> {
+                chatStateObservationScope?.cancel()
+                accountObservationScope?.cancel()
+                settingsObservationScope?.cancel()
+                connectionStatusObservationScope?.cancel()
+                zendesk2Chat.dispose()
+            }
             "logger" -> zendesk2Chat.logger(call)
             "setVisitorInfo" -> zendesk2Chat.setVisitorInfo(call)
             "startChatProviders" -> zendesk2Chat.startChatProviders()
             "chat_dispose" -> zendesk2Chat.dispose()
-            "getChatProviders" -> mResult = zendesk2Chat.getChatProviders()
             "sendMessage" -> zendesk2Chat.sendMessage(call)
             "sendFile" -> zendesk2Chat.sendFile(call)
-            "compatibleAttachmentsExtensions" -> mResult = zendesk2Chat.getAttachmentsExtension()
             "endChat" -> zendesk2Chat.endChat()
             "sendIsTyping" -> zendesk2Chat.sendTyping(call)
             "registerToken" -> zendesk2Chat.registerToken(call)
             "connect" -> zendesk2Chat.connect()
             "disconnect" -> zendesk2Chat.disconnect()
+            "sendChatProvidersResult" -> mResult = call.arguments
+            "sendChatConnectionStatusResult" -> mResult = call.arguments
+            "sendChatSettingsResult" -> mResult = call.arguments
+            "sendChatIsOnlineResult" -> mResult = call.arguments
             // answer sdk method channels
+            "init_answer" -> {
+                zendesk2Answer.initialize(call)
+            }
+            "query" -> zendesk2Answer.deflectionQuery(call)
+            "resolve_article" -> zendesk2Answer.resolveArticleDeflection(call)
+            "reject_article" -> zendesk2Answer.rejectArticleDeflection(call)
+            "sendAnswerProviderModel" -> mResult = call.arguments
+            "sendResolveArticleDeflection" -> mResult = call.arguments
+            "sendRejectArticleDeflection" -> mResult = call.arguments
             else -> print("method not implemented")
         }
 

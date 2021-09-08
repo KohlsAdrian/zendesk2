@@ -58,16 +58,6 @@ public class SwiftZendesk2Answer {
         }
     }
     
-    private func sendAnswerProviderModel(_ arguments: Dictionary<String, Any>?) -> Void {
-        self.channel?.invokeMethod("sendAnswerProviderModel", arguments: arguments)
-    }
-    private func sendResolveArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
-        self.channel?.invokeMethod("sendResolveArticleDeflection", arguments: arguments)
-    }
-    private func sendRejectArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
-        self.channel?.invokeMethod("sendRejectArticleDeflection", arguments: arguments)
-    }
-    
     func deflectionQuery(_ arguments: Dictionary<String, Any>?) -> Void {
         let query: String = (arguments?["query"] ?? "") as! String
         
@@ -106,7 +96,7 @@ public class SwiftZendesk2Answer {
                 
                 dictionary["articles"] = mArticles
                 
-                self.sendAnswerProviderModel(dictionary)
+                self.channel?.invokeMethod("sendAnswerProviderModel", arguments: dictionary)
             case .failure(let error):
                 NSLog(error.localizedDescription)
             }
@@ -128,7 +118,7 @@ public class SwiftZendesk2Answer {
                 dictionary["success"] = false
                 NSLog("Error resolving article deflection: %@", error.localizedDescription)
             }
-            self.sendResolveArticleDeflection(dictionary)
+            self.channel?.invokeMethod("sendResolveArticleDeflection", arguments: arguments)
         })
     }
     
@@ -156,7 +146,7 @@ public class SwiftZendesk2Answer {
                 dictionary["success"] = false
                 NSLog("Error rejecting article deflection: %@", error.localizedDescription)
             }
-            self.sendRejectArticleDeflection(dictionary)
+            self.channel?.invokeMethod("sendRejectArticleDeflection", arguments: dictionary)
         })
     }
 }

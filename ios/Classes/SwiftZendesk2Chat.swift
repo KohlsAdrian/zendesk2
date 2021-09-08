@@ -51,10 +51,10 @@ public class SwiftZendesk2Chat {
     /// startChat v2 Zendesk API Providers
     func startChatProviders() -> Void {
         NSLog("zendesk_chat_start_providers")
-        chatProviderStart()
-        accountProviderStart()
-        settingsProviderStart()
-        connectionProviderStart()
+        self.chatProviderStart()
+        self.accountProviderStart()
+        self.settingsProviderStart()
+        self.connectionProviderStart()
     }
     
     func connect(){
@@ -62,19 +62,6 @@ public class SwiftZendesk2Chat {
     }
     func disconnect(){
         Chat.connectionProvider?.disconnect()
-    }
-    
-    private func sendChatProvidersResult(_ arguments: Dictionary<String, Any>?) -> Void {
-        self.channel?.invokeMethod("sendChatProvidersResult", arguments: arguments)
-    }
-    private func sendChatConnectionStatusResult(_ arguments: Dictionary<String, Any>?) -> Void {
-        self.channel?.invokeMethod("sendChatConnectionStatusResult", arguments: arguments)
-    }
-    private func sendChatSettingsResult(_ arguments: Dictionary<String, Any>?) -> Void {
-        self.channel?.invokeMethod("sendChatSettingsResult", arguments: arguments)
-    }
-    private func sendChatIsOnlineResult(_ arguments: Dictionary<String, Any>?) -> Void {
-        self.channel?.invokeMethod("sendChatIsOnlineResult", arguments: arguments)
     }
     
     private func chatProviderStart() -> Void {
@@ -88,7 +75,6 @@ public class SwiftZendesk2Chat {
             
             let mQueuePosition = chatState.queuePosition
             let queuePosition = mQueuePosition.queue
-            let queueId = mQueuePosition.id
             
             let department = chatState.department
             let chatSessionStatus = chatState.chatSessionStatus.description.uppercased()
@@ -99,7 +85,6 @@ public class SwiftZendesk2Chat {
             dictionary["chatId"] = chatId
             dictionary["agents"] = agents
             dictionary["queuePosition"] = queuePosition
-            dictionary["queueId"] = queueId
             dictionary["chatSessionStatus"] = chatSessionStatus
             dictionary["department"] = nil
             
@@ -109,7 +94,7 @@ public class SwiftZendesk2Chat {
                 let id = department!.id
                 let name = department!.name
                 let status = department!.status.description.uppercased()
-
+                
                 departmentDict["id"] = id
                 departmentDict["name"] = name
                 departmentDict["status"] = status
@@ -132,6 +117,7 @@ public class SwiftZendesk2Chat {
                 agentDict["nick"] = nick
                 agentsList.append(agentDict)
             }
+            dictionary["agents"] = agentsList
             
             var logsList = Array<Dictionary<String, Any>>()
             for log in logs {
@@ -148,17 +134,49 @@ public class SwiftZendesk2Chat {
                 let deliveryStatus = log.status
                 let isFailed = deliveryStatus.isFailed
                 logDS["isFailed"] = isFailed
+                logDS["messageId_failed"] = nil
+                var status: String? = nil
+                var messageIdFailed: String? = nil
                 switch deliveryStatus {
                 case .delivered:
                     logDS["status"] = "DELIVERED"
                 case .pending:
                     logDS["status"] = "PENDING"
                 case .failed(reason: let reason):
-                    logDS["status"] = "FAILED"
-                    NSLog("MessageLog delivery error: ",reason.localizedDescription)
-                default:
-                    logDS["status"] = "FAILED"
+                    switch reason {
+                    case .failed(messageId: let messageId):
+                        messageIdFailed = messageId
+                        status = "FAILED"
+                        break
+                    case .fileSendingIsDisabled(messageId: let messageId):
+                        messageIdFailed = messageId
+                        status = "FAILED_FILE_SENDING_DISABLED"
+                        break
+                    case .fileSizeTooLarge(messageId: let messageId):
+                        messageIdFailed = messageId
+                        status = "FAILED_FILE_SIZE_TOO_LARGE"
+                        break
+                    case .networkError(messageId: let messageId):
+                        messageIdFailed = messageId
+                        status = "FAILED_INTERNAL_SERVER_ERROR"
+                        break
+                    case .timeout(messageId: let messageId):
+                        messageIdFailed = messageId
+                        status = "FAILED_RESPONSE_TIMEOUT"
+                        break
+                    case .unsupportedFileType(messageId: let messageId):
+                        messageIdFailed = messageId
+                        status = "FAILED_UNSUPPORTED_FILE_TYPE"
+                        break
+                    default:
+                        status = "FAILED_UNKNOWN_REASON"
+                        break
+                    }
+                @unknown default:
+                    status = "FAILED"
                 }
+                logDS["messageId_failed"] = messageIdFailed
+                logDS["status"] = status
                 
                 var logT = [String: Any]()
                 let chatLogType = log.type
@@ -245,16 +263,12 @@ public class SwiftZendesk2Chat {
                     
                     logT["chatOptionsMessage"] = logChatOptionsMessage
                 }
-                
                 logDict["deliveryStatus"] = logDS
                 logDict["type"] = logT
                 logsList.append(logDict)
             }
-            
-            dictionary["agents"] = agentsList
             dictionary["logs"] = logsList
-            
-            self.sendChatProvidersResult(dictionary)
+            self.channel?.invokeMethod("sendChatProvidersResult", arguments: dictionary)
         }
     }
     
@@ -284,7 +298,7 @@ public class SwiftZendesk2Chat {
             dictionary["isOnline"] = isOnline
             dictionary["departments"] = departmentsList
             
-            self.sendChatIsOnlineResult(dictionary)
+            self.channel?.invokeMethod("sendChatIsOnlineResult", arguments: dictionary)
         }
     }
     
@@ -299,7 +313,7 @@ public class SwiftZendesk2Chat {
             dictionary["supportedFileTypes"] = supportedFileTypes
             dictionary["fileSizeLimit"] = fileSizeLimit
             
-            self.sendChatSettingsResult(dictionary)
+            self.channel?.invokeMethod("sendChatSettingsResult", arguments: dictionary)
         }
     }
     
@@ -310,7 +324,7 @@ public class SwiftZendesk2Chat {
             var dictionary = [String: Any]()
             dictionary["connectionStatus"] = connectionStatus
             
-            self.sendChatConnectionStatusResult(dictionary)
+            self.channel?.invokeMethod("sendChatConnectionStatusResult", arguments: dictionary)
         }
     }
     

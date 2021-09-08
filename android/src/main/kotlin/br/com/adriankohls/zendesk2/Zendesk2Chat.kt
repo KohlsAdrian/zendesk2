@@ -1,7 +1,5 @@
 package br.com.adriankohls.zendesk2
 
-import android.app.Activity
-import android.content.Context
 import com.zendesk.logger.Logger
 import com.zendesk.service.ErrorResponse
 import com.zendesk.service.ZendeskCallback
@@ -13,6 +11,17 @@ import java.io.File
 
 class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: MethodChannel) {
 
+    fun initialize(call: MethodCall) {
+        val accountKey = call.argument<String>("accountKey")!!
+        val appId = call.argument<String>("appId")!!
+
+        if(plugin.activity != null) {
+            Chat.INSTANCE.init(plugin.activity!!, accountKey, appId)
+        } else {
+            print("Plugin Context is NULL!")
+        }
+    }
+
     fun logger(call: MethodCall) {
         var enabled = call.argument<Boolean>("enabled")
         enabled = enabled ?: false
@@ -20,8 +29,7 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
     }
 
     fun dispose() {
-        Chat.INSTANCE.providers()?.chatProvider()?.endChat(null)
-        Chat.INSTANCE.providers()?.connectionProvider()?.disconnect()
+        Chat.INSTANCE.clearCache()
     }
 
     fun setVisitorInfo(call: MethodCall) {
@@ -67,55 +75,206 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
     }
 
     private fun chatProviderStart() {
-        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(plugin.chatStateObservationScope) {
+        plugin.chatStateObservationScope = ObservationScope()
+        Chat.INSTANCE.providers()?.chatProvider()?.observeChatState(plugin.chatStateObservationScope!!) {
+            val isChatting = it.isChatting
+            val chatId = it.chatId
             val agents = it.agents
             val logs = it.chatLogs
-            val chatId = it.chatId
+
             val queuePosition = it.queuePosition
-            val isChatting = it.isChatting
-            val chatSessionStatus = it.chatSessionStatus.name.split('.').last()
+
             val department = it.department
+            val chatSessionStatus = it.chatSessionStatus.name.uppercase()
 
             val dictionary = mutableMapOf<String, Any?>()
 
+            dictionary["isChatting"] = isChatting
+            dictionary["chatId"] = chatId
+            dictionary["agents"] = agents
+            dictionary["queuePosition"] = queuePosition
+            dictionary["chatSessionStatus"] = chatSessionStatus
+            dictionary["department"] = null
+
+            if(department != null){
+                val departmentDict = mutableMapOf<String, Any?>()
+
+                val id = department.id
+                val name = department.name
+                val status = department.status.name.uppercase()
+
+                departmentDict["id"] = id
+                departmentDict["name"] = name
+                departmentDict["status"] = status
+
+                dictionary["department"] = departmentDict
+            }
+
+            val mAgents = arrayListOf<Map<String, Any?>>()
+            for (agent in agents) {
+                val agentDict = mutableMapOf<String, Any?>()
+
+                val avatar = agent.avatarPath
+                val displayName = agent.displayName
+                val isTyping = agent.isTyping
+                val nick = agent.nick
+
+                agentDict["avatar"] = avatar
+                agentDict["displayName"] = displayName
+                agentDict["isTyping"] = isTyping
+                agentDict["nick"] = nick
+
+                mAgents.add(agentDict)
+            }
+            dictionary["agents"] = mAgents.toArray()
+
+            val mLogs = arrayListOf<Map<String, Any?>>()
+            for (log in logs){
+                val logDict = mutableMapOf<String, Any?>()
+                logDict["id"] = log.id
+                logDict["createdByVisitor"] = log.chatParticipant == ChatParticipant.VISITOR
+                logDict["createdTimestamp"] = log.createdTimestamp
+                logDict["displayName"] = log.displayName
+                logDict["lastModifiedTimestamp"] = log.lastModifiedTimestamp
+                logDict["nick"] = log.nick
+                logDict["chatParticipant"] = log.chatParticipant.name.uppercase()
 
 
+                val logDS = mutableMapOf<String, Any?>()
+                val deliveryStatus = log.deliveryStatus.name.uppercase()
+                val isFailed = when(log.deliveryStatus){
+                    DeliveryStatus.FAILED_FILE_SENDING_DISABLED -> true
+                    DeliveryStatus.FAILED_FILE_SIZE_TOO_LARGE -> true
+                    DeliveryStatus.FAILED_INTERNAL_SERVER_ERROR -> true
+                    DeliveryStatus.FAILED_RESPONSE_TIMEOUT -> true
+                    DeliveryStatus.FAILED_UNKNOWN_REASON -> true
+                    DeliveryStatus.FAILED_UNSUPPORTED_FILE_TYPE -> true
+                    else -> false
+                }
+                logDS["isFailed"] = isFailed
+                logDS["status"] = deliveryStatus
+                logDS["messageId_failed"] = if (isFailed) log.id else null
 
+
+                val logT = mutableMapOf<String, Any?>()
+                logT["type"] = log.type.name.uppercase()
+
+                when (log) {
+                    is ChatLog.Message -> {
+                        val logChatMessage = mutableMapOf<String, Any?>()
+
+                        val id = log.id
+                        val message = log.message
+
+                        logChatMessage["id"] = id
+                        logChatMessage["message"] = message
+
+                        logT["chatMessage"] = logChatMessage
+                    }
+                    is ChatLog.AttachmentMessage -> {
+                        val logChatAttachmentMessage = mutableMapOf<String, Any?>()
+
+                        val id = log.id
+                        val url = log.attachment.url
+
+                        logChatAttachmentMessage["id"] = id
+                        logChatAttachmentMessage["url"] = url
+
+                        val attachment = log.attachment
+                        val logChatAttachmentAttachmentMessage = mutableMapOf<String, Any?>()
+
+                        val attachmentName = attachment.name
+                        val attachmentMimeType = attachment.mimeType
+                        val attachmentSize = attachment.size
+                        val attachmentUrl = attachment.url
+
+                        logChatAttachmentAttachmentMessage["name"] = attachmentName
+                        logChatAttachmentAttachmentMessage["mimeType"] = attachmentMimeType
+                        logChatAttachmentAttachmentMessage["size"] = attachmentSize
+                        logChatAttachmentAttachmentMessage["url"] = attachmentUrl
+
+                        logChatAttachmentMessage["chatAttachmentAttachment"] = logChatAttachmentAttachmentMessage
+                        logT["chatAttachment"] = logChatAttachmentMessage
+                    }
+                    is ChatLog.OptionsMessage -> {
+                        val logChatOptionsMessage = mutableMapOf<String, Any?>()
+
+                        val message = log.messageQuestion
+                        val options = log.messageOptions.toList<String>()
+
+                        logChatOptionsMessage["message"] = message
+                        logChatOptionsMessage["options"] = options
+
+                        logT["chatOptionsMessage"] = logChatOptionsMessage
+                    }
+                }
+
+                logDict["deliveryStatus"] = logDS
+                logDict["type"] = logT
+
+                mLogs.add(logDict)
+            }
+            dictionary["logs"] = mLogs
+            channel.invokeMethod("sendChatProvidersResult", dictionary)
         }
     }
 
     private fun accountProviderStart() {
-        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(plugin.accountObservationScope) {
+        plugin.accountObservationScope = ObservationScope()
+        Chat.INSTANCE.providers()?.accountProvider()?.observeAccount(plugin.accountObservationScope!!) {
             val isOnline = it.status == AccountStatus.ONLINE
             val deparments = it.departments ?: listOf<Department>()
+
+            val dictionary = mutableMapOf<String, Any?>()
+
+            val mDepartments = arrayListOf<Map<String, Any?>>()
             for (deparment in deparments) {
+                val departmentDict = mutableMapOf<String, Any?>()
 
+                val id = deparment.id
+                val name = deparment.name
+                val status = deparment.status.name.uppercase()
+
+                departmentDict["id"] = id
+                departmentDict["name"] = name
+                departmentDict["status"] = status
+
+                mDepartments.add(departmentDict)
             }
+
+            dictionary["isOnline"] = isOnline
+            dictionary["departments"] = mDepartments
+
+            channel.invokeMethod("sendChatIsOnlineResult", dictionary)
         }
-
-        Chat.INSTANCE.providers()?.accountProvider()?.getAccount(object : ZendeskCallback<Account>() {
-            override fun onSuccess(a: Account?) {
-                hasAgents = agents.isNotEmpty()
-                isOnline = a?.status == AccountStatus.ONLINE
-
-            }
-
-            override fun onError(e: ErrorResponse?) {
-                print(e)
-            }
-        })
     }
 
     private fun settingsProviderStart() {
-        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(plugin.settingsObservationScope) {
-            this.isFileSendingEnabled = it.isFileSendingEnabled
+        plugin.settingsObservationScope = ObservationScope()
+        Chat.INSTANCE.providers()?.settingsProvider()?.observeChatSettings(plugin.settingsObservationScope!!) {
+            val isFileSendingEnabled = it.isFileSendingEnabled
+            val supportedFileTypes = it.allowedFileTypes
+            val fileSizeLimit = it.maxFileSize
 
+            val dictionary = mutableMapOf<String, Any?>()
+
+            dictionary["isFileSendingEnabled"] = isFileSendingEnabled
+            dictionary["supportedFileTypes"] = supportedFileTypes
+            dictionary["fileSizeLimit"] = fileSizeLimit
+
+            channel.invokeMethod("sendChatSettingsResult", dictionary)
         }
     }
 
     private fun connectionProviderStart() {
-        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(plugin.connectionStatusObservationScope) {
-            this.connectionStatus = it.name.split('.').last()
+        plugin.connectionStatusObservationScope = ObservationScope()
+        Chat.INSTANCE.providers()?.connectionProvider()?.observeConnectionStatus(plugin.connectionStatusObservationScope!!) {
+            val connectionStatus = it.name.uppercase()
+
+            val dictionary = mutableMapOf<String, Any?>()
+            dictionary["connectionStatus"] = connectionStatus
+
+            channel.invokeMethod("sendChatConnectionStatusResult", dictionary)
         }
     }
 
@@ -141,135 +300,9 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
             Chat.INSTANCE.providers()?.chatProvider()?.resendFailedMessage(attachmentMessage.id)
     }
 
-    fun getAttachmentsExtension(): List<String> {
-        val types = Chat.INSTANCE.providers()?.settingsProvider()?.chatSettings?.allowedFileTypes
-        val array = types?.toList<String>()
-        return array ?: listOf()
-    }
-
     fun sendTyping(call: MethodCall) {
         val isTyping = call.argument<Boolean>("isTyping") ?: false
         Chat.INSTANCE.providers()?.chatProvider()?.setTyping(isTyping)
-    }
-
-    fun getChatProviders(): Map<String, Any?> {
-        val dictionary = mutableMapOf<String, Any?>()
-        dictionary["isOnline"] = this.isOnline
-        dictionary["isChatting"] = this.isChatting
-        dictionary["hasAgents"] = this.hasAgents
-        dictionary["isFileSendingEnabled"] = this.isFileSendingEnabled
-        dictionary["connectionStatus"] = this.connectionStatus
-        dictionary["chatSessionStatus"] = this.chatSessionStatus
-        dictionary["queuePosition"] = this.queuePosition
-
-        val agentsList = mutableListOf<MutableMap<String, Any?>>()
-        for (agent in agents) {
-            val agentDict = mutableMapOf<String, Any?>()
-
-            val avatar = agent.avatarPath
-            val displayName = agent.displayName
-            val isTyping = agent.isTyping
-            val nick = agent.nick
-
-            agentDict["avatar"] = avatar
-            agentDict["displayName"] = displayName
-            agentDict["isTyping"] = isTyping
-            agentDict["nick"] = nick
-
-            agentsList.add(agentDict)
-        }
-
-        val logsList = mutableListOf<MutableMap<String, Any?>>()
-        for (log in logs) {
-            val logDict = mutableMapOf<String, Any?>()
-            logDict["id"] = log.id
-            logDict["createdTimestamp"] = log.createdTimestamp
-            logDict["displayName"] = log.displayName
-            logDict["lastModifiedTimestamp"] = log.lastModifiedTimestamp
-            logDict["nick"] = log.nick
-
-            val logCP = mutableMapOf<String, Any?>()
-            val chatParticipant = log.chatParticipant
-            logCP["chatParticipant"] = chatParticipant.name.split(".").last()
-
-            val logDS = mutableMapOf<String, Any?>()
-            val deliveryStatus = log.deliveryStatus
-            val isFailed = deliveryStatus.name.contains("FAILED")
-            logDS["isFailed"] = isFailed
-            logDS["status"] = deliveryStatus.name.split(".").last()
-
-            val logT = mutableMapOf<String, Any?>()
-            val chatLogType = log.type
-            logT["type"] = chatLogType.name.split(".").last()
-
-            when (log) {
-                is ChatLog.Message -> {
-                    val logChatMessage = mutableMapOf<String, Any?>()
-
-                    val id = log.id
-                    val message = log.message
-
-                    logChatMessage["id"] = id
-                    logChatMessage["message"] = message
-
-                    logT["chatMessage"] = logChatMessage
-                }
-                is ChatLog.AttachmentMessage -> {
-                    val logChatAttachmentMessage = mutableMapOf<String, Any?>()
-
-                    val id = log.id
-                    val url = log.attachment.url
-
-                    logChatAttachmentMessage["id"] = id
-                    logChatAttachmentMessage["url"] = url
-
-                    val attachment = log.attachment
-                    val logChatAttachmentAttachmentMessage = mutableMapOf<String, Any?>()
-
-                    val attachmentName = attachment.name
-                    val attachmentMimeType = attachment.mimeType
-                    val attachmentSize = attachment.size
-                    val attachmentUrl = attachment.url
-
-                    logChatAttachmentAttachmentMessage["name"] = attachmentName
-                    logChatAttachmentAttachmentMessage["mimeType"] = attachmentMimeType
-                    logChatAttachmentAttachmentMessage["size"] = attachmentSize
-                    logChatAttachmentAttachmentMessage["url"] = attachmentUrl
-
-                    logChatAttachmentMessage["chatAttachmentAttachment"] = logChatAttachmentAttachmentMessage
-                    logT["chatAttachment"] = logChatAttachmentMessage
-                }
-                is ChatLog.Rating -> {
-                    val logChatRating = mutableMapOf<String, Any?>()
-
-                    val rating = log.newChatRating.name.split(".").last()
-                    logChatRating["rating"] = rating
-
-                    logT["chatRating"] = logChatRating
-                }
-                is ChatLog.OptionsMessage -> {
-                    val logChatOptionsMessage = mutableMapOf<String, Any?>()
-
-                    val message = log.messageQuestion
-                    val options = log.messageOptions.toList<String>()
-
-                    logChatOptionsMessage["message"] = message
-                    logChatOptionsMessage["options"] = options
-
-                    logT["chatOptionsMessage"] = logChatOptionsMessage
-                }
-            }
-
-            logDict["participant"] = logCP
-            logDict["deliveryStatus"] = logDS
-            logDict["type"] = logT
-            logsList.add(logDict)
-        }
-
-        dictionary["agents"] = agentsList
-        dictionary["logs"] = logsList
-
-        return dictionary
     }
 
     fun registerToken(call: MethodCall) {
@@ -281,11 +314,11 @@ class Zendesk2Chat(private val plugin: Zendesk2Plugin, private val channel: Meth
     }
 
     fun endChat() {
+        Chat.INSTANCE.resetIdentity()
         Chat.INSTANCE.providers()?.chatProvider()?.endChat(object : ZendeskCallback<Void>() {
             override fun onSuccess(v: Void?) {
                 print("success")
             }
-
             override fun onError(e: ErrorResponse?) {
                 print(e)
             }
