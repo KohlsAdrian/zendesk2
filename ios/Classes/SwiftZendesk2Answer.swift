@@ -79,9 +79,19 @@ public class SwiftZendesk2Answer {
                 for article in articles {
                     var mArticle = [String: Any]()
                     
-                    mArticle["deflectionArticleId"] = article.id
+                    // Optimisation Note:
+                    //
+                    // ```articleId``` and ```deflectionArticleId``` are necessary
+                    // to be String because Android Zendesk SDK uses `Long`
+                    // datatype to resolve/reject articles, so we use String and convert it
+                    // to Long on Android side and we don't lose information on retrieving
+                    // from native side
+                    //
+                    // iOS uses Int64, but we are using String to make it compatible on
+                    // both platforms
+                    mArticle["deflectionArticleId"] = String(article.id)
                     mArticle["brandId"] = article.brandId
-                    mArticle["articleId"] = article.articleId
+                    mArticle["articleId"] = String(article.articleId)
                     mArticle["body"] = article.body
                     mArticle["htmlURL"] = article.htmlURL
                     mArticle["labels"] = article.labelNames
@@ -104,11 +114,11 @@ public class SwiftZendesk2Answer {
     }
     
     func resolveArticleDeflection(_ arguments: Dictionary<String, Any>?) -> Void {
-        let deflectionId = arguments?["deflectionArticleId"] as! Int64
-        let articleId = arguments?["articleId"] as! Int64
+        let deflectionId = arguments?["deflectionArticleId"] as! String
+        let articleId = arguments?["articleId"] as! String
         let interactionAccessToken = arguments?["interactionAccessToken"] as! String
         
-        answerBotProvider?.resolveWithArticle(deflectionId: deflectionId, articleId: articleId, interactionAccessToken: interactionAccessToken, callback: { result in
+        answerBotProvider?.resolveWithArticle(deflectionId: Int64(deflectionId)!, articleId: Int64(articleId)!, interactionAccessToken: interactionAccessToken, callback: { result in
             var dictionary = [String: Any]()
             switch result {
             case .success(let response):

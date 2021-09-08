@@ -62,8 +62,8 @@ class ZendeskAnswer {
   }
 
   Future<void> resolveArticle(
-    int deflectionArticleId,
-    int articleId,
+    String deflectionArticleId,
+    String articleId,
     String interactionAccessToken,
   ) async {
     try {
@@ -79,8 +79,8 @@ class ZendeskAnswer {
   }
 
   Future<void> rejectArticle(
-    int deflectionArticleId,
-    int articleId,
+    String deflectionArticleId,
+    String articleId,
     String interactionAccessToken, {
     ARTICLE_REJECT_REASON reason = ARTICLE_REJECT_REASON.UNKNOWN,
   }) async {

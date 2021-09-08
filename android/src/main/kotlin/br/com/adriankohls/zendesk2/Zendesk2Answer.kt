@@ -75,10 +75,20 @@ class Zendesk2Answer(private val plugin: Zendesk2Plugin, private val channel: Me
                         val mArticles = mutableListOf<Map<String, Any?>>()
                         for (article in articles) {
                             val mArticle = mutableMapOf<String, Any?>()
-
-                            mArticle["deflectionArticleId"] = article.id
+                            
+                            // Optimisation Note:
+                            //
+                            // ```articleId``` and ```deflectionArticleId``` are necessary
+                            // to be String because Android Zendesk SDK uses `Long`
+                            // datatype to resolve/reject articles, so we use String and convert it
+                            // to Long on Android side and we don't lose information on retrieving
+                            // from native side
+                            //
+                            // iOS uses Int64, but we are using String to make it compatible on
+                            // both platforms
+                            mArticle["deflectionArticleId"] = article.id.toString()
                             mArticle["brandId"] = article.brandId
-                            mArticle["articleId"] = article.articleId
+                            mArticle["articleId"] = article.articleId.toString()
                             mArticle["body"] = null
                             mArticle["htmlURL"] = article.htmlUrl
                             mArticle["labels"] = article.labelNames
@@ -103,13 +113,13 @@ class Zendesk2Answer(private val plugin: Zendesk2Plugin, private val channel: Me
     }
 
     fun resolveArticleDeflection(call: MethodCall) {
-        val deflectionId = call.argument<Long>("deflectionId")!!
-        val articleId = call.argument<Long>("articleId")!!
+        val deflectionId = call.argument<String>("deflectionArticleId")!!
+        val articleId = call.argument<String>("articleId")!!
         val interactionAccessToken = call.argument<String>("interactionAccessToken")!!
 
         provider?.resolveWithArticle(
-                deflectionId,
-                articleId,
+                deflectionId.toLong(),
+                articleId.toLong(),
                 interactionAccessToken,
                 object : ZendeskCallback<Void>() {
                     override fun onSuccess(void: Void?) {
@@ -128,8 +138,8 @@ class Zendesk2Answer(private val plugin: Zendesk2Plugin, private val channel: Me
     }
 
     fun rejectArticleDeflection(call: MethodCall) {
-        val deflectionId = call.argument<Long>("deflectionId")!!
-        val articleId = call.argument<Long>("articleId")!!
+        val deflectionId = call.argument<String>("deflectionArticleId")!!
+        val articleId = call.argument<String>("articleId")!!
         val interactionAccessToken = call.argument<String>("interactionAccessToken")!!
         val reason = call.argument<String>("reason")!!
 
@@ -140,8 +150,8 @@ class Zendesk2Answer(private val plugin: Zendesk2Plugin, private val channel: Me
         }
 
         provider?.rejectWithArticle(
-                deflectionId,
-                articleId,
+                deflectionId.toLong(),
+                articleId.toLong(),
                 interactionAccessToken,
                 mReason,
                 object : ZendeskCallback<Void>() {

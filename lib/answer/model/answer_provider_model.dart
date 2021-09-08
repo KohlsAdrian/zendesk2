@@ -20,7 +20,7 @@ class AnswerProviderModel {
   factory AnswerProviderModel.fromJson(Map map) {
     String interactionAccessToken = map['interactionAccessToken'];
     int deflectionId = map['deflectionId'];
-    String description = map['description'];
+    String description = map['description'] ?? '';
     Iterable<ArticleModel> articles = ((map['articles'] as Iterable?) ?? [])
         .map((a) => ArticleModel.fromJson(a));
     return AnswerProviderModel(
@@ -32,10 +32,18 @@ class AnswerProviderModel {
   }
 }
 
+/// Optimisation Note: 
+/// 
+/// ```articleId``` and ```deflectionArticleId``` are necessary 
+/// to be String because Android Zendesk SDK uses `Long` datatype to resolve/reject
+/// articles, so we use String and convert it to Long on Android side and we don't
+/// lose information on retreving from native side
+/// 
+/// iOS uses Int64, but we are using String to make it compatible on both platforms
 class ArticleModel {
-  final int deflectionArticleId;
+  final String deflectionArticleId;
   final int brandId;
-  final int articleId;
+  final String articleId;
   final String body;
   final String htmlURL;
   final Iterable<String> labels;
@@ -60,10 +68,10 @@ class ArticleModel {
   );
 
   factory ArticleModel.fromJson(Map map) {
-    int deflectionArticleId = map['deflectionArticleId'];
+    String deflectionArticleId = map['deflectionArticleId'];
     int brandId = map['brandId'];
-    int articleId = map['articleId'];
-    String body = map['body'];
+    String articleId = map['articleId'];
+    String body = map['body'] ?? '';
     String htmlURL = map['htmlURL'];
     Iterable<String> labels = ((map['labels'] ?? []) as Iterable).map((e) => e);
     String locale = map['locale'];
