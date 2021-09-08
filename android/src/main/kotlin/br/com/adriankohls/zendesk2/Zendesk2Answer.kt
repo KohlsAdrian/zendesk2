@@ -75,7 +75,7 @@ class Zendesk2Answer(private val plugin: Zendesk2Plugin, private val channel: Me
                         val mArticles = mutableListOf<Map<String, Any?>>()
                         for (article in articles) {
                             val mArticle = mutableMapOf<String, Any?>()
-                            
+
                             // Optimisation Note:
                             //
                             // ```articleId``` and ```deflectionArticleId``` are necessary
