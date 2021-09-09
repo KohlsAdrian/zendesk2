@@ -168,9 +168,8 @@ class _ZendeskChat extends State<ZendeskChat> {
             allowedExtensions: compatibleExt?.toList() ?? [],
           );
     if (result != null) {
-      final file = result is FilePickerResult
-          ? result.files.single
-          : (result as XFile);
+      final file =
+          result is FilePickerResult ? result.files.single : (result as XFile);
 
       final path = file is PlatformFile ? file.path : (file as XFile).path;
 
@@ -251,7 +250,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                     FloatingActionButton(
                       heroTag: 'attachFab',
                       mini: true,
-                      backgroundColor: Theme.of(context).accentColor,
+                      backgroundColor: Theme.of(context).primaryColor,
                       child: Icon(Icons.attach_file),
                       onPressed: _attach,
                     ),

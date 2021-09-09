@@ -18,7 +18,12 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(accentColor: Colors.amber),
+      theme: ThemeData(
+        colorScheme: ColorScheme.dark(
+          primary: Colors.amber,
+          secondary: Colors.indigo,
+        ),
+      ),
       home: Home(),
     );
   }
