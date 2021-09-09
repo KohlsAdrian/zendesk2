@@ -80,7 +80,7 @@ class _Home extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plugin example app'),
+        title: const Text('zendesk2 Plugin Demo app'),
       ),
       body: Center(
         child: Column(
@@ -95,14 +95,14 @@ class _Home extends State<Home> {
             ),
             FloatingActionButton.extended(
               heroTag: 'answer',
-              icon: Icon(FontAwesomeIcons.comments),
-              label: Text('Answer BOT'),
+              icon: Icon(FontAwesomeIcons.robot),
+              label: Text('AnswerBot SDK'),
               onPressed: answer,
             ),
             FloatingActionButton.extended(
-              heroTag: 'chat',
-              icon: Icon(FontAwesomeIcons.comments),
-              label: Text('Chat SDK V2'),
+              heroTag: 'talk',
+              icon: Icon(FontAwesomeIcons.phoneAlt),
+              label: Text('Talk SDK'),
               onPressed: talk,
             ),
           ],
