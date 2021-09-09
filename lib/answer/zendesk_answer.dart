@@ -7,19 +7,19 @@ class ZendeskAnswer {
     _channel.setMethodCallHandler(
       (call) async {
         try {
+          final arguments = call.arguments;
           switch (call.method) {
             case 'sendAnswerProviderModel':
-              final arguments = call.arguments;
               final answerProviderModel =
                   AnswerProviderModel.fromJson(arguments);
               _providersDeflection.sink.add(answerProviderModel);
               break;
             case 'sendResolveArticleDeflection':
-              final success = call.arguments['success'] ?? false;
+              final success = arguments['success'] ?? false;
               _providersResolveArticleDeflection.sink.add(success);
               break;
             case 'sendRejectArticleDeflection':
-              final success = call.arguments['success'] ?? false;
+              final success = arguments['success'] ?? false;
               _providersRejectArticleDeflection.sink.add(success);
               break;
           }
