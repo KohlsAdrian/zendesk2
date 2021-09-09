@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:zendesk2/zendesk2.dart';
 
 class ZendeskTalk {
@@ -10,10 +12,12 @@ class ZendeskTalk {
             case 'sendTalkAvailability':
               TalkProviderModel talkProviderModel =
                   TalkProviderModel.fromJson(arguments);
+              _availabilityStream.sink.add(talkProviderModel);
               break;
             case 'sendTalkCall':
               TalkCallProviderModel talkCallProviderModel =
                   TalkCallProviderModel.fromJson(arguments);
+              _talkCallStream.sink.add(talkCallProviderModel);
               break;
           }
         } catch (e) {
@@ -25,6 +29,17 @@ class ZendeskTalk {
   static final ZendeskTalk instance = ZendeskTalk._();
 
   static final _channel = Zendesk.instance.channel;
+
+  StreamController<TalkProviderModel> _availabilityStream =
+      StreamController<TalkProviderModel>();
+  StreamController<TalkCallProviderModel> _talkCallStream =
+      StreamController<TalkCallProviderModel>();
+
+  Stream<TalkProviderModel> get availabilityStream =>
+      _availabilityStream.stream.asBroadcastStream();
+
+  Stream<TalkCallProviderModel>? get talkCallStream =>
+      _talkCallStream.stream.asBroadcastStream();
 
   Future<TalkPermission> getRecordingPermission() async {
     TalkPermission talkPermission = TalkPermission.UNKNOWN;
@@ -52,6 +67,9 @@ class ZendeskTalk {
 
   Future<void> checkAvailability(String digitalLineName) async {
     try {
+      if (_availabilityStream.isClosed) {
+        _availabilityStream = StreamController<TalkProviderModel>();
+      }
       final arguments = {
         'digitalLineName': digitalLineName,
       };
@@ -63,6 +81,9 @@ class ZendeskTalk {
 
   Future<void> call(String digitalLineName, TalkConsent talkConsent) async {
     try {
+      if (_talkCallStream.isClosed) {
+        _talkCallStream = StreamController<TalkCallProviderModel>();
+      }
       final arguments = {
         'digitalLineName': digitalLineName,
         'recordingConsentAnswer': talkConsent.toString().split('.').last,
@@ -109,5 +130,23 @@ class ZendeskTalk {
       print(e);
     }
     return audioRoutingOptions;
+  }
+
+  void disconnect() async {
+    try {
+      await _channel.invokeMethod('talk_disconnect');
+      _talkCallStream.sink.close();
+      _talkCallStream.close();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void dispose() {
+    _availabilityStream.sink.close();
+    _availabilityStream.close();
+
+    _talkCallStream.sink.close();
+    _talkCallStream.close();
   }
 }

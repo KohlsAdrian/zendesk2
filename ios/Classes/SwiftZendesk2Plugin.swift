@@ -125,7 +125,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             zendesk2Talk.initialize(arguments)
             break
         case "talk_recording_permission":
-            mResult = zendesk2Talk.recordingPermission
+            mResult = zendesk2Talk.recordingPermission()
             break
         case "talk_check_availability":
             zendesk2Talk.checkAvailability(arguments)
@@ -137,13 +137,13 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             zendesk2Talk.disconnect()
             break
         case "talk_toggle_mute":
-            mResult = zendesk2Talk.toggleMute
+            mResult = zendesk2Talk.toggleMute()
             break
         case "talk_toggle_output":
-            mResult = zendesk2Talk.toggleOutput
+            mResult = zendesk2Talk.toggleOutput()
             break
         case "talk_available_audio_routing_options":
-            mResult = zendesk2Talk.availableAudioRoutingOptions
+            mResult = zendesk2Talk.availableAudioRoutingOptions()
             break
         case "sendTalkAvailability":
             mResult = arguments

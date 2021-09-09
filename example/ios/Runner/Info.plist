@@ -52,5 +52,7 @@
 		<false/>
 		<key>NSCameraUsageDescription</key>
 		<string>This is needed to attach an image</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>This is needed to talk</string>
 	</dict>
 </plist>
