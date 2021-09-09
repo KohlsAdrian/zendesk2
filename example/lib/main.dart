@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zendesk2/zendesk2.dart';
-import 'package:zendesk2_example/zendesk_answer.dart';
-import 'package:zendesk2_example/zendesk_chat.dart';
+import 'package:zendesk2_example/zendesk_answer_ui.dart';
+import 'package:zendesk2_example/zendesk_chat_ui.dart';
+import 'package:zendesk2_example/zendesk_talk_ui.dart';
 
 void main() {
   runApp(MyApp());
@@ -41,12 +42,6 @@ class _Home extends State<Home> {
   String clientId = '';
   String zendeskUrl = '';
 
-  void answer() async {
-    z.initAnswerSDK(appId, clientId, zendeskUrl);
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => ZendeskAnswerUI()));
-  }
-
   void chat() async {
     String name = '';
     String email = '';
@@ -66,7 +61,19 @@ class _Home extends State<Home> {
     await Zendesk2Chat.instance.startChatProviders(autoConnect: false);
 
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => ZendeskChat()));
+        .push(MaterialPageRoute(builder: (context) => ZendeskChatUI()));
+  }
+
+  void answer() async {
+    z.initAnswerSDK(appId, clientId, zendeskUrl);
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => ZendeskAnswerUI()));
+  }
+
+  void talk() async {
+    z.initTalkSDK(appId, clientId, zendeskUrl);
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => ZendeskTalkUI()));
   }
 
   @override
@@ -76,24 +83,30 @@ class _Home extends State<Home> {
         title: const Text('Plugin example app'),
       ),
       body: Center(
-        child: Text('Press on FAB to start chat'),
-      ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'answer',
-            icon: Icon(FontAwesomeIcons.comments),
-            label: Text('Answer BOT'),
-            onPressed: answer,
-          ),
-          FloatingActionButton.extended(
-            heroTag: 'chat',
-            icon: Icon(FontAwesomeIcons.comments),
-            label: Text('Chat SDK V2'),
-            onPressed: chat,
-          ),
-        ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            FloatingActionButton.extended(
+              heroTag: 'chat',
+              icon: Icon(FontAwesomeIcons.comments),
+              label: Text('Chat SDK V2'),
+              onPressed: chat,
+            ),
+            FloatingActionButton.extended(
+              heroTag: 'answer',
+              icon: Icon(FontAwesomeIcons.comments),
+              label: Text('Answer BOT'),
+              onPressed: answer,
+            ),
+            FloatingActionButton.extended(
+              heroTag: 'chat',
+              icon: Icon(FontAwesomeIcons.comments),
+              label: Text('Chat SDK V2'),
+              onPressed: talk,
+            ),
+          ],
+        ),
       ),
     );
   }

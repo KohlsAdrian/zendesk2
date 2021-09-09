@@ -9,11 +9,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zendesk2/zendesk2.dart';
 
-class ZendeskChat extends StatefulWidget {
+class ZendeskChatUI extends StatefulWidget {
   _ZendeskChat createState() => _ZendeskChat();
 }
 
-class _ZendeskChat extends State<ZendeskChat> {
+class _ZendeskChat extends State<ZendeskChatUI> {
   final Zendesk2Chat _z = Zendesk2Chat.instance;
 
   final _tecM = TextEditingController();
