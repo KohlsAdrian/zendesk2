@@ -43,8 +43,7 @@ class _ZendeskChat extends State<ZendeskChat> {
 
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
       await _z.connect();
-      _subscriptionProvidersStream =
-          _z.providersStream?.listen((providerModel) {
+      _subscriptionProvidersStream = _z.providersStream.listen((providerModel) {
         _providerModel = providerModel;
         print('ProviderModel: $_providerModel');
         setState(() {});
@@ -56,7 +55,7 @@ class _ZendeskChat extends State<ZendeskChat> {
         setState(() {});
       });
       _subscriptionConnetionStatusStream =
-          _z.connectionStatusStream?.listen((connectionStatus) {
+          _z.connectionStatusStream.listen((connectionStatus) {
         _connectionStatus = connectionStatus;
         print('Connection Status: $_connectionStatus');
         setState(() {});
@@ -168,9 +167,8 @@ class _ZendeskChat extends State<ZendeskChat> {
             allowedExtensions: compatibleExt?.toList() ?? [],
           );
     if (result != null) {
-      final file = result is FilePickerResult
-          ? result.files.single
-          : (result as XFile);
+      final file =
+          result is FilePickerResult ? result.files.single : (result as XFile);
 
       final path = file is PlatformFile ? file.path : (file as XFile).path;
 
