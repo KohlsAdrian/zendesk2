@@ -43,6 +43,40 @@ class Zendesk {
     }
   }
 
+  /// Initialize the Zendesk Talk SDK
+  ///
+  /// ```appId``` the zendesk created appId
+  ///
+  /// ```clientId``` your company Zendesk client ID
+  ///
+  /// ```zendeskUrl``` your company Zendesk domain URL
+  ///
+  /// ```name```, ```email``` and ```jwtToken``` are for authentication (JWT is prioritized)
+  Future<void> initTalkSDK(
+    String appId,
+    String clientId,
+    String zendeskUrl, {
+    String? name,
+    String? email,
+    String? jwtToken,
+  }) async {
+    if (_answerInitialized) return;
+    Map arguments = {
+      'appId': appId,
+      'clientId': clientId,
+      'zendeskUrl': zendeskUrl,
+      'name': name,
+      'email': email,
+      'token': jwtToken,
+    };
+    try {
+      await channel.invokeMethod('init_talk', arguments);
+      _answerInitialized = true;
+    } catch (e) {
+      print(e);
+    }
+  }
+
   /// Initialize the Zendesk Chat SDK
   ///
   /// ```accountKey``` the zendesk created account key, unique by organization

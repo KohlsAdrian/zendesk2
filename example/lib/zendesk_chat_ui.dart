@@ -9,11 +9,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zendesk2/zendesk2.dart';
 
-class ZendeskChat extends StatefulWidget {
+class ZendeskChatUI extends StatefulWidget {
   _ZendeskChat createState() => _ZendeskChat();
 }
 
-class _ZendeskChat extends State<ZendeskChat> {
+class _ZendeskChat extends State<ZendeskChatUI> {
   final Zendesk2Chat _z = Zendesk2Chat.instance;
 
   final _tecM = TextEditingController();
@@ -168,9 +168,8 @@ class _ZendeskChat extends State<ZendeskChat> {
             allowedExtensions: compatibleExt?.toList() ?? [],
           );
     if (result != null) {
-      final file = result is FilePickerResult
-          ? result.files.single
-          : (result as XFile);
+      final file =
+          result is FilePickerResult ? result.files.single : (result as XFile);
 
       final path = file is PlatformFile ? file.path : (file as XFile).path;
 
@@ -251,7 +250,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                     FloatingActionButton(
                       heroTag: 'attachFab',
                       mini: true,
-                      backgroundColor: Theme.of(context).accentColor,
+                      backgroundColor: Theme.of(context).primaryColor,
                       child: Icon(Icons.attach_file),
                       onPressed: _attach,
                     ),

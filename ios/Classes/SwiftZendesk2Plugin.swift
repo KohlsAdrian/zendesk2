@@ -1,17 +1,20 @@
 import Flutter
 import UIKit
 import ChatProvidersSDK
+import TalkSDK
 
 public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
-    
     
     var chatStateObservationToken: ObservationToken? = nil
     var accountObservationToken: ObservationToken? = nil
     var settingsObservationToken: ObservationToken? = nil
     var statusObservationToken: ObservationToken? = nil
+    var talk: Talk? = nil
+    var talkCall: TalkCall? = nil
     
     private var streamingChatSDK: Bool = false
     private var streamingAnswerSDK: Bool = false
+    
     
     private var channel: FlutterMethodChannel
     
@@ -35,6 +38,7 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
         
         let zendesk2Chat = SwiftZendesk2Chat(channel: channel, flutterPlugin: self)
         let zendesk2Answer = SwiftZendesk2Answer(channel: channel, flutterPlugin: self)
+        let zendesk2Talk = SwiftZendesk2Talk(channel: channel, flutterPlugin: self)
         
         switch(method){
         // chat sdk method channels
@@ -114,6 +118,37 @@ public class SwiftZendesk2Plugin: NSObject, FlutterPlugin {
             mResult = arguments
             break
         case "sendRejectArticleDeflection":
+            mResult = arguments
+            break
+        // talk sdk method channels
+        case "init_talk":
+            zendesk2Talk.initialize(arguments)
+            break
+        case "talk_recording_permission":
+            mResult = zendesk2Talk.recordingPermission()
+            break
+        case "talk_check_availability":
+            zendesk2Talk.checkAvailability(arguments)
+            break
+        case "talk_call":
+            zendesk2Talk.call(arguments)
+            break
+        case "talk_disconnect":
+            zendesk2Talk.disconnect()
+            break
+        case "talk_toggle_mute":
+            mResult = zendesk2Talk.toggleMute()
+            break
+        case "talk_toggle_output":
+            mResult = zendesk2Talk.toggleOutput()
+            break
+        case "talk_available_audio_routing_options":
+            mResult = zendesk2Talk.availableAudioRoutingOptions()
+            break
+        case "sendTalkAvailability":
+            mResult = arguments
+            break
+        case "sendTalkCall":
             mResult = arguments
             break
         default:

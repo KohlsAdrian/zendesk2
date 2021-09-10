@@ -40,7 +40,7 @@ public class SwiftZendesk2Answer {
                 Identity.createJwt(token: token!) :
                 Identity.createAnonymous(name: name, email: email)
             
-            Zendesk.instance?.setIdentity(identity)
+            zendesk?.setIdentity(identity)
             
             if zendesk != nil {
                 Support.initialize(withZendesk: zendesk!)

@@ -1,3 +1,13 @@
+# 2.1.0+0
+
+### [BREAKING CHANGES]
+
+* Android Min API 21 (Talk SDK minimum required)
+
+### [Features]
+
+* TalkSDK
+
 # 2.0.0+0
 
 ## Huge update 🎉

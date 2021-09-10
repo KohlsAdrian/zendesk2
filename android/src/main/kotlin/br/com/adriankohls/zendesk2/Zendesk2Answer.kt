@@ -51,7 +51,6 @@ class Zendesk2Answer(private val plugin: Zendesk2Plugin, private val channel: Me
         } else {
             print("Plugin Context is NULL!")
         }
-
     }
 
     fun deflectionQuery(call: MethodCall) {
