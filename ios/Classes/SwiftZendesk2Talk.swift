@@ -127,8 +127,6 @@ public class SwiftZendesk2Talk {
             consent = RecordingConsentAnswer.optedIn
         case "OPT_OUT":
             consent = RecordingConsentAnswer.optedOut
-        case "UNKNOWN":
-            consent = RecordingConsentAnswer.unknown
         default:
             consent = RecordingConsentAnswer.unknown
         }
@@ -231,7 +229,4 @@ public class SwiftZendesk2Talk {
         zendeskPlugin?.talkCall?.disconnect()
         zendeskPlugin?.talkCall = nil
     }
-    
-    
-    
 }

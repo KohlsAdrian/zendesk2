@@ -41,8 +41,8 @@ class _ZendeskTalkUI extends State<ZendeskTalkUI> {
   }
 
   Future<bool> _onWillPopScope() async {
-    await _availabilityStream?.cancel();
-    await _talkCallStream?.cancel();
+    _availabilityStream?.cancel();
+    _talkCallStream?.cancel();
     _z.disconnect();
     _z.dispose();
     return true;

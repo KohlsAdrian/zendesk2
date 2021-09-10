@@ -67,9 +67,6 @@ class ZendeskTalk {
 
   Future<void> checkAvailability(String digitalLineName) async {
     try {
-      if (_availabilityStream.isClosed) {
-        _availabilityStream = StreamController<TalkProviderModel>();
-      }
       final arguments = {
         'digitalLineName': digitalLineName,
       };
@@ -81,9 +78,6 @@ class ZendeskTalk {
 
   Future<void> call(String digitalLineName, TalkConsent talkConsent) async {
     try {
-      if (_talkCallStream.isClosed) {
-        _talkCallStream = StreamController<TalkCallProviderModel>();
-      }
       final arguments = {
         'digitalLineName': digitalLineName,
         'recordingConsentAnswer': talkConsent.toString().split('.').last,
