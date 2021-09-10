@@ -1,3 +1,13 @@
+# 2.0.1+0
+
+### [DOCS]
+
+* Dart: Answer SDK
+
+### [OPTIMISATION]
+
+* Release and recreate streams on Chat SDK and Answer SDK
+
 # 2.0.0+0
 
 ## Huge update 🎉
