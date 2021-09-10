@@ -40,17 +40,23 @@ class ZendeskAnswer {
       StreamController();
   StreamController<bool> _providersRejectArticleDeflection = StreamController();
 
+  /// Retrieves `articles` and `interactionAccessToken` to resolve ou reject articles
   Stream<AnswerProviderModel> get providersDeflection =>
       _providersDeflection.stream.asBroadcastStream();
 
+  /// Retrieves last `article` resolved success
   Stream<bool> get providersResolveArticleDeflection =>
       _providersResolveArticleDeflection.stream.asBroadcastStream();
 
+  /// Retrieves last `article` rejected success
   Stream<bool> get providersRejectArticleDeflection =>
       _providersRejectArticleDeflection.stream.asBroadcastStream();
 
   bool _isStreaming = true;
 
+  /// `query` key word or phrase to retrieve articles related
+  ///
+  /// result streams in `providersDeflection`
   Future<void> query(String query) async {
     if (!_isStreaming) {
       _providersDeflection = StreamController();
@@ -68,6 +74,7 @@ class ZendeskAnswer {
     }
   }
 
+  /// User resolves article as helpful
   Future<void> resolveArticle(
     String deflectionArticleId,
     String articleId,
@@ -85,6 +92,9 @@ class ZendeskAnswer {
     }
   }
 
+  /// User resolves article as unhelpful
+  ///
+  /// `reason`: optional reason to rejection
   Future<void> rejectArticle(
     String deflectionArticleId,
     String articleId,
@@ -104,6 +114,7 @@ class ZendeskAnswer {
     }
   }
 
+  /// Release stream resources
   Future<void> dispose() async {
     await _providersDeflection.sink.close();
     await _providersDeflection.close();
