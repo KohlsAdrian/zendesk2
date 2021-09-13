@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
@@ -160,22 +161,19 @@ class _ZendeskChat extends State<ZendeskChat> {
     final compatibleExt = _chatSettingsModel?.supportedFileTypes;
 
     final result = isPhoto
-        ? await ImagePicker().pickImage(source: ImageSource.gallery)
+        ? await ImagePicker.pickImage(source: ImageSource.gallery)
         : await FilePicker.platform.pickFiles(
             allowMultiple: false,
             type: FileType.custom,
             allowedExtensions: compatibleExt?.toList() ?? [],
           );
-    if (result != null) {
-      final file =
-          result is FilePickerResult ? result.files.single : (result as XFile);
+    
+    final file =
+        result is FilePickerResult ? result.files.single : (result as File);
 
-      final path = file is PlatformFile ? file.path : (file as XFile).path;
+    final path = file is PlatformFile ? file.path : (file as File).path;
 
-      if (path != null) {
-        _z.sendFile(path);
-      }
-    }
+    _z.sendFile(path);
   }
 
   void _settings() async {
