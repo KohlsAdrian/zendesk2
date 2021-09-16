@@ -1,3 +1,7 @@
+# 2.0.0+1
+
+* fix(jcentral): Remove reference to jCenter
+
 # 2.0.0+0
 
 ## Huge update 🎉
@@ -46,7 +50,7 @@
 
 * Fix README.md
 
-F* ixed FirebaseService Example
+* Fixed FirebaseService Example
 
 ## 1.5.0
 
