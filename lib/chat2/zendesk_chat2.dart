@@ -11,7 +11,7 @@ class Zendesk2Chat {
           switch (call.method) {
             case 'sendChatProvidersResult':
               final providerModel = ChatProviderModel.fromJson(arguments);
-              _providersStream?.sink.add(providerModel);
+              _providersStream.sink.add(providerModel);
               break;
             case 'sendChatConnectionStatusResult':
               CONNECTION_STATUS connectionStatus = CONNECTION_STATUS.CONNECTING;
@@ -37,16 +37,16 @@ class Zendesk2Chat {
                   connectionStatus = CONNECTION_STATUS.UNREACHABLE;
                   break;
               }
-              _connectionStatusStream?.sink.add(connectionStatus);
+              _connectionStatusStream.sink.add(connectionStatus);
               break;
             case 'sendChatSettingsResult':
               ChatSettingsModel? chatSettingsModel =
                   ChatSettingsModel.fromJson(arguments);
-              _chatSettingsStream?.sink.add(chatSettingsModel);
+              _chatSettingsStream.sink.add(chatSettingsModel);
               break;
             case 'sendChatIsOnlineResult':
               final chatAccountModel = ChatAccountModel.fromJson(arguments);
-              _chatAccountStream?.sink.add(chatAccountModel);
+              _chatAccountStream.sink.add(chatAccountModel);
               break;
           }
         } catch (e) {
@@ -63,38 +63,39 @@ class Zendesk2Chat {
   /// added ignore so the source won't have warnings
   /// but don't forget to close or .dispose() when needed!!!
   /// ignore: close_sinks
-  StreamController<ChatProviderModel>? _providersStream;
-  StreamController<CONNECTION_STATUS>? _connectionStatusStream;
-  StreamController<ChatSettingsModel>? _chatSettingsStream;
-  StreamController<ChatAccountModel>? _chatAccountStream;
+  StreamController<ChatProviderModel> _providersStream = StreamController();
+  StreamController<CONNECTION_STATUS> _connectionStatusStream =
+      StreamController();
+  StreamController<ChatSettingsModel> _chatSettingsStream = StreamController();
+  StreamController<ChatAccountModel> _chatAccountStream = StreamController();
 
   bool _isStreaming = false;
 
   /// Stream is triggered when socket receive new values
   ///
   /// Please see ```ChatProviderModel```
-  Stream<ChatProviderModel>? get providersStream =>
-      _providersStream?.stream.asBroadcastStream();
+  Stream<ChatProviderModel> get providersStream =>
+      _providersStream.stream.asBroadcastStream();
 
   /// Stream is triggered when socket receive new values
   ///
   /// ```CONNECTION_STATUS```:
   /// CONNECTED | CONNECTING | DISCONNECTED |
   /// FAILED | RECONNECTING | UNREACHABLE | UNKNOWN
-  Stream<CONNECTION_STATUS>? get connectionStatusStream =>
-      _connectionStatusStream?.stream.asBroadcastStream();
+  Stream<CONNECTION_STATUS> get connectionStatusStream =>
+      _connectionStatusStream.stream.asBroadcastStream();
 
   /// Stream is triggered when socket receive new values
   ///
   /// Please see ```ChatSettingsModel```
   Stream<ChatSettingsModel>? get chatSettingsStream =>
-      _chatSettingsStream?.stream.asBroadcastStream();
+      _chatSettingsStream.stream.asBroadcastStream();
 
   /// Stream is triggered when socket receive new values
   ///
   /// Please see ```ChatAccountModel ```
   Stream<ChatAccountModel>? get chatIsOnlineStream =>
-      _chatAccountStream?.stream.asBroadcastStream();
+      _chatAccountStream.stream.asBroadcastStream();
 
   /// Set on Native/Custom chat user information
   ///
@@ -131,22 +132,24 @@ class Zendesk2Chat {
   /// Start chat providers for custom UI handling
   ///
   /// ```periodicRetrieve``` periodic time to update the ```providersStream```
-  /// 
+  ///
   /// ```autoConnect``` Determines if you also want to connect to the chat socket
-  /// 
+  ///
   /// The user will not receive push notifications while connected
   Future<void> startChatProviders({bool autoConnect = true}) async {
     try {
-      if (!_isStreaming) {
-        _providersStream = StreamController<ChatProviderModel>();
-        _connectionStatusStream = StreamController<CONNECTION_STATUS>();
-        _chatSettingsStream = StreamController<ChatSettingsModel>();
-        _chatAccountStream = StreamController<ChatAccountModel>();
-        _isStreaming = true;
+      if (_isStreaming) {
+        await dispose();
+
+        _providersStream = StreamController();
+        _connectionStatusStream = StreamController();
+        _chatSettingsStream = StreamController();
+        _chatAccountStream = StreamController();
       }
 
-      await _channel.invokeMethod('startChatProviders');
+      _isStreaming = true;
 
+      await _channel.invokeMethod('startChatProviders');
       if (autoConnect) {
         await connect();
       }
@@ -242,26 +245,19 @@ class Zendesk2Chat {
   /// Release and close streams
   Future<void> dispose() async {
     try {
-      _providersStream?.sink.close();
-      _providersStream?.close();
+      await _channel.invokeMethod('chat_dispose');
 
-      _connectionStatusStream?.sink.close();
-      _connectionStatusStream?.close();
+      await _providersStream.sink.close();
+      await _connectionStatusStream.sink.close();
+      await _chatSettingsStream.sink.close();
+      await _chatAccountStream.sink.close();
 
-      _chatSettingsStream?.sink.close();
-      _chatSettingsStream?.close();
-
-      _chatAccountStream?.sink.close();
-      _chatAccountStream?.close();
-
-      _providersStream = null;
-      _connectionStatusStream = null;
-      _chatSettingsStream = null;
-      _chatAccountStream = null;
+      await _providersStream.close();
+      await _connectionStatusStream.close();
+      await _chatSettingsStream.close();
+      await _chatAccountStream.close();
 
       _isStreaming = false;
-
-      await _channel.invokeMethod('chat_dispose');
     } catch (e) {
       print(e);
     }

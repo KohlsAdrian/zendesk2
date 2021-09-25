@@ -35,22 +35,35 @@ class ZendeskAnswer {
   static final _channel = Zendesk.instance.channel;
 
   StreamController<AnswerProviderModel> _providersDeflection =
-      StreamController<AnswerProviderModel>();
+      StreamController();
   StreamController<bool> _providersResolveArticleDeflection =
-      StreamController<bool>();
-  StreamController<bool> _providersRejectArticleDeflection =
-      StreamController<bool>();
+      StreamController();
+  StreamController<bool> _providersRejectArticleDeflection = StreamController();
 
+  /// Retrieves `articles` and `interactionAccessToken` to resolve ou reject articles
   Stream<AnswerProviderModel> get providersDeflection =>
       _providersDeflection.stream.asBroadcastStream();
 
+  /// Retrieves last `article` resolved success
   Stream<bool> get providersResolveArticleDeflection =>
       _providersResolveArticleDeflection.stream.asBroadcastStream();
 
+  /// Retrieves last `article` rejected success
   Stream<bool> get providersRejectArticleDeflection =>
       _providersRejectArticleDeflection.stream.asBroadcastStream();
 
+  bool _isStreaming = true;
+
+  /// `query` key word or phrase to retrieve articles related
+  ///
+  /// result streams in `providersDeflection`
   Future<void> query(String query) async {
+    if (!_isStreaming) {
+      _providersDeflection = StreamController();
+      _providersResolveArticleDeflection = StreamController();
+      _providersRejectArticleDeflection = StreamController();
+    }
+
     try {
       final arguments = {
         'query': query,
@@ -61,6 +74,7 @@ class ZendeskAnswer {
     }
   }
 
+  /// User resolves article as helpful
   Future<void> resolveArticle(
     String deflectionArticleId,
     String articleId,
@@ -78,6 +92,9 @@ class ZendeskAnswer {
     }
   }
 
+  /// User resolves article as unhelpful
+  ///
+  /// `reason`: optional reason to rejection
   Future<void> rejectArticle(
     String deflectionArticleId,
     String articleId,
@@ -97,14 +114,17 @@ class ZendeskAnswer {
     }
   }
 
+  /// Release stream resources
   Future<void> dispose() async {
-    _providersDeflection.sink.close();
-    _providersDeflection.close();
+    await _providersDeflection.sink.close();
+    await _providersDeflection.close();
 
-    _providersResolveArticleDeflection.sink.close();
-    _providersResolveArticleDeflection.close();
+    await _providersResolveArticleDeflection.sink.close();
+    await _providersResolveArticleDeflection.close();
 
-    _providersRejectArticleDeflection.sink.close();
-    _providersRejectArticleDeflection.close();
+    await _providersRejectArticleDeflection.sink.close();
+    await _providersRejectArticleDeflection.close();
+
+    _isStreaming = false;
   }
 }
