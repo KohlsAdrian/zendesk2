@@ -1,4 +1,4 @@
-# 2.0.1+0
+# 2.1.0+0
 
 ### [DOCS]
 
@@ -7,6 +7,10 @@
 ### [OPTIMISATION]
 
 * Release and recreate streams on Chat SDK and Answer SDK
+
+# 2.0.0+1
+
+* fix(jcentral): Remove reference to jCenter
 
 # 2.0.0+0
 
@@ -56,7 +60,7 @@
 
 * Fix README.md
 
-F* ixed FirebaseService Example
+* Fixed FirebaseService Example
 
 ## 1.5.0
 
